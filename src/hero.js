@@ -147,10 +147,10 @@ export function makeStratisOrb() {
 
 // ---------------------------------------------------------------------------
 // Headquarters tower — full-detail model per spec sheet:
-// 12×12 footprint, 4m lobby, 5×3.5m office floors with interiors + lighting,
-// crown, rooftop platform, stem, glow ring, STRATIS orb.
+// 12×9 rounded footprint, 4.2m glass lobby, 5×3.6m furnished floors,
+// crown, mechanical rooftop, STRATIS orb, working elevator.
 // ---------------------------------------------------------------------------
-export const FLOORS = ['COLLABORATION', 'ANALYTICS', 'CREATIVE', 'OPERATIONS', 'STRATEGY'];
+export const FLOORS = ['COLLABORATION', 'ANALYTICS', 'CREATIVE', 'MEDIA', 'STRATEGY'];
 
 // spec palette
 const T_WHITE = 0xf8fafc;
@@ -273,230 +273,791 @@ function wallScreen(variant = 0, w = 2.1, h = 1.25) {
   return g;
 }
 
-/** One furnished office floor. Interior clear ~10.8, origin at walking surface. */
-function floorInterior(label, idx) {
-  const g = new THREE.Group();
-  const addStander = (x, z, ry) => {
-    const p = makePerson({});
-    p.position.set(x, 0, z);
-    p.rotation.y = ry;
-    g.add(p);
-  };
+// --- spec-sheet props library ------------------------------------------------
+const FAB_BLUE = mat(0x2456c9, { roughness: 0.85 });
+const WOOD = mat(0xd9c9a8, { roughness: 0.75 });
+const STEEL_G = mat(T_GREY2, { roughness: 0.5 });
+const WHITE_TOP = mat(0xffffff, { roughness: 0.45 });
+const LED_BLUE = new THREE.MeshStandardMaterial({
+  color: 0x9fc4ff, emissive: 0x3d7bff, emissiveIntensity: 1.9, roughness: 0.35,
+});
+const LED_WHITE = new THREE.MeshStandardMaterial({
+  color: 0xffffff, emissive: 0xffffff, emissiveIntensity: 1.3, roughness: 0.4,
+});
+const BOOK_MATS = [0x2a6bff, 0xe3172e, 0xf0c66a, 0x5fa88f, 0xffffff, 0x10307c]
+  .map((c) => mat(c, { roughness: 0.8 }));
 
-  if (label === 'COLLABORATION') {
-    // round meeting table with team
-    g.add(cyl(1.5, 1.5, 0.08, mat(0xffffff, { roughness: 0.45 }), 0, 0.76, -0.4, 24));
-    g.add(cyl(0.14, 0.2, 0.74, mat(T_GREY2, { roughness: 0.5 }), 0, 0.38, -0.4, 10));
-    for (let k = 0; k < 5; k++) {
-      const a = (k / 5) * Math.PI * 2 + 0.5;
-      const ch = officeChair();
-      ch.position.set(Math.cos(a) * 2.1, 0, -0.4 + Math.sin(a) * 2.1);
-      ch.rotation.y = -a - Math.PI / 2;
-      g.add(ch);
-      if (k !== 2) {
-        const p = makePerson({ seated: true });
-        p.position.set(Math.cos(a) * 2.25, 0.02, -0.4 + Math.sin(a) * 2.25);
-        p.rotation.y = -a - Math.PI;
-        g.add(p);
-      }
-    }
-    const ws = wallScreen(1);
-    ws.position.set(-3.2, 1.6, -4.75);
-    g.add(ws);
-    addStander(3.4, 1.8, -2.2);
-    const pl = pottedPlant(); pl.position.set(4.4, 0, -4.2); g.add(pl);
-  } else if (label === 'ANALYTICS') {
-    const ws1 = wallScreen(0); ws1.position.set(-2.4, 1.7, -4.75); g.add(ws1);
-    const ws2 = wallScreen(1); ws2.position.set(0.4, 1.7, -4.75); g.add(ws2);
-    const d1 = deskSet(0); d1.position.set(-2.4, 0, -1.4); g.add(d1);
-    const d2 = deskSet(1); d2.position.set(1.6, 0, 0.6); d2.rotation.y = 0.5; g.add(d2);
-    addStander(-1.4, -3.4, 0.4); // analyst studying the wall screens
-    const pl = pottedPlant(); pl.position.set(4.5, 0, 2.6); g.add(pl);
-  } else if (label === 'CREATIVE') {
-    const d1 = deskSet(2); d1.position.set(2.2, 0, -1.6); d1.rotation.y = -0.6; g.add(d1);
-    // pin-up boards
-    g.add(rbox(1.5, 1.0, 0.06, mat(0xffffff, { roughness: 0.5 }), -2.6, 2.0, -4.78, 0.03));
-    g.add(rbox(1.5, 1.0, 0.06, mat(0xffffff, { roughness: 0.5 }), -0.8, 2.0, -4.78, 0.03));
-    g.add(box(1.1, 0.7, 0.02, mat(T_BLUE, { roughness: 0.6 }), -2.6, 2.0, -4.74));
-    const pt = partition(); pt.position.set(0.2, 0, -0.4); pt.rotation.y = 0.3; g.add(pt);
-    addStander(-2.2, -3.2, 0.5);
-    addStander(-1.4, -2.6, Math.PI + 0.9);
-    const pl = pottedPlant(1.15); pl.position.set(-4.4, 0, 2.4); g.add(pl);
-  } else if (label === 'OPERATIONS') {
-    const d1 = deskSet(1); d1.position.set(-2.2, 0, -0.8); d1.rotation.y = 0.25; g.add(d1);
-    const d2 = deskSet(0); d2.position.set(1.8, 0, -2.2); d2.rotation.y = -0.2; g.add(d2);
-    const pt = partition(); pt.position.set(-0.2, 0, -1.6); pt.rotation.y = 0.25; g.add(pt);
-    const ws = wallScreen(2); ws.position.set(2.6, 1.7, -4.75); g.add(ws);
-    addStander(3.4, 1.4, -1.8);
-    const pl = pottedPlant(); pl.position.set(-4.5, 0, -4.2); g.add(pl);
-  } else {
-    // STRATEGY — executive floor
-    const d1 = deskSet(0); d1.position.set(-2.4, 0, -1.0); d1.rotation.y = 0.3; g.add(d1);
-    const ws = wallScreen(0); ws.position.set(1.8, 1.7, -4.75); g.add(ws);
-    // two executives in discussion
-    addStander(2.2, 0.6, -2.4);
-    addStander(3.1, 0.2, 0.9);
-    const pl = pottedPlant(1.1); pl.position.set(-4.5, 0, 2.8); g.add(pl);
-    const pl2 = pottedPlant(0.9); pl2.position.set(4.5, 0, -4.0); g.add(pl2);
+/** Seated figure matching an officeChair/sofa rotated to `chairRotY`. */
+function seated(chairRotY) {
+  const p = makePerson({ seated: true });
+  p.rotation.y = chairRotY + Math.PI / 2;
+  return p;
+}
+
+/** N standing figures loosely ringed around a point, facing the centre. */
+function meetingGroup(n = 3, r = 0.8) {
+  const g = new THREE.Group();
+  for (let k = 0; k < n; k++) {
+    const a = (k / n) * Math.PI * 2 + 0.6;
+    const p = makePerson({});
+    p.position.set(Math.cos(a) * r, 0, Math.sin(a) * r);
+    p.rotation.y = Math.PI - a;
+    g.add(p);
   }
   return g;
 }
 
+function sofa(len = 2.1) {
+  const g = new THREE.Group();
+  g.add(rbox(len, 0.4, 0.85, FAB_BLUE, 0, 0.32, 0, 0.09));
+  g.add(rbox(len, 0.62, 0.24, FAB_BLUE, 0, 0.72, -0.31, 0.09));
+  for (const sx of [-1, 1]) {
+    g.add(rbox(0.24, 0.62, 0.85, FAB_BLUE, sx * (len / 2 - 0.12), 0.43, 0, 0.09));
+  }
+  g.add(box(len - 0.34, 0.1, 0.58, STEEL_G, 0, 0.06, 0.05));
+  return g;
+}
+const loungeChair = () => sofa(1.05);
+
+function coffeeTable() {
+  const g = new THREE.Group();
+  g.add(cyl(0.55, 0.55, 0.06, WOOD, 0, 0.42, 0, 20));
+  g.add(cyl(0.05, 0.05, 0.38, STEEL_G, 0, 0.21, 0, 8));
+  g.add(cyl(0.28, 0.33, 0.04, STEEL_G, 0, 0.02, 0, 16));
+  return g;
+}
+
+function barStool() {
+  const g = new THREE.Group();
+  g.add(cyl(0.19, 0.19, 0.07, FAB_BLUE, 0, 0.76, 0, 14));
+  g.add(cyl(0.035, 0.035, 0.7, STEEL_G, 0, 0.38, 0, 8));
+  g.add(cyl(0.2, 0.24, 0.04, STEEL_G, 0, 0.02, 0, 14));
+  return g;
+}
+
+function bookshelf(w = 1.5, h = 2.1) {
+  const g = new THREE.Group();
+  g.add(rbox(w, h, 0.42, mat(T_WHITE, { roughness: 0.6 }), 0, h / 2, 0, 0.05));
+  g.add(box(w - 0.14, h - 0.16, 0.3, mat(0xdde3ec, { roughness: 0.9 }), 0, h / 2, 0.05));
+  for (let r = 0; r < 3; r++) {
+    const sy = h * (0.24 + r * 0.27);
+    g.add(box(w - 0.2, 0.05, 0.34, mat(T_GREY1, { roughness: 0.7 }), 0, sy, 0.06));
+    let bx = -(w / 2) + 0.18;
+    while (bx < w / 2 - 0.24) {
+      const bw = 0.09 + Math.random() * 0.1;
+      if (Math.random() < 0.85) {
+        const bh = 0.3 + Math.random() * 0.14;
+        const b = box(bw, bh, 0.26, BOOK_MATS[Math.floor(Math.random() * BOOK_MATS.length)],
+          bx + bw / 2, sy + 0.025 + bh / 2, 0.08);
+        b.castShadow = false;
+        g.add(b);
+      }
+      bx += bw + 0.025;
+    }
+  }
+  return g;
+}
+
+/** Kitchenette / coffee bar. Back sits at -Z (against a wall). */
+function kitchenette(len = 2.9) {
+  const g = new THREE.Group();
+  g.add(rbox(len, 0.9, 0.66, mat(T_WHITE, { roughness: 0.55 }), 0, 0.46, 0, 0.06));
+  g.add(box(len + 0.06, 0.06, 0.72, STEEL_G, 0, 0.94, 0));
+  g.add(box(len, 0.12, 0.02, mat(T_NAVY, { roughness: 0.5 }), 0, 0.68, 0.34));
+  g.add(rbox(0.34, 0.44, 0.3, mat(T_NAVY, { roughness: 0.4 }), -len / 2 + 0.45, 1.19, -0.08, 0.04));
+  g.add(cyl(0.045, 0.04, 0.09, mat(T_BLUE, { roughness: 0.5 }), 0.2, 1.02, 0.05, 8));
+  g.add(cyl(0.045, 0.04, 0.09, mat(0xe3172e, { roughness: 0.5 }), 0.45, 1.02, -0.1, 8));
+  g.add(box(0.42, 0.03, 0.3, STEEL_G, len / 2 - 0.55, 0.975, 0));
+  g.add(box(len * 0.72, 0.07, 0.32, mat(T_WHITE, { roughness: 0.55 }), 0, 2.0, -0.16));
+  const led = box(len * 0.66, 0.04, 0.05, LED_BLUE, 0, 1.94, -0.04);
+  led.castShadow = false;
+  g.add(led);
+  return g;
+}
+
+function serverRack() {
+  const g = new THREE.Group();
+  g.add(rbox(0.72, 1.9, 0.72, mat(0x232c3d, { roughness: 0.5 }), 0, 0.95, 0, 0.05));
+  for (let k = 0; k < 4; k++) {
+    g.add(box(0.56, 0.05, 0.02, mat(0x39445c, { roughness: 0.6 }), 0, 0.42 + k * 0.38, 0.36));
+  }
+  for (const [dx, dy] of [[-0.18, 1.66], [0, 1.66], [0.18, 1.66]]) {
+    const dot = box(0.06, 0.06, 0.02, LED_BLUE, dx, dy, 0.37);
+    dot.castShadow = false;
+    g.add(dot);
+  }
+  return g;
+}
+
+function whiteboard() {
+  const g = new THREE.Group();
+  g.add(rbox(1.7, 1.05, 0.06, mat(0xffffff, { roughness: 0.3 }), 0, 1.5, 0, 0.03));
+  const s1 = box(1.0, 0.05, 0.012, mat(T_BLUE, { roughness: 0.6 }), -0.15, 1.72, 0.03);
+  const s2 = box(0.7, 0.05, 0.012, mat(T_BLUE, { roughness: 0.6 }), -0.3, 1.52, 0.03);
+  const s3 = box(0.5, 0.28, 0.012, mat(0xe3172e, { roughness: 0.6 }), 0.45, 1.38, 0.03);
+  s1.castShadow = s2.castShadow = s3.castShadow = false;
+  g.add(s1, s2, s3);
+  g.add(box(1.5, 0.05, 0.14, STEEL_G, 0, 0.94, 0.06));
+  for (const sx of [-1, 1]) {
+    g.add(box(0.06, 1.0, 0.06, STEEL_G, sx * 0.72, 0.5, 0));
+    g.add(box(0.06, 0.05, 0.5, STEEL_G, sx * 0.72, 0.03, 0));
+  }
+  return g;
+}
+
+/** Pin-board idea wall — white panel covered in coloured cards. */
+function ideaWall(w = 3.2, h = 1.5) {
+  const g = new THREE.Group();
+  g.add(rbox(w, h, 0.08, mat(0xffffff, { roughness: 0.6 }), 0, 0, 0, 0.04));
+  const cardCols = [0x2a6bff, 0xe3172e, 0xf0c66a, 0x5fa88f, 0x9dbdf5].map((c) => mat(c, { roughness: 0.7 }));
+  for (let i = 0; i < 16; i++) {
+    const cx = -w / 2 + 0.35 + (i % 6) * ((w - 0.7) / 5) + (Math.random() - 0.5) * 0.1;
+    const cyy = h / 2 - 0.3 - Math.floor(i / 6) * 0.42 + (Math.random() - 0.5) * 0.08;
+    const card = box(0.26, 0.2, 0.015, cardCols[i % cardCols.length], cx, cyy, 0.05);
+    card.rotation.z = (Math.random() - 0.5) * 0.2;
+    card.castShadow = false;
+    g.add(card);
+  }
+  return g;
+}
+
+/** Multi-screen media wall — 3×2 grid of live dashboards in a navy frame. */
+function mediaWall() {
+  const g = new THREE.Group();
+  g.add(rbox(4.7, 2.5, 0.14, mat(T_NAVY, { roughness: 0.5 }), 0, 0, 0, 0.05));
+  for (let r = 0; r < 2; r++) {
+    for (let c = 0; c < 3; c++) {
+      const scr = new THREE.Mesh(new THREE.BoxGeometry(1.42, 1.08, 0.05), [
+        mat(T_NAVY), mat(T_NAVY), mat(T_NAVY), mat(T_NAVY),
+        screenMaterials()[(r * 3 + c) % 3], mat(T_NAVY),
+      ]);
+      scr.position.set(-1.52 + c * 1.52, 0.6 - r * 1.2, 0.08);
+      scr.castShadow = false;
+      g.add(scr);
+    }
+  }
+  const led = box(4.6, 0.05, 0.05, LED_BLUE, 0, -1.3, 0.06);
+  led.castShadow = false;
+  g.add(led);
+  return g;
+}
+
+function storageCabinet(w = 1.25) {
+  const g = new THREE.Group();
+  g.add(rbox(w, 1.25, 0.5, mat(T_GREY1, { roughness: 0.7 }), 0, 0.63, 0, 0.05));
+  g.add(box(w + 0.04, 0.05, 0.54, STEEL_G, 0, 1.27, 0));
+  for (const sx of [-1, 1]) {
+    g.add(box(0.03, 0.16, 0.03, STEEL_G, sx * 0.12, 0.72, 0.26));
+  }
+  return g;
+}
+
+function workshopTable(l = 2.3, w = 1.05, h = 0.92) {
+  const g = new THREE.Group();
+  g.add(rbox(l, 0.08, w, WHITE_TOP, 0, h, 0, 0.03));
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      g.add(box(0.07, h, 0.07, STEEL_G, sx * (l / 2 - 0.12), h / 2, sz * (w / 2 - 0.12)));
+    }
+  }
+  return g;
+}
+
+/** Standing-height huddle table. */
+function huddleTable() {
+  const g = new THREE.Group();
+  g.add(cyl(0.85, 0.85, 0.07, WHITE_TOP, 0, 1.02, 0, 20));
+  g.add(cyl(0.07, 0.07, 0.95, STEEL_G, 0, 0.5, 0, 10));
+  g.add(cyl(0.4, 0.46, 0.05, STEEL_G, 0, 0.025, 0, 16));
+  return g;
+}
+
+/** Vent / grille panel (mechanical detail). Faces +Z. */
+function ventGrille(w = 1.2, h = 0.7) {
+  const g = new THREE.Group();
+  g.add(rbox(w, h, 0.08, mat(T_GREY2, { roughness: 0.6 }), 0, 0, 0, 0.03));
+  for (let k = 0; k < 3; k++) {
+    const slat = box(w - 0.24, 0.07, 0.02, mat(0x6c7686, { roughness: 0.7 }), 0, -h / 2 + 0.18 + k * ((h - 0.36) / 2), 0.045);
+    slat.castShadow = false;
+    g.add(slat);
+  }
+  return g;
+}
+
+// ---------------------------------------------------------------------------
+// Floor hosts — walk up to them in first person and they introduce themselves
+// (a speech bubble appears; wired up in main.js via userData.npc).
+// ---------------------------------------------------------------------------
+const GREETERS = {
+  STRATEGY: {
+    name: 'Jason', title: 'Chief Strategy Officer · PUSH',
+    line: "Hi, I'm Jason — Chief Strategy Officer at PUSH. I work with Purolator to turn everything this network learns into the brand's next big move.",
+    x: 1.9, z: 2.2,
+  },
+  MEDIA: {
+    name: 'Darren', title: 'Director of Media · PUSH Canada',
+    line: "Hi, I'm Darren — Director of Media at PUSH in Canada. I work with Purolator to put the brand everywhere its network runs. Every screen on this floor is a live campaign.",
+    x: 1.6, z: 1.6,
+  },
+  CREATIVE: {
+    name: 'Maya', title: 'Executive Creative Director · PUSH',
+    line: "Hi, I'm Maya — Executive Creative Director at PUSH. My team turns Purolator's delivery promise into stories people feel, shipped as reliably as the parcels.",
+    x: -0.9, z: 0.6,
+  },
+  ANALYTICS: {
+    name: 'Priya', title: 'Head of Analytics · PUSH',
+    line: "Hi, I'm Priya — Head of Analytics at PUSH. Up here we measure brand lift and delivery performance on the same dashboard, so every idea has proof behind it.",
+    x: 0.8, z: 1.6,
+  },
+  COLLABORATION: {
+    name: 'Kirsten', title: 'Managing Director, Client Services · PUSH',
+    line: "Hi, I'm Kirsten — Managing Director of Client Services at PUSH. This floor is where PUSH and Purolator work as one team. Grab a coffee and stay a while!",
+    x: -1.3, z: 1.2,
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Furnished floors — layouts follow the HQ spec sheet. Interior clear space is
+// x ∈ [-5.6, 5.6], z ∈ [-3.9, 4.1] (front open). The zone x < -2.8, z < -1.9
+// is reserved for the elevator shaft on every floor.
+// ---------------------------------------------------------------------------
+function floorInterior(label) {
+  const g = new THREE.Group();
+  const rugM = mat(0xdce6f5, { roughness: 0.95 });
+
+  if (label === 'COLLABORATION') {
+    // kitchenette / coffee bar against the left glass wall
+    const kit = kitchenette(3.0);
+    kit.position.set(-4.9, 0, 1.7);
+    kit.rotation.y = Math.PI / 2;
+    g.add(kit);
+    for (const zz of [1.0, 2.4]) {
+      const st = barStool();
+      st.position.set(-3.9, 0, zz);
+      g.add(st);
+    }
+    const barista = makePerson({});
+    barista.position.set(-3.55, 0, 1.7);
+    barista.rotation.y = Math.PI;
+    g.add(barista);
+    // workshop table with a standing working group
+    const t1 = workshopTable(2.5, 1.1);
+    t1.position.set(0.6, 0, 0.6);
+    t1.rotation.y = 0.15;
+    g.add(t1);
+    const grp = meetingGroup(3, 1.35);
+    grp.position.set(0.6, 0, 0.6);
+    g.add(grp);
+    // second table, two seated
+    const t2 = workshopTable(2.2, 1.0);
+    t2.position.set(3.9, 0, -1.8);
+    t2.rotation.y = -0.35;
+    g.add(t2);
+    for (const [cx, cz, cr] of [[3.15, -1.2, 2.3], [4.6, -2.4, -0.8]]) {
+      const ch = officeChair(); ch.position.set(cx, 0, cz); ch.rotation.y = cr; g.add(ch);
+      const p = seated(cr); p.position.set(cx, 0.02, cz); g.add(p);
+    }
+    // meeting pod — facing sofas over a rug, coffee table between
+    const rug = box(3.4, 0.04, 2.8, rugM, 3.7, 0.02, 2.7);
+    rug.castShadow = false;
+    g.add(rug);
+    const s1 = sofa(2.0); s1.position.set(3.7, 0, 3.6); s1.rotation.y = Math.PI; g.add(s1);
+    const s2 = sofa(2.0); s2.position.set(3.7, 0, 1.8); g.add(s2);
+    const ct = coffeeTable(); ct.position.set(3.7, 0, 2.7); g.add(ct);
+    const pa = seated(Math.PI); pa.position.set(3.25, 0, 3.6); g.add(pa);
+    const pb = seated(0); pb.position.set(4.15, 0, 1.8); g.add(pb);
+    // library / storage on the back wall
+    const b1 = bookshelf(1.6); b1.position.set(0.9, 0, -3.62); g.add(b1);
+    const b2 = bookshelf(1.6); b2.position.set(2.7, 0, -3.62); g.add(b2);
+    const sc = storageCabinet(); sc.position.set(-1.4, 0, -3.68); g.add(sc);
+    const pl = pottedPlant(1.35); pl.position.set(5.1, 0, 0.3); g.add(pl);
+    const pl2 = pottedPlant(0.95); pl2.position.set(-2.3, 0, 3.6); g.add(pl2);
+  } else if (label === 'ANALYTICS') {
+    // dashboard wall
+    const dash = wallScreen(1, 3.2, 1.8); dash.position.set(0.6, 1.85, -3.8); g.add(dash);
+    const sideA = wallScreen(0, 1.4, 0.95); sideA.position.set(-2.2, 1.85, -3.8); g.add(sideA);
+    const sideB = wallScreen(2, 1.4, 0.95); sideB.position.set(3.5, 1.85, -3.8); g.add(sideB);
+    // data analysis stations facing the wall
+    for (const [dx, dv] of [[-1.6, 0], [0.6, 1], [2.8, 2]]) {
+      const d = deskSet(dv);
+      d.position.set(dx, 0, -1.5);
+      g.add(d);
+    }
+    // huddle zone — high table, stools, two analysts talking
+    const ht = huddleTable(); ht.position.set(3.6, 0, 2.1); g.add(ht);
+    for (const a of [0.6, 2.4, 4.3]) {
+      const st = barStool();
+      st.position.set(3.6 + Math.cos(a) * 1.0, 0, 2.1 + Math.sin(a) * 1.0);
+      g.add(st);
+    }
+    const hg = meetingGroup(2, 1.3); hg.position.set(3.6, 0, 2.1); g.add(hg);
+    // server / storage closet, back-right corner
+    const r1 = serverRack(); r1.position.set(5.0, 0, -3.5); g.add(r1);
+    const r2 = serverRack(); r2.position.set(4.15, 0, -3.5); g.add(r2);
+    const sc = storageCabinet(); sc.position.set(-2.1, 0, -3.68); g.add(sc);
+    const an = makePerson({});
+    an.position.set(-0.4, 0, -2.7);
+    an.rotation.y = Math.PI / 2; // studying the dashboards
+    g.add(an);
+    const pl = pottedPlant(1.3); pl.position.set(-5.0, 0, 2.9); g.add(pl);
+    const pl2 = pottedPlant(0.9); pl2.position.set(5.2, 0, 0.6); g.add(pl2);
+  } else if (label === 'CREATIVE') {
+    // idea wall + freestanding whiteboard with presenter
+    const iw = ideaWall(3.4, 1.5); iw.position.set(1.0, 1.9, -3.82); g.add(iw);
+    const wb = whiteboard(); wb.position.set(-2.0, 0, -2.6); wb.rotation.y = 0.45; g.add(wb);
+    const presenter = makePerson({});
+    presenter.position.set(-1.1, 0, -1.9);
+    presenter.rotation.y = 2.5;
+    g.add(presenter);
+    // studio worktables
+    const t1 = workshopTable(2.6, 1.15);
+    t1.position.set(1.6, 0, -0.9);
+    t1.rotation.y = -0.12;
+    g.add(t1);
+    for (const [cx, cz, cr] of [[0.8, -0.15, 2.3], [2.5, -1.7, -0.85]]) {
+      const ch = officeChair(); ch.position.set(cx, 0, cz); ch.rotation.y = cr; g.add(ch);
+      const p = seated(cr); p.position.set(cx, 0.02, cz); g.add(p);
+    }
+    // lounge corner
+    const rug = box(3.2, 0.04, 2.8, rugM, -3.7, 0.02, 2.2);
+    rug.castShadow = false;
+    g.add(rug);
+    const sf = sofa(2.1); sf.position.set(-3.7, 0, 3.2); sf.rotation.y = Math.PI; g.add(sf);
+    const lc1 = loungeChair(); lc1.position.set(-4.6, 0, 1.2); lc1.rotation.y = 0.35; g.add(lc1);
+    const lc2 = loungeChair(); lc2.position.set(-2.8, 0, 1.2); lc2.rotation.y = -0.35; g.add(lc2);
+    const ct = coffeeTable(); ct.position.set(-3.7, 0, 2.2); g.add(ct);
+    const ps = seated(Math.PI); ps.position.set(-4.2, 0, 3.2); g.add(ps);
+    const pc = seated(0.35); pc.position.set(-4.6, 0, 1.2); g.add(pc);
+    // display / props shelf on the right wall
+    const shelf = bookshelf(1.7, 2.2);
+    shelf.position.set(5.25, 0, -0.6);
+    shelf.rotation.y = -Math.PI / 2;
+    g.add(shelf);
+    const pl = pottedPlant(1.25); pl.position.set(4.9, 0, 3.4); g.add(pl);
+  } else if (label === 'MEDIA') {
+    // multi-screen wall + operations console facing it
+    const mw = mediaWall(); mw.position.set(0.2, 1.85, -3.82); g.add(mw);
+    const consoleG = new THREE.Group();
+    consoleG.add(rbox(4.4, 0.09, 0.95, WHITE_TOP, 0, 0.78, 0, 0.03));
+    for (const sx of [-1.9, 0, 1.9]) {
+      consoleG.add(box(0.09, 0.74, 0.8, STEEL_G, sx, 0.38, 0));
+    }
+    for (let s = 0; s < 3; s++) {
+      const scr = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.4, 0.03), [
+        mat(T_NAVY), mat(T_NAVY), mat(T_NAVY), mat(T_NAVY),
+        screenMaterials()[s], mat(T_NAVY),
+      ]);
+      scr.position.set(-1.3 + s * 1.3, 1.2, -0.28);
+      scr.castShadow = true;
+      consoleG.add(scr);
+      consoleG.add(cyl(0.03, 0.05, 0.18, STEEL_G, -1.3 + s * 1.3, 0.9, -0.28, 8));
+      consoleG.add(box(0.42, 0.025, 0.15, mat(T_GREY1, { roughness: 0.6 }), -1.3 + s * 1.3, 0.84, 0.05));
+    }
+    consoleG.position.set(0.2, 0, -2.0);
+    g.add(consoleG);
+    for (const dx of [-1.1, 1.5]) {
+      const ch = officeChair(); ch.position.set(0.2 + dx, 0, -1.25); ch.rotation.y = Math.PI; g.add(ch);
+      const p = seated(Math.PI); p.position.set(0.2 + dx, 0.02, -1.25); g.add(p);
+    }
+    // campaign monitor stations
+    const d1 = deskSet(0); d1.position.set(3.9, 0, 0.6); d1.rotation.y = -0.5; g.add(d1);
+    const d2 = deskSet(2); d2.position.set(-3.6, 0, -0.6); d2.rotation.y = 0.5; g.add(d2);
+    // planning table with standing team
+    const pt = workshopTable(2.3, 1.05);
+    pt.position.set(-3.0, 0, 2.6);
+    pt.rotation.y = 0.2;
+    g.add(pt);
+    const grp = meetingGroup(3, 1.3); grp.position.set(-3.0, 0, 2.6); g.add(grp);
+    // storage cabinets on the right wall
+    for (const zz of [-2.9, -1.5]) {
+      const c = storageCabinet(1.3);
+      c.position.set(5.3, 0, zz);
+      c.rotation.y = -Math.PI / 2;
+      g.add(c);
+    }
+    const pl = pottedPlant(1.2); pl.position.set(5.0, 0, 3.6); g.add(pl);
+  } else {
+    // STRATEGY — war room + presentation wall + executive desks + lounge
+    const pres = wallScreen(0, 3.4, 1.95); pres.position.set(0.6, 1.95, -3.8); g.add(pres);
+    const ds1 = wallScreen(1, 1.3, 0.9); ds1.position.set(-2.3, 1.9, -3.8); g.add(ds1);
+    const ds2 = wallScreen(2, 1.3, 0.9); ds2.position.set(3.5, 1.9, -3.8); g.add(ds2);
+    const wt = new THREE.Group();
+    wt.add(rbox(3.3, 0.1, 1.5, WHITE_TOP, 0, 0.76, 0, 0.05));
+    wt.add(rbox(0.5, 0.72, 1.1, mat(T_GREY1, { roughness: 0.6 }), -1.15, 0.36, 0, 0.06));
+    wt.add(rbox(0.5, 0.72, 1.1, mat(T_GREY1, { roughness: 0.6 }), 1.15, 0.36, 0, 0.06));
+    wt.position.set(0.5, 0, -0.9);
+    g.add(wt);
+    for (const [cx, cz, cr, sit] of [
+      [-0.6, -1.85, 0, 1], [0.5, -1.85, 0, 1], [1.6, -1.85, 0, 0],
+      [-0.6, 0.1, Math.PI, 1], [0.5, 0.1, Math.PI, 0], [1.6, 0.1, Math.PI, 1],
+    ]) {
+      const ch = officeChair(); ch.position.set(cx, 0, cz); ch.rotation.y = cr; g.add(ch);
+      if (sit) { const p = seated(cr); p.position.set(cx, 0.02, cz); g.add(p); }
+    }
+    const pr = makePerson({});
+    pr.position.set(0.6, 0, -2.9);
+    pr.rotation.y = -Math.PI / 2; // presenting to the table
+    g.add(pr);
+    // executive desks
+    const e1 = deskSet(0); e1.position.set(4.0, 0, 1.5); e1.rotation.y = -0.85; g.add(e1);
+    const e2 = deskSet(1); e2.position.set(-3.9, 0, 0.0); e2.rotation.y = 0.7; g.add(e2);
+    // lounge corner
+    const lc1 = loungeChair(); lc1.position.set(-4.3, 0, 3.3); lc1.rotation.y = 2.4; g.add(lc1);
+    const lc2 = loungeChair(); lc2.position.set(-2.9, 0, 3.5); lc2.rotation.y = -2.5; g.add(lc2);
+    const ct = coffeeTable(); ct.position.set(-3.6, 0, 2.5); g.add(ct);
+    const pv = seated(2.4); pv.position.set(-4.3, 0, 3.3); g.add(pv);
+    const pl = pottedPlant(1.35); pl.position.set(5.1, 0, -3.4); g.add(pl);
+    const pl2 = pottedPlant(0.95); pl2.position.set(-5.1, 0, 1.9); g.add(pl2);
+  }
+
+  // the floor's host — faces the open front, introduces themselves in FP mode
+  const gr = GREETERS[label];
+  if (gr) {
+    const host = makePerson({ clip: 'Talk' });
+    host.position.set(gr.x, 0, gr.z);
+    host.rotation.y = -Math.PI / 2;
+    host.userData.npc = { name: gr.name, title: gr.title, line: gr.line, h: 2.25 };
+    g.add(host);
+  }
+  return g;
+}
+
+// ---------------------------------------------------------------------------
+// HQ tower — 12 × 9 rounded shell per the spec sheet: glass curtain sides,
+// solid back with vents, open display front with glass balustrades, LED accent
+// seams, Purolator crown, mechanical rooftop with the STRATIS orb — and a
+// working elevator (glass shaft, back-left) that serves the lobby and all
+// five floors. First-person: stand in the car and press E / Q.
+// ---------------------------------------------------------------------------
 export function makeHQTower() {
   const g = new THREE.Group();
   const wall = mat(T_WHITE, { roughness: 0.6 });
   const grey1 = mat(T_GREY1, { roughness: 0.7 });
   const grey2 = mat(T_GREY2, { roughness: 0.6 });
+  const floorM = mat(0xf0f3f8, { roughness: 0.9 });
   const glassM = new THREE.MeshStandardMaterial({
     color: 0xcfe0f2, transparent: true, opacity: 0.16, roughness: 0.1, metalness: 0.05,
   });
 
-  const FW = 12, FH = 3.5, LOBBY_H = 4, N = FLOORS.length;
-  const y0 = 1.3;                       // base top / lobby floor
-  const fy = (i) => y0 + LOBBY_H + 0.45 + i * FH; // walking surface of floor i
-  const topY = fy(N - 1) + FH;          // top of highest floor volume
+  const W = 12, D = 9, FH = 3.6, LOBBY_H = 4.2, N = FLOORS.length;
+  const y0 = 1.3;                                  // base top / lobby floor
+  const fy = (i) => y0 + LOBBY_H + 0.45 + i * FH;  // walking surface of floor i
+  const topY = fy(N - 1) + FH;                     // top of highest floor volume
 
-  // --- base / foundation
-  g.add(rbox(14.5, 1.3, 14.5, grey1, 0, 0.65, 0, 0.4));
-  g.add(rbox(6.5, 0.4, 3.6, grey2, 0, 1.4, 6.4, 0.15)); // entry step
+  // --- base: foundation tiers sunk deep into the curved terrain (the globe
+  // falls away ~1 unit across the footprint) + steps running down to grade
+  g.add(rbox(15.4, 2.6, 12.2, grey2, 0, -0.7, 0, 0.25));
+  g.add(rbox(14.2, 0.75, 11.0, grey1, 0, 0.95, 0, 0.3));
+  for (let k = 0; k < 7; k++) {
+    const top = 1.32 - k * 0.3;
+    g.add(box(5.4, 2.0, 0.62, grey1, 0, top - 1.0, 5.9 + k * 0.6));
+  }
+  // planters with shrubs flanking the steps
+  for (const sx of [-1, 1]) {
+    g.add(rbox(1.15, 2.2, 1.15, grey1, sx * 3.4, -0.3, 7.3, 0.1));
+    const shrub = new THREE.Mesh(new THREE.IcosahedronGeometry(0.52, 1), mat(0x7fa77c, { roughness: 0.7 }));
+    shrub.position.set(sx * 3.4, 1.05, 7.3);
+    shrub.castShadow = true;
+    g.add(shrub);
+    const shrub2 = new THREE.Mesh(new THREE.IcosahedronGeometry(0.3, 1), mat(0x6d976b, { roughness: 0.7 }));
+    shrub2.position.set(sx * 3.4 + 0.3, 1.35, 7.15);
+    shrub2.castShadow = true;
+    g.add(shrub2);
+  }
 
-  // --- lobby (glass, 4m)
+  // --- lobby shell (glass on three sides)
   const lobMidY = y0 + LOBBY_H / 2;
   for (const sx of [-1, 1]) {
-    g.add(box(0.12, LOBBY_H - 0.2, FW - 1.2, glassM, sx * (FW / 2 - 0.1), lobMidY, 0));
-    g.add(rbox(1.0, LOBBY_H + 0.4, 1.0, wall, sx * (FW / 2 - 0.5), lobMidY, FW / 2 - 0.5, 0.2));
-    g.add(rbox(1.0, LOBBY_H + 0.4, 1.0, wall, sx * (FW / 2 - 0.5), lobMidY, -(FW / 2 - 0.5), 0.2));
+    g.add(box(0.12, LOBBY_H - 0.2, D - 1.6, glassM, sx * (W / 2 - 0.15), lobMidY, 0));
   }
-  g.add(box(FW - 1.2, LOBBY_H - 0.2, 0.12, glassM, 0, lobMidY, FW / 2 - 0.1)); // front glass
-  g.add(rbox(FW, LOBBY_H + 0.2, 0.8, wall, 0, lobMidY, -FW / 2 + 0.4, 0.2));   // back wall
-  // entrance: navy door frames + canopy
-  for (const sx of [-1, 1]) {
-    g.add(box(0.14, 2.6, 0.2, mat(T_NAVY, { roughness: 0.5 }), sx * 1.1, y0 + 1.3, FW / 2 + 0.02));
+  g.add(box(W - 2.4, LOBBY_H - 0.2, 0.12, glassM, 0, lobMidY, D / 2 - 0.15));
+  g.add(rbox(W, LOBBY_H + 0.3, 0.5, wall, 0, lobMidY, -D / 2 + 0.25, 0.2));
+  // entrance: navy-framed glass double doors, canopy, LED accent
+  const doorGlass = new THREE.MeshStandardMaterial({
+    color: 0xb9d2ec, transparent: true, opacity: 0.32, roughness: 0.08, metalness: 0.05,
+  });
+  for (const sx of [-1.15, 0, 1.15]) {
+    g.add(box(0.14, 2.7, 0.2, mat(T_NAVY, { roughness: 0.5 }), sx, y0 + 1.35, D / 2 + 0.06));
   }
-  g.add(box(2.34, 0.14, 0.2, mat(T_NAVY, { roughness: 0.5 }), 0, y0 + 2.67, FW / 2 + 0.02));
-  g.add(rbox(4.8, 0.24, 1.7, wall, 0, y0 + 3.1, FW / 2 + 0.75, 0.1)); // canopy
-  // reception desk + lobby dressing
-  g.add(rbox(3.4, 1.05, 0.9, grey1, 0, y0 + 0.55, -2.4, 0.15));
-  g.add(rbox(3.0, 0.08, 0.7, mat(0xffffff, { roughness: 0.45 }), 0, y0 + 1.12, -2.4, 0.04));
-  const recep = makePerson({ seated: true });
-  recep.position.set(0, y0 + 0.02, -3.2);
-  g.add(recep);
-  const visitor = makePerson({});
-  visitor.position.set(-1.6, y0, 0.8);
-  visitor.rotation.y = 0.6;
-  g.add(visitor);
-  const lp1 = pottedPlant(1.3); lp1.position.set(3.6, y0, 3.8); g.add(lp1);
-  const lp2 = pottedPlant(1.3); lp2.position.set(-3.6, y0, 3.8); g.add(lp2);
-  // entrance plants outside
-  const ep1 = pottedPlant(1.5); ep1.position.set(3.1, y0, 6.6); g.add(ep1);
-  const ep2 = pottedPlant(1.5); ep2.position.set(-3.1, y0, 6.6); g.add(ep2);
-  // lobby ceiling light
-  const lobLight = new THREE.PointLight(0xffe9c4, 6, 11, 2);
-  lobLight.position.set(0, y0 + 3.4, 0);
-  g.add(lobLight);
-  const lobStrip = box(3.6, 0.07, 0.5, mat(0xfff3d9, { emissive: 0xc9a96a, roughness: 0.4 }), 0, y0 + 3.75, 0);
-  lobStrip.castShadow = false;
-  g.add(lobStrip);
+  for (const sx of [-0.56, 0.56]) {
+    g.add(box(0.98, 2.55, 0.06, doorGlass, sx, y0 + 1.28, D / 2 + 0.06));
+  }
+  g.add(box(2.44, 0.14, 0.2, mat(T_NAVY, { roughness: 0.5 }), 0, y0 + 2.72, D / 2 + 0.06));
+  g.add(rbox(5.2, 0.26, 1.9, wall, 0, y0 + 3.2, D / 2 + 0.85, 0.1));
+  const doorLed = box(2.6, 0.08, 0.08, LED_BLUE, 0, y0 + 2.92, D / 2 + 0.1);
+  doorLed.castShadow = false;
+  g.add(doorLed);
 
-  // --- tower shell around office floors
+  // --- lobby interior
+  g.add(rbox(3.2, 1.05, 0.85, grey1, 1.0, y0 + 0.55, -2.3, 0.15));
+  g.add(rbox(2.9, 0.08, 0.68, WHITE_TOP, 1.0, y0 + 1.12, -2.3, 0.04));
+  g.add(box(3.0, 0.14, 0.02, mat(T_NAVY, { roughness: 0.5 }), 1.0, y0 + 0.75, -1.87));
+  {
+    const ch = officeChair(); ch.position.set(1.0, y0, -3.05); g.add(ch);
+    const rp = seated(0); rp.position.set(1.0, y0 + 0.02, -3.05); g.add(rp);
+    rp.userData.npc = {
+      name: 'Alex', title: 'Front Desk · Partnership HQ',
+      line: "Welcome to Partnership HQ! I'm Alex. Take the lift at the back-left — there's someone worth meeting on every floor.",
+      h: 1.8,
+    };
+  }
+  // Purolator wall behind reception
+  const logoM = purolatorLogoMaterial();
+  const lobbyLogo = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.15, 0.08), [
+    wall, wall, wall, wall, logoM, wall,
+  ]);
+  lobbyLogo.position.set(1.0, y0 + 2.5, -D / 2 + 0.55);
+  g.add(lobbyLogo);
+  const lobbyRug = box(4.2, 0.04, 3.0, mat(0xdce6f5, { roughness: 0.95 }), 0.4, y0 + 0.02, 0.9);
+  lobbyRug.castShadow = false;
+  g.add(lobbyRug);
+  const visitors = meetingGroup(2, 0.6);
+  visitors.position.set(-2.2, y0, 1.3);
+  g.add(visitors);
+  const lp1 = pottedPlant(1.35); lp1.position.set(4.6, y0, 3.2); g.add(lp1);
+  const lp2 = pottedPlant(1.35); lp2.position.set(-4.6, y0, 3.2); g.add(lp2);
+  const lobLight = new THREE.PointLight(0xeef4ff, 7, 11, 2);
+  lobLight.position.set(0, y0 + 3.5, 0.4);
+  g.add(lobLight);
+  for (const [lx, lz] of [[-2.5, 0.8], [0, 0.8], [2.5, 0.8], [0.8, -2.4]]) {
+    const dot = cyl(0.17, 0.17, 0.05, LED_WHITE, lx, y0 + LOBBY_H - 0.28, lz, 12);
+    dot.castShadow = false;
+    g.add(dot);
+  }
+
+  // --- tower shell around the office floors
   const floorsMidY = (fy(0) - 0.45 + topY) / 2;
   const floorsH = topY - (fy(0) - 0.45);
-  g.add(rbox(FW - 0.4, floorsH, 0.8, wall, 0, floorsMidY, -FW / 2 + 0.4, 0.2)); // back wall
+  g.add(rbox(W - 0.4, floorsH, 0.5, wall, 0, floorsMidY, -D / 2 + 0.25, 0.2)); // back wall
   for (const sx of [-1, 1]) {
-    // glass curtain sides + mullions
-    g.add(box(0.12, floorsH, FW - 2.2, glassM, sx * (FW / 2 - 0.15), floorsMidY, 0));
-    for (let mz = -4.8; mz <= 4.8; mz += 2.4) {
-      const mull = box(0.16, floorsH, 0.1, grey2, sx * (FW / 2 - 0.14), floorsMidY, mz);
+    g.add(box(0.12, floorsH, D - 2.2, glassM, sx * (W / 2 - 0.18), floorsMidY, 0));
+    for (let mz = -3.0; mz <= 3.01; mz += 1.5) {
+      const mull = box(0.16, floorsH, 0.1, grey2, sx * (W / 2 - 0.17), floorsMidY, mz);
       mull.castShadow = false;
       g.add(mull);
     }
-    // corner columns (front + back)
-    g.add(rbox(1.0, floorsH + 0.5, 1.0, wall, sx * (FW / 2 - 0.5), floorsMidY, FW / 2 - 0.5, 0.22));
-    g.add(rbox(1.0, floorsH + 0.5, 1.0, wall, sx * (FW / 2 - 0.5), floorsMidY, -(FW / 2 - 0.5), 0.22));
+  }
+  // rounded corner columns, base to crown
+  const colH = topY - y0 + 0.4;
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      g.add(rbox(1.1, colH, 1.1, wall, sx * (W / 2 - 0.55), y0 + colH / 2 - 0.2, sz * (D / 2 - 0.55), 0.26));
+    }
+    // LED accent seams up the front corners
+    const seam = box(0.07, colH - 0.6, 0.07, LED_BLUE, sx * (W / 2 - 0.06), y0 + colH / 2 - 0.2, D / 2 - 0.06);
+    seam.castShadow = false;
+    g.add(seam);
+  }
+  // back-wall vent grilles
+  for (const [vx, vi] of [[-3.2, 1], [3.2, 3]]) {
+    const vent = ventGrille(1.3, 0.75);
+    vent.position.set(vx, fy(vi) + 2.4, -D / 2 - 0.05);
+    vent.rotation.y = Math.PI;
+    g.add(vent);
   }
 
-  // --- office floors
+  // --- office floors (slabs have a cut-out for the elevator shaft)
   for (let i = 0; i < N; i++) {
     const y = fy(i);
-    g.add(rbox(FW, 0.45, FW, wall, 0, y - 0.225, 0, 0.1));                 // slab
-    g.add(box(FW + 0.12, 0.14, FW + 0.12, grey2, 0, y - 0.4, 0));          // slab trim band
-    // interior back wall wash
-    const wash = box(FW - 2.4, FH - 0.8, 0.1, mat(0xeef2f8, { roughness: 0.95 }), 0, y + FH / 2 - 0.3, -FW / 2 + 0.9);
+    g.add(box(W, 0.45, 6.55, floorM, 0, y - 0.225, 1.225));
+    g.add(box(8.95, 0.45, 2.45, floorM, 1.525, y - 0.225, -3.275));
+    g.add(box(0.55, 0.45, 2.45, floorM, -5.725, y - 0.225, -3.275));
+    // slab trim — perimeter strips (kept clear of the shaft)
+    for (const sz of [-1, 1]) {
+      const band = box(W + 0.14, 0.16, 0.3, grey2, 0, y - 0.41, sz * (D / 2 - 0.08));
+      band.castShadow = false;
+      g.add(band);
+    }
+    for (const sx of [-1, 1]) {
+      const band = box(0.3, 0.16, D + 0.14, grey2, sx * (W / 2 - 0.08), y - 0.41, 0);
+      band.castShadow = false;
+      g.add(band);
+    }
+    const ledEdge = box(W - 1.4, 0.05, 0.07, LED_BLUE, 0, y - 0.16, D / 2 + 0.03);
+    ledEdge.castShadow = false;
+    g.add(ledEdge);
+    // interior back-wall wash
+    const wash = box(W - 2.4, FH - 0.7, 0.1, mat(0xeef2f8, { roughness: 0.95 }), 0, y + FH / 2 - 0.2, -D / 2 + 0.56);
     wash.castShadow = false;
     g.add(wash);
     // furnished interior
-    const interior = floorInterior(FLOORS[i], i);
+    const interior = floorInterior(FLOORS[i]);
     interior.position.y = y;
     g.add(interior);
-    // ceiling light strips + warm point light
-    for (const lx of [-1.8, 1.8]) {
-      const strip = box(2.6, 0.06, 0.4, mat(0xfff3d9, { emissive: 0xd8b070, emissiveIntensity: 1.8, roughness: 0.4 }), lx, y + FH - 0.48, -0.4);
-      strip.castShadow = false;
-      g.add(strip);
+    // recessed ceiling lights + blue LED accent + cool point light
+    for (const [lx, lz] of [[-3, 0.9], [0, 0.9], [3, 0.9], [-1.6, -2.0], [1.8, -2.0]]) {
+      const dot = cyl(0.17, 0.17, 0.05, LED_WHITE, lx, y + FH - 0.47, lz, 12);
+      dot.castShadow = false;
+      g.add(dot);
     }
-    const fl = new THREE.PointLight(0xffe9c4, 6, 9.5, 2);
-    fl.position.set(0, y + FH - 0.7, 0.4);
+    const cled = box(W - 2.8, 0.04, 0.06, LED_BLUE, 0, y + FH - 0.5, D / 2 - 0.75);
+    cled.castShadow = false;
+    g.add(cled);
+    const fl = new THREE.PointLight(0xeef4ff, 7, 10.5, 2);
+    fl.position.set(0, y + FH - 0.8, 0.3);
     g.add(fl);
-    // floor label tab on the slab edge
-    const tab = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.8, 0.22), [
+    // floor label tab — canted off the right front edge like the mockup
+    const tab = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.85, 0.22), [
       mat(T_BLUE), mat(T_BLUE), mat(T_BLUE), mat(T_BLUE),
       brandedMaterial({ text: FLOORS[i], bg: '#2a6bff', fg: '#ffffff', w: 512, h: 96, fontSize: 52 }),
       mat(T_BLUE),
     ]);
-    tab.position.set(0, y + 0.62, FW / 2 + 0.04);
+    tab.position.set(3.1, y + 0.75, D / 2 + 0.28);
+    tab.rotation.y = -0.18;
     tab.castShadow = true;
     g.add(tab);
     // glass balustrade across the open front
-    const rail = box(FW - 2.4, 0.8, 0.05, glassM, 0, y + 0.85, FW / 2 - 0.3);
+    const rail = box(W - 2.6, 0.85, 0.05, glassM, 0, y + 0.83, D / 2 - 0.3);
     rail.castShadow = false;
     g.add(rail);
-    const handrail = box(FW - 2.4, 0.07, 0.1, grey2, 0, y + 1.28, FW / 2 - 0.3);
+    const handrail = box(W - 2.6, 0.06, 0.1, grey2, 0, y + 1.28, D / 2 - 0.3);
     handrail.castShadow = false;
     g.add(handrail);
   }
 
-  // --- crown with logo panels (front + back)
-  const crownMid = topY + 1.25;
-  g.add(rbox(FW + 0.4, 2.5, FW + 0.4, wall, 0, crownMid, 0, 0.25));
-  const logoM = purolatorLogoMaterial();
+  // --- crown with logo panels + LED ring
+  const crownMid = topY + 1.15;
+  g.add(rbox(W + 0.5, 2.3, D + 0.5, wall, 0, crownMid, 0, 0.3));
   for (const sz of [1, -1]) {
-    const logoPanel = new THREE.Mesh(new THREE.BoxGeometry(FW - 2, 1.9, 0.18), [
+    const logoPanel = new THREE.Mesh(new THREE.BoxGeometry(W - 2.6, 1.7, 0.18), [
       wall, wall, wall, wall, logoM, logoM,
     ]);
-    logoPanel.position.set(0, crownMid, sz * (FW / 2 + 0.32));
+    logoPanel.position.set(0, crownMid, sz * (D / 2 + 0.28));
     if (sz === -1) logoPanel.rotation.y = Math.PI;
     logoPanel.castShadow = true;
     g.add(logoPanel);
   }
+  for (const sz of [-1, 1]) {
+    const strip = box(W + 0.2, 0.07, 0.07, LED_BLUE, 0, topY + 0.14, sz * (D / 2 + 0.22));
+    strip.castShadow = false;
+    g.add(strip);
+  }
+  for (const sx of [-1, 1]) {
+    const strip = box(0.07, 0.07, D + 0.2, LED_BLUE, sx * (W / 2 + 0.22), topY + 0.14, 0);
+    strip.castShadow = false;
+    g.add(strip);
+  }
 
-  // --- rooftop platform, parapet, stem, glow ring, orb
-  const roofY = topY + 2.5;
-  g.add(rbox(FW - 1.5, 0.9, FW - 1.5, grey1, 0, roofY + 0.45, 0, 0.3));
+  // --- rooftop: platform, safety railings, mechanical unit, lit orb mount
+  const roofY = topY + 2.3;
+  g.add(rbox(W - 1.8, 0.8, D - 1.8, grey1, 0, roofY + 0.4, 0, 0.3));
   for (const sx of [-1, 1]) {
     for (const sz of [-1, 1]) {
-      g.add(box(0.14, 1.0, 0.14, grey2, sx * (FW / 2 - 1.2), roofY + 1.3, sz * (FW / 2 - 1.2)));
+      g.add(box(0.12, 1.1, 0.12, grey2, sx * (W / 2 - 1.3), roofY + 1.35, sz * (D / 2 - 1.3)));
     }
-    const railA = box(FW - 2.3, 0.08, 0.08, grey2, 0, roofY + 1.75, sx * (FW / 2 - 1.2));
-    const railB = box(0.08, 0.08, FW - 2.3, grey2, sx * (FW / 2 - 1.2), roofY + 1.75, 0);
-    railA.castShadow = railB.castShadow = false;
-    g.add(railA, railB);
+    for (const by of [1.5, 1.82]) {
+      const railA = box(W - 2.6, 0.07, 0.07, grey2, 0, roofY + by, sx * (D / 2 - 1.3));
+      const railB = box(0.07, 0.07, D - 2.6, grey2, sx * (W / 2 - 1.3), roofY + by, 0);
+      railA.castShadow = railB.castShadow = false;
+      g.add(railA, railB);
+    }
   }
-  g.add(cyl(0.55, 0.75, 1.6, wall, 0, roofY + 1.7, 0, 16));       // orb stem
-  g.add(cyl(1.15, 1.15, 0.28, grey2, 0, roofY + 2.6, 0, 20));      // collar
-  // additive glow ring under the orb
+  // HVAC / mechanical unit
+  {
+    const hv = new THREE.Group();
+    hv.add(rbox(2.5, 1.4, 1.7, grey2, 0, 0.7, 0, 0.12));
+    const grille = ventGrille(1.9, 0.8);
+    grille.position.set(0, 0.7, 0.88);
+    hv.add(grille);
+    for (const fx of [-0.6, 0.6]) {
+      hv.add(cyl(0.42, 0.42, 0.12, mat(0x6c7686, { roughness: 0.5 }), fx, 1.44, 0, 18));
+      hv.add(cyl(0.34, 0.34, 0.05, mat(0x39445c, { roughness: 0.6 }), fx, 1.5, 0, 18));
+    }
+    hv.add(cyl(0.07, 0.07, 0.9, grey2, 1.05, 0.45, 0.95, 8));
+    hv.position.set(-2.9, roofY + 0.8, -1.5);
+    g.add(hv);
+  }
+  // orb mount with lighting
+  g.add(cyl(1.7, 2.0, 0.5, grey1, 0, roofY + 1.05, 0, 24));
+  const mountLed = cyl(1.82, 1.82, 0.07, LED_BLUE, 0, roofY + 0.88, 0, 24);
+  mountLed.castShadow = false;
+  g.add(mountLed);
+  g.add(cyl(0.5, 0.72, 1.8, wall, 0, roofY + 2.2, 0, 16));
+  g.add(cyl(1.1, 1.1, 0.26, grey2, 0, roofY + 3.15, 0, 20));
   const ring = new THREE.Mesh(
     new THREE.TorusGeometry(2.5, 0.16, 10, 40),
     new THREE.MeshBasicMaterial({ color: 0x9ec8ff, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false })
   );
   ring.rotation.x = Math.PI / 2;
-  ring.position.set(0, roofY + 3.0, 0);
+  ring.position.set(0, roofY + 3.5, 0);
   g.add(ring);
 
   const orb = makeStratisOrb();
-  orb.position.set(0, roofY + 5.4, 0);
+  orb.position.set(0, roofY + 5.7, 0);
   g.add(orb);
   orb.userData.pulse.ring = ring;
   g.userData.orb = orb;
+
+  // --- elevator: glass shaft back-left, car serves lobby + all floors -------
+  const SH_X = -4.2, SH_Z = -3.1;
+  const stops = [y0];
+  for (let i = 0; i < N; i++) stops.push(fy(i));
+  const shaftTop = stops[stops.length - 1] + 2.7;
+  const shaftH = shaftTop - y0;
+  const shaftMid = y0 + shaftH / 2;
+  g.add(box(2.35, shaftH, 0.14, grey1, SH_X, shaftMid, -4.06));
+  const spineLed = box(0.09, shaftH - 0.5, 0.05, LED_BLUE, SH_X, shaftMid, -3.97);
+  spineLed.castShadow = false;
+  g.add(spineLed);
+  for (const sx of [-1.16, 1.16]) {
+    g.add(box(0.07, shaftH, 1.85, glassM, SH_X + sx, shaftMid, -3.12));
+    g.add(box(0.15, shaftH, 0.15, grey2, SH_X + sx, shaftMid, -2.2));
+    g.add(box(0.15, shaftH, 0.15, grey2, SH_X + sx, shaftMid, -4.0));
+  }
+  g.add(rbox(2.7, 0.35, 2.2, grey1, SH_X, shaftTop + 0.15, -3.1, 0.1));
+  for (const s of stops) {
+    const cp = box(0.14, 0.42, 0.1, LED_BLUE, SH_X + 1.16, s + 1.15, -2.08);
+    cp.castShadow = false;
+    g.add(cp);
+  }
+  // the car — origin is its walking surface
+  const car = new THREE.Group();
+  // platform reaches almost to the slab edge (0.025 clearance) so stepping
+  // out never drops a ground ray through the crack
+  car.add(rbox(2.05, 0.16, 1.85, mat(0xf2f5fa, { roughness: 0.6 }), 0, -0.08, 0.1, 0.05));
+  car.add(rbox(1.95, 2.15, 0.12, wall, 0, 1.07, -0.76, 0.05));
+  for (const sx of [-1, 1]) {
+    car.add(rbox(0.12, 1.35, 1.45, wall, sx * 0.96, 0.67, -0.02, 0.05));
+    const strip = box(0.05, 1.95, 0.05, LED_BLUE, sx * 0.88, 1.05, -0.72);
+    strip.castShadow = false;
+    car.add(strip);
+  }
+  car.add(box(1.6, 0.06, 0.09, grey2, 0, 1.02, -0.68));
+  car.add(box(0.14, 1.08, 0.14, grey2, 0.8, 0.54, 0.55));
+  const btn = box(0.16, 0.3, 0.07, LED_BLUE, 0.8, 1.16, 0.55);
+  btn.castShadow = false;
+  car.add(btn);
+  car.position.set(SH_X, y0 + 0.02, SH_Z);
+  g.add(car);
+
+  g.userData.elevator = {
+    stops,
+    car,
+    shaft: { x: SH_X, z: SH_Z },
+    idx: 0,
+    target: 0,
+    busy: false,
+    call(i) {
+      if (i < 0 || i >= this.stops.length) return;
+      if (this.busy && i === this.target) return;
+      this.target = i;
+      this.busy = true;
+    },
+    update(dt) {
+      const ty = this.stops[this.target] + 0.02;
+      const dy = ty - car.position.y;
+      if (Math.abs(dy) < 0.004) {
+        if (this.busy) {
+          car.position.y = ty;
+          this.busy = false;
+          this.idx = this.target;
+        }
+        return;
+      }
+      const v = THREE.MathUtils.clamp(Math.abs(dy) * 1.7, 0.5, 2.6);
+      car.position.y += Math.sign(dy) * Math.min(Math.abs(dy), v * dt);
+    },
+  };
 
   return g;
 }
@@ -548,8 +1109,9 @@ export function makeBillboard(lines, { w = 12, h = 6, chart = true } = {}) {
   panel.position.set(0, h / 2 + 2.4, 0.25);
   panel.castShadow = true;
   g.add(panel);
-  g.add(cyl(0.28, 0.34, 2.6, mat(C.steel), -w / 3, 1.3, 0, 10));
-  g.add(cyl(0.28, 0.34, 2.6, mat(C.steel), w / 3, 1.3, 0, 10));
+  // legs continue below grade — the curved terrain falls away under wide stances
+  g.add(cyl(0.28, 0.36, 4.6, mat(C.steel), -w / 3, 0.3, 0, 10));
+  g.add(cyl(0.28, 0.36, 4.6, mat(C.steel), w / 3, 0.3, 0, 10));
   return g;
 }
 

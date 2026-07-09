@@ -582,3 +582,80 @@ export function makeRack(levels = 3, bays = 3) {
   }
   return g;
 }
+
+// ---------------------------------------------------------------------------
+// City fabric — mid-rise blocks, street lamps, benches (neighbourhood filler)
+// ---------------------------------------------------------------------------
+let _winMats = null;
+function windowMats() {
+  if (_winMats) return _winMats;
+  _winMats = [];
+  for (let v = 0; v < 3; v++) {
+    const cv = document.createElement('canvas');
+    cv.width = 128; cv.height = 256;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle = ['#f7fafd', '#eef2f8', '#f3f6fb'][v];
+    ctx.fillRect(0, 0, 128, 256);
+    const cols = 3 + v, rows = 6;
+    const cw = 128 / cols, ch = 256 / rows;
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        const lit = Math.random() < 0.18;
+        ctx.fillStyle = lit ? '#ffe9b8' : (Math.random() < 0.75 ? '#22355e' : '#8fb2d8');
+        ctx.fillRect(c * cw + cw * 0.2, r * ch + ch * 0.22, cw * 0.6, ch * 0.5);
+      }
+    }
+    const tex = new THREE.CanvasTexture(cv);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    _winMats.push(new THREE.MeshStandardMaterial({ map: tex, roughness: 0.7 }));
+  }
+  return _winMats;
+}
+
+/** Small mid-rise office/apartment block with a window grid. */
+export function makeOfficeBlock(variant = 0, h = 5) {
+  const g = new THREE.Group();
+  const W = 3.4 + (variant % 2) * 0.8, D = 3.0 + (variant % 3) * 0.5;
+  const win = windowMats()[variant % 3];
+  const white = mat(C.white);
+  const bm = new THREE.Mesh(new THREE.BoxGeometry(W, h, D), [win, win, mat(C.whiteWarm), white, win, win]);
+  bm.position.y = h / 2 + 0.1;
+  bm.castShadow = true;
+  bm.receiveShadow = true;
+  g.add(bm);
+  g.add(box(W + 0.4, 1.1, D + 0.4, mat(0xe9edf5, { roughness: 0.85 }), 0, -0.3, 0)); // sunk plinth
+  g.add(box(W + 0.2, 0.28, D + 0.2, mat(C.whiteWarm), 0, h + 0.22, 0));              // parapet
+  g.add(box(0.9, 0.5, 0.7, mat(0x9aa5b8, { roughness: 0.6 }), W / 5, h + 0.6, -D / 6)); // rooftop unit
+  g.add(box(1.0, 1.7, 0.12, mat(C.puroBlue, { roughness: 0.55 }), 0, 0.95, D / 2 + 0.08)); // entrance
+  if (variant % 2 === 0) {
+    g.add(box(W * 0.7, 0.22, 0.9, mat(C.puroBlue), 0, 2.1, D / 2 + 0.5)); // awning
+  }
+  return g;
+}
+
+/** Street lamp — arm reaches +X, pole continues below grade. */
+export function makeLamppost() {
+  const g = new THREE.Group();
+  const grey = mat(0x8b95a8, { roughness: 0.5, metalness: 0.3 });
+  const pole = cyl(0.06, 0.09, 4.0, grey, 0, 1.2, 0, 8);
+  const arm = box(0.85, 0.06, 0.06, grey, 0.4, 3.16, 0);
+  const head = box(0.42, 0.1, 0.16, new THREE.MeshStandardMaterial({
+    color: 0xffffff, emissive: 0xfff2cf, emissiveIntensity: 1.6, roughness: 0.4,
+  }), 0.78, 3.1, 0);
+  pole.castShadow = arm.castShadow = head.castShadow = false;
+  g.add(pole, arm, head);
+  return g;
+}
+
+/** Park bench. */
+export function makeBench() {
+  const g = new THREE.Group();
+  const wood = mat(0xd9c9a8, { roughness: 0.8 });
+  const grey = mat(0x8b95a8, { roughness: 0.5 });
+  g.add(box(1.6, 0.08, 0.5, wood, 0, 0.5, 0));
+  g.add(box(1.6, 0.42, 0.07, wood, 0, 0.82, -0.24));
+  for (const sx of [-0.65, 0.65]) {
+    g.add(box(0.08, 0.62, 0.45, grey, sx, 0.2, 0));
+  }
+  return g;
+}

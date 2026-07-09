@@ -208,6 +208,122 @@ html, body {
   width: 22px;
 }
 
+/* ---------- first-person walk mode ---------- */
+#walk-btn {
+  border: none;
+  background: var(--puro-blue-dark);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  padding: 0 16px;
+  height: 38px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+#walk-btn:hover { background: #0b2258; }
+
+#walk-hud {
+  position: absolute;
+  bottom: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  align-items: center;
+  gap: 7px;
+  background: rgba(27, 36, 55, 0.78);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  border-radius: 999px;
+  padding: 11px 20px;
+  font-size: 12.5px;
+  font-weight: 600;
+  pointer-events: none;
+}
+#walk-hud .key {
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 11px;
+  font-weight: 800;
+}
+#walk-hud .hud-sep { opacity: 0.85; }
+
+body.walking #walk-hud { display: flex; }
+
+#lift-hud {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: none;
+  background: rgba(28, 79, 196, 0.88);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  border-radius: 999px;
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+body.walking #lift-hud.visible { display: block; }
+body.walking #tour-bar,
+body.walking #hint,
+body.walking #info-card,
+body.walking #tooltip { display: none; }
+
+/* ---------- NPC speech bubble ---------- */
+#npc-bubble {
+  position: fixed;
+  transform: translate(-50%, calc(-100% - 14px));
+  max-width: 280px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  padding: 12px 15px 11px;
+  box-shadow: 0 10px 32px rgba(27, 36, 55, 0.2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+  z-index: 30;
+}
+#npc-bubble.visible { opacity: 1; }
+#npc-bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  width: 14px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 3px;
+}
+#npc-bubble b {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink);
+}
+#npc-bubble span {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--puro-blue);
+  margin: 2px 0 6px;
+}
+#npc-bubble p {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #46506a;
+  margin: 0;
+}
+
 /* ---------- tooltip ---------- */
 #tooltip {
   position: fixed;

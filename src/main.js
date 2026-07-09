@@ -14,11 +14,13 @@ import {
 } from './hero.js';
 import {
   makeTree, makeContainerYardStacks, makeGantryCrane, makePalletStack, makeRack,
-  makeDepot, makeWarehouse,
+  makeDepot, makeWarehouse, makeStore, makeHouse, makeFuelStation,
+  makeOfficeBlock, makeLamppost, makeBench,
 } from './factories.js';
 import { makeTruck, makeVan, makeForklift, makeWorker, makePlane } from './vehicles.js';
 import { POIS, makePin, CameraRig, setupUI, poiDir, poiPinPos } from './tour.js';
-import { initPeople } from './people.js';
+import { initPeople, requestFigure } from './people.js';
+import { WalkMode } from './walk.js';
 
 // ---------------------------------------------------------------------------
 // Renderer / scene / camera
@@ -34,7 +36,7 @@ renderer.toneMappingExposure = 1.05;
 app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0xb9cce9); // mockup sky blue
+scene.background = new THREE.Color(0x82b2ef); // sky blue
 
 // soft studio IBL
 {
@@ -53,6 +55,31 @@ camera.lookAt(0, 10, 0);
 // camera. See the controller block after the rig is created.
 const camFocus = new THREE.Vector3(0, 10, 0);
 camera.lookAt(camFocus);
+
+// debug/screenshot hook: ?view=lat,lon,dist[,tlat,tlon,tr] aims the camera
+{
+  const v = new URLSearchParams(location.search).get('view');
+  if (v) {
+    const [vlat, vlon, vdist = 120, tlat, tlon, tr = 0] = v.split(',').map(Number);
+    camera.position.copy(dirFromLatLon(vlat, vlon).multiplyScalar(vdist));
+    if (Number.isFinite(tlat)) camFocus.copy(dirFromLatLon(tlat, tlon).multiplyScalar(tr));
+    else camFocus.set(0, 0, 0);
+    camera.lookAt(camFocus);
+  }
+  // ?facecheck — render one character up close (face/material debugging)
+  if (new URLSearchParams(location.search).has('facecheck')) {
+    const fig = requestFigure({ clip: 'Idle' });
+    fig.position.set(40, 40, 0); // floats in air, inside the camera leash radius
+    fig.rotation.y = Math.PI;    // face -X ≈ toward the check camera
+    scene.add(fig);
+    const fl = new THREE.PointLight(0xffffff, 30, 20, 1.6);
+    fl.position.set(42, 41.8, 2);
+    scene.add(fl);
+    camera.position.set(37.6, 41.4, 0.5);
+    camFocus.set(40, 40.9, 0);
+    camera.lookAt(camFocus);
+  }
+}
 
 // everything on/around the planet lives in this rotatable group
 const world = new THREE.Group();
@@ -91,7 +118,7 @@ const OCEAN_DIR = dirFromLatLon(5, -105);
 buildGlobe(world, OCEAN_DIR);
 const oceanFx = buildOcean(world, OCEAN_DIR);
 makePond(world, dirFromLatLon(-68, -25), 0.1);
-makePond(world, dirFromLatLon(46, 152), 0.07);
+makePond(world, dirFromLatLon(56, -18), 0.07);
 
 // broad tinted terraces — layered terrain like the mockup
 const TERRACES = [
@@ -109,6 +136,92 @@ const animators = [];
 const clickables = [];
 animators.push(oceanFx);
 
+// ---------------------------------------------------------------------------
+// Atmosphere — gradient sky dome, planet rim halo, drifting haze, soft fog.
+// All of it lives in `scene` (not `world`) so it holds still while the globe
+// spins, and shifts with the camera for a sense of depth.
+// ---------------------------------------------------------------------------
+{
+  // gradient sky dome: deeper blue overhead → bright band at the horizon
+  const cv = document.createElement('canvas');
+  cv.width = 16; cv.height = 512;
+  const ctx = cv.getContext('2d');
+  const grad = ctx.createLinearGradient(0, 0, 0, 512);
+  grad.addColorStop(0, '#5e93e3');    // deeper sky blue overhead…
+  grad.addColorStop(0.45, '#82b2ef'); // …settling into the base sky blue
+  grad.addColorStop(0.58, '#b0d4fa'); // whisper of light at the horizon
+  grad.addColorStop(0.78, '#82b2ef'); // …and back to the base blue below
+  grad.addColorStop(1, '#82b2ef');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 16, 512);
+  const skyTex = new THREE.CanvasTexture(cv);
+  skyTex.colorSpace = THREE.SRGBColorSpace;
+  const sky = new THREE.Mesh(
+    new THREE.SphereGeometry(950, 32, 24),
+    new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.BackSide, fog: false, depthWrite: false })
+  );
+  sky.renderOrder = -10;
+  scene.add(sky);
+
+  // additive rim halo hugging the planet's silhouette
+  const hcv = document.createElement('canvas');
+  hcv.width = hcv.height = 512;
+  const hctx = hcv.getContext('2d');
+  const hg = hctx.createRadialGradient(256, 256, 0, 256, 256, 256);
+  hg.addColorStop(0, 'rgba(202,226,252,0)');
+  hg.addColorStop(0.3, 'rgba(202,226,252,0)');
+  hg.addColorStop(0.335, 'rgba(213,231,254,0.3)');
+  hg.addColorStop(0.42, 'rgba(203,226,251,0.1)');
+  hg.addColorStop(0.6, 'rgba(197,216,242,0.03)');
+  hg.addColorStop(1, 'rgba(185,204,233,0)');
+  hctx.fillStyle = hg;
+  hctx.fillRect(0, 0, 512, 512);
+  const haloTex = new THREE.CanvasTexture(hcv);
+  haloTex.colorSpace = THREE.SRGBColorSpace;
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: haloTex, transparent: true, opacity: 0.55,
+    depthWrite: false, blending: THREE.AdditiveBlending, fog: false,
+  }));
+  halo.scale.setScalar(262); // planet edge lands right on the glow ring
+  scene.add(halo);
+
+  // far-field haze wisps — parallax layer between the planet and the sky
+  const ccv = document.createElement('canvas');
+  ccv.width = 256; ccv.height = 128;
+  const cctx = ccv.getContext('2d');
+  const cg = cctx.createRadialGradient(128, 64, 6, 128, 64, 120);
+  cg.addColorStop(0, 'rgba(255,255,255,0.85)');
+  cg.addColorStop(0.55, 'rgba(255,255,255,0.28)');
+  cg.addColorStop(1, 'rgba(255,255,255,0)');
+  cctx.fillStyle = cg;
+  cctx.save();
+  cctx.translate(128, 64);
+  cctx.scale(1, 0.5);
+  cctx.beginPath();
+  cctx.arc(0, 0, 120, 0, Math.PI * 2);
+  cctx.fill();
+  cctx.restore();
+  const hazeTex = new THREE.CanvasTexture(ccv);
+  hazeTex.colorSpace = THREE.SRGBColorSpace;
+  const hazeGroup = new THREE.Group();
+  scene.add(hazeGroup);
+  for (let i = 0; i < 10; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({
+      map: hazeTex, transparent: true, depthWrite: false, fog: false,
+      opacity: 0.15 + Math.random() * 0.13,
+    }));
+    const a = Math.random() * Math.PI * 2;
+    const rr = 135 + Math.random() * 90;
+    s.position.set(Math.cos(a) * rr, (Math.random() - 0.5) * 170, Math.sin(a) * rr);
+    s.scale.set(48 + Math.random() * 42, 15 + Math.random() * 11, 1);
+    hazeGroup.add(s);
+  }
+  animators.push({ update(dt) { hazeGroup.rotation.y += dt * 0.004; } });
+
+  // gentle depth fog — hazes the planet's far limb as you orbit and zoom
+  scene.fog = new THREE.Fog(0xa5c8f2, 300, 900);
+}
+
 function registerPoi(group, poiId) {
   const poi = POIS.find((p) => p.id === poiId);
   group.traverse((o) => { if (o.isMesh) { o.userData.poi = poi; clickables.push(o); } });
@@ -122,15 +235,125 @@ const PLATES = [
   { lat: 28, lon: 20, r: 0.2, alt: 0.36 },    // pavilion
   { lat: 55, lon: 115, r: 0.24, alt: 0.33 },  // depot
   { lat: 31, lon: -72, r: 0.24, alt: 0.35 },  // port apron (quay over shore)
-  { lat: 8, lon: 30, r: 0.18, alt: 0.37 },    // rail freight yard
+  { lat: 22, lon: 47, r: 0.18, alt: 0.37 },   // rail freight yard
   { lat: -50, lon: 95, r: 0.22, alt: 0.34 },  // southern warehouse
-  { lat: -46, lon: -60, r: 0.18, alt: 0.31 }, // southern rail yard
+  { lat: -52, lon: -50, r: 0.18, alt: 0.31 }, // southern rail yard
   { lat: -80, lon: 60, r: 0.2, alt: 0.3 },    // south pole staging
-  { lat: 52, lon: 168, r: 0.2, alt: 0.32 },   // media lab (back)
+  { lat: 19, lon: 166, r: 0.2, alt: 0.32 },   // media lab (back)
   { lat: 25, lon: -172, r: 0.19, alt: 0.34 }, // data command (back)
 ];
 for (const p of PLATES) {
   world.add(makeCapPatch(dirFromLatLon(p.lat, p.lon), p.r, p.alt, mat(0xeaeff7, { roughness: 0.92 })));
+}
+
+// ---------------------------------------------------------------------------
+// Foundations — like the HQ base, every structure gets a plinth sunk into the
+// terrain: the globe surface falls away ~d²/2R across a flat footprint, so
+// flat-based buildings would otherwise float at their edges. Each foundation
+// top is flush with its building's base plane and reaches down to bedrock.
+// ---------------------------------------------------------------------------
+{
+  const foundM = mat(0xe6e9f0, { roughness: 0.9 });
+  const foundation = (lat, lon, heading, w, d, alt, { round = false, dz = 0 } = {}) => {
+    const reach = round ? w / 2 + Math.abs(dz) : Math.hypot(w / 2, d / 2 + Math.abs(dz));
+    const depth = (reach * reach) / (2 * R) + 0.8;
+    const g = new THREE.Group();
+    const m = round
+      ? cyl(w / 2, w / 2 + 0.2, depth, foundM, 0, 0.02 - depth / 2, dz, 40)
+      : box(w, depth, d, foundM, 0, 0.02 - depth / 2, dz);
+    m.receiveShadow = true;
+    g.add(m);
+    surfacePlace(g, dirFromLatLon(lat, lon), heading, alt);
+    world.add(g);
+  };
+  foundation(54, -50, 0, 12.9, 10.6, 0.36, { dz: 0.5 });    // creative studio + entry step
+  foundation(54, 58, 0, 11.6, 11.6, 0.36, { round: true }); // ideation lab
+  foundation(28, 20, 0, 12.7, 12.7, 0.38, { round: true }); // pavilion
+  foundation(55, 115, 0, 13.8, 13.6, 0.36, { dz: 2.0 });    // depot + van apron
+  foundation(19, 166, 0, 11.3, 11.3, 0.36, { round: true });// media lab
+  foundation(25, -172, 0, 11.0, 9.0, 0.38, { dz: 0.3 });    // data command
+  foundation(-50, 95, Math.PI, 19, 14, 0.36);               // southern warehouse
+  foundation(31, -72, Math.PI * 0.55, 26, 20, 0.38);        // port quay
+  foundation(22, 47, 0, 21, 10, 0.38, { dz: 0.75 });        // north rail yard
+  foundation(-52, -50, Math.PI, 21, 9.5, 0.36);             // south rail yard
+  foundation(-80, 60, 0.4, 19, 10, 0.34, { dz: 0.8 });      // pole staging
+  foundation(15, -158, 0.5, 21, 9, 0.3, { dz: -1.2 });      // back transfer cluster
+}
+
+// ---------------------------------------------------------------------------
+// City neighbourhoods — small blocks, shops, houses and a fuel stop scattered
+// through the empty bands (every spot verified clear of all roads and rails)
+// ---------------------------------------------------------------------------
+const NEIGHBOURHOODS = [
+  { lat: 27, lon: -1, kind: 'offices' },
+  { lat: -22, lon: 7, kind: 'suburb' },
+  { lat: -22, lon: 24, kind: 'retail' },
+  { lat: -22, lon: 41, kind: 'fuel' },
+  { lat: -22, lon: 58, kind: 'offices' },
+  { lat: -22, lon: -55, kind: 'suburb' },
+  { lat: 13, lon: 99, kind: 'offices' },
+  { lat: 13, lon: 115, kind: 'retail' },
+  { lat: 19, lon: 130, kind: 'suburb' },
+  { lat: -16, lon: 165, kind: 'offices' },
+  { lat: -22, lon: 150, kind: 'suburb' },
+  { lat: -22, lon: -163, kind: 'suburb' },
+  { lat: -57, lon: -4, kind: 'offices' },
+  { lat: -49, lon: -124, kind: 'suburb' },
+  { lat: -65, lon: 126, kind: 'suburb' },
+  { lat: -68, lon: -93, kind: 'hamlet' },
+];
+{
+  const plateM = mat(0xe9eef6, { roughness: 0.92 });
+  const ALT = 0.24;
+  // place an object at a tangent offset (du east, dv north, in units)
+  const put = (obj, n, du, dv, ry = 0) => {
+    const lat = n.lat + dv / 0.733;
+    const lon = n.lon + du / (0.733 * Math.cos(THREE.MathUtils.degToRad(n.lat)));
+    surfacePlace(obj, dirFromLatLon(lat, lon), ry, ALT);
+    world.add(obj);
+  };
+  let v = 0;
+  for (const n of NEIGHBOURHOODS) {
+    world.add(makeCapPatch(dirFromLatLon(n.lat, n.lon), 0.13, 0.22, plateM));
+    if (n.kind === 'offices') {
+      const a = makeOfficeBlock(v, 4.6 + (v % 3) * 0.9);
+      put(a, n, -1.5, -0.7, 0.2 + (v % 3) * 0.15);
+      const b = makeOfficeBlock(v + 1, 3.6 + (v % 2) * 0.8);
+      put(b, n, 1.6, 0.7, -0.15);
+      const bench = makeBench();
+      put(bench, n, 0.2, 2.5, Math.PI);
+      const lamp = makeLamppost();
+      put(lamp, n, 2.6, -1.7, 1.1);
+    } else if (n.kind === 'suburb') {
+      const h1 = makeHouse(0); h1.scale.setScalar(0.5);
+      put(h1, n, -1.5, -0.8, 0.35);
+      const h2 = makeHouse(1); h2.scale.setScalar(0.5);
+      put(h2, n, 1.6, 0.9, Math.PI - 0.25);
+      const t = makeTree(v % 3, 1.0 + (v % 2) * 0.4);
+      put(t, n, 2.4, -1.6);
+      const bench = makeBench();
+      put(bench, n, -2.3, 1.6, -0.7);
+    } else if (n.kind === 'retail') {
+      const s = makeStore(); s.scale.setScalar(0.38);
+      put(s, n, 0, -0.5, 0.1);
+      const lamp = makeLamppost();
+      put(lamp, n, 2.8, 1.6, -1.6);
+    } else if (n.kind === 'fuel') {
+      const f = makeFuelStation(); f.scale.setScalar(0.5);
+      put(f, n, 0, 1.5, 0.15);
+    } else {
+      const h = makeHouse(1); h.scale.setScalar(0.55);
+      put(h, n, 0, 0, 0.4);
+      const t = makeTree(1, 1.3);
+      put(t, n, 2.2, 1.2);
+    }
+    // a local out and about
+    if (v % 2 === 0) {
+      const p = requestFigure({});
+      put(p, n, -0.4 + (v % 3) * 0.9, 1.9, (v * 1.7) % (Math.PI * 2));
+    }
+    v++;
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -190,24 +413,24 @@ world.add(depot);
 registerPoi(depot, 'depot');
 {
   const v1 = makeVan({});
-  surfacePlace(v1, dirFromLatLon(46.5, 106), Math.PI * 0.45, 0.36);
+  surfacePlace(v1, dirFromLatLon(50, 105), Math.PI * 0.45, 0.36);
   world.add(v1);
   const ps = makePalletStack();
   ps.scale.setScalar(0.8);
-  surfacePlace(ps, dirFromLatLon(47.5, 124), 0, 0.36);
+  surfacePlace(ps, dirFromLatLon(49.2, 120), 0, 0.36);
   world.add(ps);
   const w = makeWorker({ pose: 'carry' });
-  surfacePlace(w, dirFromLatLon(47.5, 119), -0.6, 0.36);
+  surfacePlace(w, dirFromLatLon(49, 115.5), -0.6, 0.36);
   world.add(w);
   const fk = makeForklift({ carrying: true });
   fk.scale.setScalar(0.9);
-  surfacePlace(fk, dirFromLatLon(46.5, 112), 2.4, 0.36);
+  surfacePlace(fk, dirFromLatLon(49.3, 110), 2.4, 0.36);
   world.add(fk);
 }
 
 // --- back-hemisphere marketing district
 const mediaLab = makeMediaLab();
-surfacePlace(mediaLab, dirFromLatLon(52, 168), 0, 0.36);
+surfacePlace(mediaLab, dirFromLatLon(19, 166), 0, 0.36);
 world.add(mediaLab);
 registerPoi(mediaLab, 'lab');
 
@@ -217,7 +440,7 @@ world.add(dataCommand);
 registerPoi(dataCommand, 'impact');
 
 const billST = makeBillboard(['SMARTER', 'TOGETHER']);
-surfacePlace(billST, dirFromLatLon(36, -152), 0.2, 0.32);
+surfacePlace(billST, dirFromLatLon(33.5, -152), 0.2, 0.32);
 world.add(billST);
 registerPoi(billST, 'impact');
 
@@ -242,7 +465,7 @@ registerPoi(billST, 'impact');
   surfacePlace(psB, dirFromLatLon(11, -156), 0.9, 0.3);
   world.add(psB);
   const vM = makeVan({ color: C.white });
-  surfacePlace(vM, dirFromLatLon(48, 163), Math.PI * 0.3, 0.34);
+  surfacePlace(vM, dirFromLatLon(9.5, 166), Math.PI * 0.3, 0.32);
   world.add(vM);
 }
 
@@ -253,13 +476,13 @@ world.add(bill1);
 registerPoi(bill1, 'impact');
 
 const bill2 = makeBillboard(['EVERY', 'CONNECTION', 'DELIVERS'], { w: 11, h: 6.5 });
-surfacePlace(bill2, dirFromLatLon(61, 4), 0.15, 0.34);
+surfacePlace(bill2, dirFromLatLon(59, 4), 0.15, 0.34);
 world.add(bill2);
 registerPoi(bill2, 'impact');
 
 const bill3 = makeBillboard(['EXPERIENTIAL', 'ACTIVATION'], { w: 9, h: 5, chart: false });
 bill3.scale.setScalar(0.8);
-surfacePlace(bill3, dirFromLatLon(32, 48), -0.3, 0.34);
+surfacePlace(bill3, dirFromLatLon(33, 52), -0.3, 0.34);
 world.add(bill3);
 registerPoi(bill3, 'pavilion');
 
@@ -267,7 +490,7 @@ registerPoi(bill3, 'pavilion');
 {
   const ps1 = makePalletStack();
   ps1.scale.setScalar(0.85);
-  surfacePlace(ps1, dirFromLatLon(20, -34), 0.5, 0.3);
+  surfacePlace(ps1, dirFromLatLon(24.5, -31.5), 0.5, 0.3);
   world.add(ps1);
   const ps2 = makePalletStack();
   ps2.scale.setScalar(0.75);
@@ -282,7 +505,7 @@ registerPoi(bill3, 'pavilion');
   world.add(cw);
   const rk = makeRack(3, 3);
   rk.scale.setScalar(0.75);
-  surfacePlace(rk, dirFromLatLon(24, -40), 0.9, 0.3);
+  surfacePlace(rk, dirFromLatLon(28, -38), 0.9, 0.3);
   world.add(rk);
 }
 
@@ -313,6 +536,7 @@ registerPoi(bill3, 'pavilion');
   registerPoi(port, 'port');
 
   const shipRoot = new THREE.Group();
+  shipRoot.userData.noWalk = true;
   const ship = makeShip();
   ship.scale.setScalar(0.8);
   shipRoot.add(ship);
@@ -334,6 +558,7 @@ registerPoi(bill3, 'pavilion');
   // buoys bobbing in the open water
   for (let i = 0; i < 5; i++) {
     const buoyRoot = new THREE.Group();
+    buoyRoot.userData.noWalk = true;
     const buoy = new THREE.Group();
     buoy.add(cyl(0.32, 0.4, 0.5, mat(0xf6f9fd, { roughness: 0.5 }), 0, 0.25, 0, 12));
     buoy.add(cyl(0.2, 0.26, 0.45, mat(C.puroRed, { roughness: 0.5 }), 0, 0.7, 0, 12));
@@ -358,7 +583,7 @@ registerPoi(bill3, 'pavilion');
   const yard = new THREE.Group();
   const stacks = makeContainerYardStacks([C.puroBlue, C.puroBlueDark]);
   stacks.scale.setScalar(0.5);
-  stacks.position.set(0, 0, 4);
+  stacks.position.set(0, 0, 2);
   yard.add(stacks);
   const fk = makeForklift({ carrying: true });
   fk.scale.setScalar(0.85);
@@ -366,14 +591,14 @@ registerPoi(bill3, 'pavilion');
   fk.rotation.y = 0.7;
   yard.add(fk);
   const w = makeWorker({ pose: 'carry' });
-  w.position.set(-3, 0, 6);
+  w.position.set(-3, 0, 4);
   w.rotation.y = -0.5;
   yard.add(w);
   const ps = makePalletStack();
   ps.scale.setScalar(0.75);
-  ps.position.set(5, 0, 7);
+  ps.position.set(5, 0, 4.5);
   yard.add(ps);
-  surfacePlace(yard, dirFromLatLon(8, 30), Math.PI * 0.5, 0.38);
+  surfacePlace(yard, dirFromLatLon(22, 47), 0, 0.38);
   world.add(yard);
   registerPoi(yard, 'rail');
 }
@@ -389,7 +614,7 @@ registerPoi(bill3, 'pavilion');
   registerPoi(wh, 'depot');
   const fk = makeForklift({ carrying: true });
   fk.scale.setScalar(0.85);
-  surfacePlace(fk, dirFromLatLon(-42, 88), Math.PI * 0.8, 0.36);
+  surfacePlace(fk, dirFromLatLon(-45, 98), Math.PI * 0.8, 0.36);
   world.add(fk);
   const ps = makePalletStack();
   ps.scale.setScalar(0.75);
@@ -401,15 +626,15 @@ registerPoi(bill3, 'pavilion');
   stacksS.scale.setScalar(0.5);
   yardS.add(stacksS);
   const wS = makeWorker({});
-  wS.position.set(-6, 0, 5);
+  wS.position.set(-6, 0, 2);
   yardS.add(wS);
-  surfacePlace(yardS, dirFromLatLon(-46, -60), Math.PI * 0.4, 0.36);
+  surfacePlace(yardS, dirFromLatLon(-52, -50), Math.PI, 0.36);
   world.add(yardS);
   registerPoi(yardS, 'rail');
 
   const billS = makeBillboard(['ONE CONNECTED', 'NETWORK']);
   billS.scale.setScalar(0.9);
-  surfacePlace(billS, dirFromLatLon(-45, 170), Math.PI, 0.34);
+  surfacePlace(billS, dirFromLatLon(-46, 176.5), Math.PI, 0.34);
   world.add(billS);
   registerPoi(billS, 'impact');
 
@@ -594,10 +819,10 @@ const SPAN_T = 20 / 360; // half of the suspended main span (20 deg of arc)
     const skipDirs = [
       ...PLATES.map((p) => ({ d: dirFromLatLon(p.lat, p.lon), ang: p.r + 0.02 })),
       { d: new THREE.Vector3(0, 1, 0), ang: 0.34 },
-      { d: dirFromLatLon(20, -34), ang: 0.08 }, { d: dirFromLatLon(17, -3), ang: 0.08 },
-      { d: dirFromLatLon(22, -10), ang: 0.08 }, { d: dirFromLatLon(24, -40), ang: 0.08 },
+      { d: dirFromLatLon(24.5, -31.5), ang: 0.08 }, { d: dirFromLatLon(17, -3), ang: 0.08 },
+      { d: dirFromLatLon(22, -10), ang: 0.08 }, { d: dirFromLatLon(28, -38), ang: 0.08 },
       { d: dirFromLatLon(33, -18), ang: 0.1 },
-      { d: dirFromLatLon(-68, -25), ang: 0.15 }, { d: dirFromLatLon(46, 152), ang: 0.12 },
+      { d: dirFromLatLon(-68, -25), ang: 0.15 }, { d: dirFromLatLon(56, -18), ang: 0.12 },
     ];
     const rings = [ring0, ring1, ringEq, ringS, railN, railS, connA];
     for (const [path, A] of [[hwy, hwyAlt], [hwyS, hwySAlt]]) {
@@ -718,10 +943,49 @@ function rboxLike(w, h, d, material) {
 }
 
 // ---------------------------------------------------------------------------
+// Street lamps along the ground road network (skipped at crossings)
+// ---------------------------------------------------------------------------
+{
+  const lampRings = [
+    [ring0, 4.4, null], [ring1, 5.0, coastalAlt], [ringEq, 5.0, bridgeAlt],
+    [ringS, 5.0, coastalAlt], [connA, 4.4, coastalAlt],
+  ];
+  const crossings = [ring0, ring1, ringEq, ringS, connA, railN, railS];
+  const _ld = new THREE.Vector3();
+  let flip = 1;
+  for (const [path, w, altFn] of lampRings) {
+    const count = Math.floor(path.length / 15);
+    for (let i = 0; i < count; i++) {
+      const t = i / count;
+      path.dir(t, _ld);
+      // don't stand a lamp on a crossing road or rail
+      if (crossings.some((r) => r !== path && Math.abs(_ld.angleTo(r.axis) - r.alpha) * R < 4.4)) continue;
+      const alt = altFn ? altFn(t, _ld) : path.alt;
+      const wrap = new THREE.Group();
+      const lamp = makeLamppost();
+      lamp.position.z = flip * (w / 2 + 1.0);
+      lamp.rotation.y = flip > 0 ? Math.PI / 2 : -Math.PI / 2; // arm over the road
+      wrap.add(lamp);
+      pathPlace(wrap, path, t, alt - path.alt);
+      world.add(wrap);
+      flip = -flip;
+    }
+  }
+}
+
+// benches around the HQ plaza and pavilion
+for (const [lat, lon, ry] of [[77, 20, -0.4], [75.5, -25, 0.9], [76, 115, 2.2], [24, 13, 0.5], [23.5, 28, -2.4]]) {
+  const bench = makeBench();
+  surfacePlace(bench, dirFromLatLon(lat, lon), ry, lat > 50 ? 0.32 : 0.4);
+  world.add(bench);
+}
+
+// ---------------------------------------------------------------------------
 // Moving traffic
 // ---------------------------------------------------------------------------
 const traffic = [];
 function addVehicle(group, path, speed, t0, altFn = null) {
+  group.userData.noWalk = true;
   world.add(group);
   traffic.push({ group, path, t: t0, speed, altFn });
 }
@@ -745,6 +1009,13 @@ addVehicle(makeTruck({}), hwyS, 7.7, 0.86, hwySAlt);
 addVehicle(makeVan({}), connA, 6.2, 0.15, coastalAlt);
 addVehicle(makeTruck({}), connA, 6.6, 0.5, coastalAlt);
 addVehicle(makeVan({ color: C.white }), connA, 6, 0.82, coastalAlt);
+// extra city traffic
+addVehicle(makeVan({ color: C.white }), ring0, 5.2, 0.32);
+addVehicle(makeVan({}), ring0, 4.8, 0.8);
+addVehicle(makeVan({}), ringEq, 6.2, 0.3, bridgeAlt);
+addVehicle(makeVan({ color: C.white }), ringS, 6.3, 0.65, coastalAlt);
+addVehicle(makeTruck({}), connA, 6.9, 0.32, coastalAlt);
+addVehicle(makeVan({}), connA, 5.8, 0.65, coastalAlt);
 
 const _td = new THREE.Vector3();
 function updateTraffic(dt) {
@@ -769,10 +1040,12 @@ function updateTraffic(dt) {
 function addTrain(railPath, cars, speed, t0) {
   const parts = [];
   const loco = makeLoco();
+  loco.userData.noWalk = true;
   world.add(loco);
   parts.push({ obj: loco, off: 0 });
   for (let i = 1; i <= cars; i++) {
     const car = makeFreightCar();
+    car.userData.noWalk = true;
     world.add(car);
     parts.push({ obj: car, off: i * (6.1 / railPath.length) });
   }
@@ -795,6 +1068,7 @@ addTrain(railS, 2, 5.5, 0.65);
 {
   const plane = makePlane();
   plane.scale.setScalar(1.3);
+  plane.userData.noWalk = true;
   world.add(plane);
   const flight = new CirclePath(dirFromLatLon(52, -60), THREE.MathUtils.degToRad(66), 17);
   let t = 0;
@@ -808,6 +1082,7 @@ addTrain(railS, 2, 5.5, 0.65);
 }
 
 const cloudsGroup = new THREE.Group();
+cloudsGroup.userData.noWalk = true;
 world.add(cloudsGroup);
 {
   const cm = mat(0xffffff, { roughness: 0.45 });
@@ -838,12 +1113,13 @@ world.add(cloudsGroup);
   const exclude = [
     { dir: OCEAN_DIR, ang: OCEAN.base + OCEAN.amp + 0.07 },
     { dir: dirFromLatLon(-68, -25), ang: 0.16 },
-    { dir: dirFromLatLon(46, 152), ang: 0.13 },
+    { dir: dirFromLatLon(56, -18), ang: 0.13 },
     ...PLATES.map((p) => ({ dir: dirFromLatLon(p.lat, p.lon), ang: p.r + 0.05 })),
+    ...NEIGHBOURHOODS.map((n) => ({ dir: dirFromLatLon(n.lat, n.lon), ang: 0.17 })),
   ];
   const rings = [ring0, ring1, ringEq, ringS, railN, railS, connA, hwy, hwyS];
   let placed = 0, guard = 0;
-  while (placed < 60 && guard < 600) {
+  while (placed < 85 && guard < 900) {
     guard++;
     const lat = -82 + Math.random() * 164;
     const lon = -180 + Math.random() * 360;
@@ -865,6 +1141,7 @@ const pins = [];
 const _Y = new THREE.Vector3(0, 1, 0);
 for (const poi of POIS) {
   const pin = makePin(poi);
+  pin.userData.noWalk = true;
   pin.scale.setScalar(0.85);
   pin.userData.dir = poiDir(poi);
   pin.userData.baseAlt = poi.pinAlt;
@@ -877,6 +1154,9 @@ for (const poi of POIS) {
 const rig = new CameraRig(camera, camFocus, world);
 rig.saveHome();
 
+// first-person walk mode (WASD + mouse look at ground level)
+const walk = new WalkMode({ camera, world, dom: renderer.domElement });
+
 // ---------------------------------------------------------------------------
 // Custom controller — object rotation (left-drag), camera pan (right-drag),
 // camera dolly (wheel), with spin inertia
@@ -888,6 +1168,7 @@ const spin = { axis: new THREE.Vector3(0, 1, 0), speed: 0 };
 const _camRight = new THREE.Vector3(), _camUp = new THREE.Vector3(), _spinQ = new THREE.Quaternion();
 
 dom.addEventListener('pointerdown', (e) => {
+  if (walk.active) return;
   dragBtn = e.button;
   lastX = e.clientX; lastY = e.clientY;
   spin.speed = 0;
@@ -920,6 +1201,7 @@ dom.addEventListener('pointermove', (e) => {
 });
 dom.addEventListener('wheel', (e) => {
   e.preventDefault();
+  if (walk.active) return;
   const dir = camera.position.clone().sub(camFocus);
   const dist = THREE.MathUtils.clamp(dir.length() * Math.exp(e.deltaY * 0.0011), 52, 320);
   camera.position.copy(camFocus).addScaledVector(dir.normalize(), dist);
@@ -936,6 +1218,117 @@ const ui = setupUI({
     rig.flyHome();
   },
 });
+
+document.getElementById('walk-btn').addEventListener('click', (e) => {
+  if (walk.active) return;
+  e.currentTarget.blur(); // so Space (jump) can't re-trigger the button
+  rig.anim = null;        // cancel any tour flight
+  spin.speed = 0;         // and any leftover inertia
+  // spawn at the foot of the HQ entrance steps, facing the tower
+  walk.enter({
+    pos: tower.localToWorld(new THREE.Vector3(0, 0, 12.5)),
+    lookAt: tower.localToWorld(new THREE.Vector3(0, 2, 0)),
+  });
+});
+
+// HQ elevator — rideable in first person; E/Q to travel between floors
+{
+  const elev = tower.userData.elevator;
+  const liftHud = document.getElementById('lift-hud');
+  const _pp = new THREE.Vector3();
+  let prevE = false, prevQ = false, hudText = '';
+  animators.push({
+    update(dt) {
+      elev.update(dt);
+      let text = '';
+      if (walk.active && walk.state === 'walk') {
+        _pp.copy(walk.dir).multiplyScalar(walk.groundR);
+        tower.worldToLocal(_pp);
+        const horiz = Math.hypot(_pp.x - elev.shaft.x, _pp.z - elev.shaft.z);
+        const carY = elev.car.position.y;
+        const e = walk.keys.has('KeyE'), q = walk.keys.has('KeyQ');
+        if (horiz < 1.15 && Math.abs(_pp.y - carY) < 1.4) {
+          // standing in the car
+          if (elev.busy) {
+            text = 'Lift moving…';
+          } else {
+            const canUp = elev.idx < elev.stops.length - 1;
+            const canDown = elev.idx > 0;
+            text = [canUp && 'E — up', canDown && 'Q — down'].filter(Boolean).join('  ·  ');
+            if (e && !prevE && canUp) elev.call(elev.idx + 1);
+            else if (q && !prevQ && canDown) elev.call(elev.idx - 1);
+          }
+        } else if (horiz < 3.0) {
+          // near the shaft opening on some floor
+          let fl = -1;
+          elev.stops.forEach((s, i) => { if (Math.abs(_pp.y - s) < 1.3) fl = i; });
+          if (fl >= 0) {
+            if (!elev.busy && elev.idx === fl) {
+              text = 'Lift ready — step in';
+            } else {
+              text = 'E — call lift';
+              if (e && !prevE) elev.call(fl);
+            }
+          }
+        }
+        prevE = e; prevQ = q;
+      }
+      if (text !== hudText) {
+        hudText = text;
+        liftHud.textContent = text;
+        liftHud.classList.toggle('visible', !!text);
+      }
+    },
+  });
+}
+
+// NPC speech bubbles — in first person, walk up to a host in the HQ and they
+// introduce themselves (bubble over the head, mouth animates while "talking")
+{
+  const bubble = document.createElement('div');
+  bubble.id = 'npc-bubble';
+  document.body.appendChild(bubble);
+  const npcs = [];
+  tower.traverse((o) => { if (o.userData.npc) npcs.push(o); });
+  const _np = new THREE.Vector3(), _pf = new THREE.Vector3(), _anchor = new THREE.Vector3();
+  let active = null;
+  animators.push({
+    update() {
+      let best = null, bestD = 2.6;
+      if (walk.active && walk.state === 'walk') {
+        _pf.copy(walk.dir).multiplyScalar(walk.feetR);
+        for (const o of npcs) {
+          o.getWorldPosition(_np);
+          const d = _np.distanceTo(_pf);
+          if (d < bestD) { bestD = d; best = o; }
+        }
+      }
+      if (best !== active) {
+        if (active?.userData.face) active.userData.face.speaking = false;
+        active = best;
+        if (active) {
+          const n = active.userData.npc;
+          bubble.innerHTML = `<b>${n.name}</b><span>${n.title}</span><p>${n.line}</p>`;
+          if (active.userData.face) active.userData.face.speaking = true;
+        }
+        bubble.classList.toggle('visible', !!active);
+      }
+      if (active) {
+        active.getWorldPosition(_anchor);
+        _np.copy(_anchor).normalize();
+        _anchor.addScaledVector(_np, active.userData.npc.h ?? 2.25);
+        _anchor.project(camera);
+        if (_anchor.z > 1) {
+          bubble.classList.remove('visible');
+        } else {
+          bubble.classList.add('visible');
+          bubble.style.left = `${(_anchor.x * 0.5 + 0.5) * window.innerWidth}px`;
+          bubble.style.top = `${(-_anchor.y * 0.5 + 0.5) * window.innerHeight}px`;
+        }
+      }
+    },
+  });
+}
 
 const tooltip = document.createElement('div');
 tooltip.id = 'tooltip';
@@ -956,6 +1349,7 @@ function pick(e) {
 }
 
 renderer.domElement.addEventListener('pointermove', (e) => {
+  if (walk.active) return;
   const poi = pick(e);
   if (poi) {
     tooltip.textContent = poi.title;
@@ -970,10 +1364,11 @@ renderer.domElement.addEventListener('pointermove', (e) => {
 });
 
 renderer.domElement.addEventListener('pointerdown', (e) => {
+  if (walk.active) return;
   downPos = [e.clientX, e.clientY];
 });
 renderer.domElement.addEventListener('pointerup', (e) => {
-  if (!downPos) return;
+  if (walk.active || !downPos) return;
   const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
   downPos = null;
   if (moved > 6) return;
@@ -1010,13 +1405,14 @@ function tick() {
   });
 
   rig.update(dt);
+  walk.update(dt, time);
   // spin inertia after the pointer is released
-  if (dragBtn !== 0 && !rig.anim && spin.speed > 0.0003) {
+  if (!walk.active && dragBtn !== 0 && !rig.anim && spin.speed > 0.0003) {
     world.quaternion.premultiply(_spinQ.setFromAxisAngle(spin.axis, spin.speed * dt));
     spin.speed *= Math.max(0, 1 - 3.0 * dt);
   }
   // soft leash so panning can't wander too far from the planet
-  if (!rig.anim && camFocus.length() > 70) {
+  if (!walk.active && !rig.anim && camFocus.length() > 70) {
     camFocus.setLength(70);
     camera.lookAt(camFocus);
   }

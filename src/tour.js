@@ -10,7 +10,7 @@ export const POIS = [
     id: 'hq',
     title: 'Partnership Headquarters',
     step: 'Stop 1 · The Beacon',
-    body: 'Purolator head office sits at the top of the world, every floor working in sync — strategy, operations, creative, analytics, collaboration — with the STRATIS beacon lighting the way above it all. Zoom right in: every office is staffed and lit.',
+    body: 'Purolator head office sits at the top of the world, every floor working in sync — strategy, media, creative, analytics, collaboration — with the STRATIS beacon lighting the way above it all. Zoom right in: every office is staffed and lit.',
     stats: [['Floors in sync', '5'], ['Signal', 'Always on']],
     lat: 90, lon: 0, dist: 116, pinAlt: 32, side: 0.85, lookR: 42,
   },
@@ -28,7 +28,7 @@ export const POIS = [
     step: 'Stop 3 · The Long Haul',
     body: 'Freight trains circle the planet on schedule, moving volume between hubs at scale. Everything scanned, everything visible — the physical backbone of the promise.',
     stats: [['Cars per train', '4'], ['On time', 'Like clockwork']],
-    lat: 8, lon: 30, dist: 92, pinAlt: 9,
+    lat: 20, lon: 46, dist: 92, pinAlt: 9,
   },
   {
     id: 'depot',
