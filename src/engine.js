@@ -11,6 +11,7 @@ import { CameraRig, makePin, poiDir, poiPinPos, setupUI } from './tour.js';
 import { initEditor, applyLayout, applyLayoutOverrides, layoutEndpoint } from './editor.js';
 import { spawnCloudDive, flyToWorld } from './transition.js';
 import { initPeople } from './people.js';
+import { initWorldSwitcher } from './switcher.js';
 
 // ---------------------------------------------------------------------------
 // World engine — everything the Purolator globe page does around its content
@@ -46,6 +47,7 @@ export function createWorldApp({
   startLabel,
 }) {
   const theme = { ...DEFAULT_THEME, ...themeIn };
+  initWorldSwitcher(worldKey);
 
   // --- renderer / scene / camera -------------------------------------------
   const app = document.getElementById('app');

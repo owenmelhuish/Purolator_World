@@ -32,6 +32,9 @@ import BAKED_LAYOUT from './layout.json';
 import { initPeople, requestFigure } from './people.js';
 import { WalkMode } from './walk.js';
 import { flyToWorld } from './transition.js';
+import { initWorldSwitcher } from './switcher.js';
+
+initWorldSwitcher('purolator');
 
 // ---------------------------------------------------------------------------
 // Renderer / scene / camera

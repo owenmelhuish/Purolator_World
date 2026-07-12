@@ -48,6 +48,10 @@ html, body {
   align-items: center;
   gap: 8px;
 }
+.brand-logo {
+  height: 34px;
+  display: block;
+}
 .brand-name {
   font-size: 26px;
   font-weight: 800;
