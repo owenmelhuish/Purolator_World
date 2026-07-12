@@ -15,20 +15,23 @@ import { R, dirFromLatLon, surfacePlace } from './globe.js';
 // project permanently, not just this browser.
 // ---------------------------------------------------------------------------
 
-const LS_KEY = 'pw-layout-v1';
+// each world keeps its own localStorage overrides + layout file on disk
+const lsKey = (worldKey) => (worldKey === 'purolator' ? 'pw-layout-v1' : `pw-layout-${worldKey}-v1`);
+export const layoutEndpoint = (worldKey) =>
+  worldKey === 'purolator' ? '/__layout' : `/__layout?world=${worldKey}`;
 const _Y = new THREE.Vector3(0, 1, 0);
 
-function loadOverrides() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch { return {}; }
+function loadOverrides(worldKey) {
+  try { return JSON.parse(localStorage.getItem(lsKey(worldKey))) || {}; } catch { return {}; }
 }
 
 let _pushT = null;
-function persist(overrides) {
-  localStorage.setItem(LS_KEY, JSON.stringify(overrides));
-  // debounce the sync to src/layout.json (dev server endpoint)
+function persist(overrides, worldKey) {
+  localStorage.setItem(lsKey(worldKey), JSON.stringify(overrides));
+  // debounce the sync to the world's layout json (dev server endpoint)
   clearTimeout(_pushT);
   _pushT = setTimeout(() => {
-    fetch('/__layout', {
+    fetch(layoutEndpoint(worldKey), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(overrides, null, 2),
@@ -72,19 +75,19 @@ export function applyLayout(movables, layout, onMoved) {
 }
 
 /** Apply this browser's saved overrides on startup (runs in every mode). */
-export function applyLayoutOverrides(movables, onMoved) {
-  applyLayout(movables, loadOverrides(), onMoved);
+export function applyLayoutOverrides(movables, onMoved, worldKey = 'purolator') {
+  applyLayout(movables, loadOverrides(worldKey), onMoved);
 }
 
-export function initEditor({ dom, camera, world, movables, animators, onMoved }) {
+export function initEditor({ dom, camera, world, movables, animators, onMoved, worldKey = 'purolator' }) {
   if (!new URLSearchParams(location.search).has('edit')) return false;
 
-  const overrides = loadOverrides();
+  const overrides = loadOverrides(worldKey);
   const items = movables.filter((m) => m.base || m.removableOnly);
   items.sort((a, b) => a.name.localeCompare(b.name));
   const listed = items.filter((m) => m.listed !== false);
-  // sync whatever this browser already holds into src/layout.json right away
-  if (Object.keys(overrides).length) persist(overrides);
+  // sync whatever this browser already holds into the layout file right away
+  if (Object.keys(overrides).length) persist(overrides, worldKey);
 
   // --- selection ring ------------------------------------------------------
   const ring = new THREE.Mesh(
@@ -230,7 +233,7 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved })
       && Math.abs(THREE.MathUtils.degToRad(m.heading) - m.base.headingRad) < 0.001;
     if (pristine || (!m.base && !m.removed)) delete overrides[m.name];
     else overrides[m.name] = v;
-    persist(overrides);
+    persist(overrides, worldKey);
     onMoved?.(m);
     refreshPanel();
   }
@@ -288,7 +291,7 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved })
       applyPlacement(selected, selected.base.lat, selected.base.lon, THREE.MathUtils.radToDeg(selected.base.headingRad));
     }
     delete overrides[selected.name];
-    persist(overrides);
+    persist(overrides, worldKey);
     onMoved?.(selected);
     refreshPanel();
   });
@@ -300,7 +303,7 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved })
       onMoved?.(m);
     }
     for (const k of Object.keys(overrides)) delete overrides[k];
-    persist(overrides);
+    persist(overrides, worldKey);
     selected = null;
     refreshPanel();
   });

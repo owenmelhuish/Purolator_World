@@ -185,15 +185,16 @@ export function isWater(d) {
   return oceanDepthAt(d) > -OCEAN.level + 0.05;
 }
 
-/** The globe itself — smooth soft-white planet with a carved ocean basin. */
-export function buildGlobe(scene, oceanDir) {
+/** The globe itself — smooth soft-white planet with a carved ocean basin.
+ *  `palette` lets themed worlds recolour the terrain (defaults = Purolator). */
+export function buildGlobe(scene, oceanDir, palette = {}) {
   setOceanFrame(oceanDir);
   const geo = new THREE.SphereGeometry(R, 160, 120);
   const posAttr = geo.getAttribute('position');
   const colors = new Float32Array(posAttr.count * 3);
-  const cLand = new THREE.Color(0xedf1f8);
-  const cSand = new THREE.Color(0xe8e3d3);
-  const cSub = new THREE.Color(0xb9c9e2);
+  const cLand = new THREE.Color(palette.land ?? 0xedf1f8);
+  const cSand = new THREE.Color(palette.sand ?? 0xe8e3d3);
+  const cSub = new THREE.Color(palette.seabed ?? 0xb9c9e2);
   const cTmp = new THREE.Color();
   const v = new THREE.Vector3();
   const d = new THREE.Vector3();
@@ -285,11 +286,11 @@ function waveStrokeTexture() {
  * so the coastline is wherever the sloped shore rises through it.
  * Returns an animator { update(dt) }.
  */
-export function buildOcean(scene, dir) {
+export function buildOcean(scene, dir, palette = {}) {
   const surfAng = OCEAN.base + OCEAN.amp + 0.04; // hides under land beyond the coast
   const bump = noiseBumpTexture();
   const water = makeCapPatch(dir, surfAng, OCEAN.level, new THREE.MeshStandardMaterial({
-    color: 0x4f84ce,
+    color: palette.water ?? 0x4f84ce,
     roughness: 0.14,
     metalness: 0.06,
     bumpMap: bump,
@@ -323,19 +324,19 @@ export function buildOcean(scene, dir) {
 }
 
 /** Small lake/pond patch. */
-export function makePond(scene, dir, angRadius = 0.09) {
+export function makePond(scene, dir, angRadius = 0.09, palette = {}) {
   scene.add(makeCapPatch(dir, angRadius, 0.12, new THREE.MeshStandardMaterial({
-    color: 0x74a0dc, roughness: 0.15, metalness: 0.06,
+    color: palette.pond ?? 0x74a0dc, roughness: 0.15, metalness: 0.06,
   })));
-  scene.add(makeCapPatch(dir, angRadius + 0.02, 0.06, mat(0xdde8f6, { roughness: 0.85 })));
+  scene.add(makeCapPatch(dir, angRadius + 0.02, 0.06, mat(palette.pondRim ?? 0xdde8f6, { roughness: 0.85 })));
 }
 
 /** Road with base, asphalt, raised curbs and centre dashes. `altFn(t, dir)` makes it an elevated deck. */
-export function makeRoad(scene, path, { width = 5.0, dashes = true, altFn = null } = {}) {
+export function makeRoad(scene, path, { width = 5.0, dashes = true, altFn = null, colors = {} } = {}) {
   const A = altFn ?? (() => path.alt);
-  scene.add(makeRibbon(path, width + 1.1, new THREE.MeshStandardMaterial({ color: 0xc6d0e0, roughness: 0.95 }), 260, 0, (t, d) => A(t, d) - 0.07));
-  scene.add(makeRibbon(path, width, new THREE.MeshStandardMaterial({ color: 0xd5ddea, roughness: 0.95 }), 260, 0, A));
-  const curbMat = new THREE.MeshStandardMaterial({ color: 0xf3f6fb, roughness: 0.7 });
+  scene.add(makeRibbon(path, width + 1.1, new THREE.MeshStandardMaterial({ color: colors.base ?? 0xc6d0e0, roughness: 0.95 }), 260, 0, (t, d) => A(t, d) - 0.07));
+  scene.add(makeRibbon(path, width, new THREE.MeshStandardMaterial({ color: colors.surface ?? 0xd5ddea, roughness: 0.95 }), 260, 0, A));
+  const curbMat = new THREE.MeshStandardMaterial({ color: colors.curb ?? 0xf3f6fb, roughness: 0.7 });
   scene.add(makeRibbon(path, 0.42, curbMat, 260, width / 2 + 0.22, (t, d) => A(t, d) + 0.09));
   scene.add(makeRibbon(path, 0.42, curbMat, 260, -(width / 2 + 0.22), (t, d) => A(t, d) + 0.09));
   if (dashes) makeDashes(path, scene, { every: 4.2, len: 1.6, w: 0.3, altFn });

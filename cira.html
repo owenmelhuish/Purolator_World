@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PUSH + STRATIS × CIRA — Canadian Internet World</title>
+  <link rel="stylesheet" href="/src/style.css" />
+  <style>
+    :root {
+      --puro-blue: #aa1e3a;        /* CIRA Maple Leaf Red */
+      --puro-blue-dark: #7e0e27;
+      --puro-red: #ba2241;
+    }
+    .brand-name { color: #2c0000; }
+    .brand-leaf { background: #aa1e3a; } /* keep the maple leaf — it's CIRA's colour name */
+    .tour-start, .ic-btn { background: #aa1e3a; }
+    .tour-start:hover, .ic-btn:hover { background: #8d1830; }
+    #info-stats .stat { background: #f9e9ec; color: #7e0e27; }
+    #walk-btn { display: none; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="ui">
+    <div id="brand">
+      <div class="brand-mark">
+        <span class="brand-name">CIRA · .CA</span>
+        <span class="brand-leaf"></span>
+      </div>
+      <div class="brand-sub">A PUSH + STRATIS world — Case Study · Canadian Internet</div>
+    </div>
+
+    <div id="hint">Drag to spin &nbsp;·&nbsp; Right-drag to pan &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Click a pin</div>
+
+    <div id="info-card" class="hidden">
+      <button id="info-close" aria-label="Close">&times;</button>
+      <div id="info-step" class="info-step"></div>
+      <h2 id="info-title"></h2>
+      <p id="info-body"></p>
+      <div id="info-stats"></div>
+    </div>
+
+    <div id="tour-bar">
+      <button id="tour-prev" class="tour-btn" aria-label="Previous stop">&#8592;</button>
+      <button id="tour-start" class="tour-start">Start the story</button>
+      <div id="tour-dots"></div>
+      <button id="tour-next" class="tour-btn" aria-label="Next stop">&#8594;</button>
+      <button id="tour-overview" class="tour-btn wide">Overview</button>
+      <button id="walk-btn" hidden></button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/worlds/cira.js"></script>
+</body>
+</html>

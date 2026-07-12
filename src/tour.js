@@ -219,9 +219,9 @@ export function findPoi(id) {
 // ---------------------------------------------------------------------------
 // Map pins
 // ---------------------------------------------------------------------------
-export function makePin(poi) {
+export function makePin(poi, color = C.puroBlue) {
   const g = new THREE.Group();
-  const blue = mat(C.puroBlue, { roughness: 0.4 });
+  const blue = mat(color, { roughness: 0.4 });
   const head = new THREE.Mesh(new THREE.SphereGeometry(1.3, 20, 16), blue);
   head.position.y = 2.8;
   head.castShadow = true;
@@ -318,7 +318,7 @@ export function poiPinPos(poi) {
 // ---------------------------------------------------------------------------
 // UI wiring
 // ---------------------------------------------------------------------------
-export function setupUI({ onSelect, onOverview, onStart }) {
+export function setupUI({ onSelect, onOverview, onStart, pois = POIS, nextWorld = null, startLabel = 'Start the story' }) {
   const card = document.getElementById('info-card');
   const stepEl = document.getElementById('info-step');
   const titleEl = document.getElementById('info-title');
@@ -329,7 +329,7 @@ export function setupUI({ onSelect, onOverview, onStart }) {
 
   let current = -1;
 
-  POIS.forEach((_, i) => {
+  pois.forEach((_, i) => {
     const d = document.createElement('div');
     d.className = 'dot';
     d.addEventListener('click', () => select(i));
@@ -341,19 +341,29 @@ export function setupUI({ onSelect, onOverview, onStart }) {
     stepEl.textContent = poi.step;
     titleEl.textContent = poi.title;
     bodyEl.textContent = poi.body;
+    // the final chapter hands off to the next world in the case-study loop
+    const handoff = nextWorld && poi === pois[pois.length - 1]
+      ? `<button class="ic-btn ic-next-world">${nextWorld.label}&nbsp;→</button>`
+      : '';
     statsEl.innerHTML =
       (poi.stats ?? []).map(([k, v]) => `<div class="stat">${k}: <b>${v}</b></div>`).join('') +
-      (poi.html ?? '');
+      (poi.html ?? '') + handoff;
+    statsEl.querySelector('.ic-next-world')?.addEventListener('click', () => nextWorld.go());
     card.scrollTop = 0;
     card.classList.remove('hidden');
   }
 
   function select(i) {
-    current = ((i % POIS.length) + POIS.length) % POIS.length;
+    // pressing → past the last chapter continues into the next world
+    if (nextWorld && current === pois.length - 1 && i === pois.length) {
+      nextWorld.go();
+      return;
+    }
+    current = ((i % pois.length) + pois.length) % pois.length;
     dots.forEach((d, j) => d.classList.toggle('active', j === current));
     startBtn.textContent = 'Touring…';
-    showCard(POIS[current]);
-    onSelect(POIS[current]);
+    showCard(pois[current]);
+    onSelect(pois[current]);
   }
 
   /** A network stop outside the main tour: card + flight, no dot lights up. */
@@ -368,9 +378,10 @@ export function setupUI({ onSelect, onOverview, onStart }) {
     current = -1;
     dots.forEach((d) => d.classList.remove('active'));
     card.classList.add('hidden');
-    startBtn.textContent = 'Start the story';
+    startBtn.textContent = startLabel;
     onOverview();
   }
+  startBtn.textContent = startLabel;
 
   // "Start the story" plays the animated intro when a handler claims it;
   // otherwise it falls back to flying straight to stop 1
@@ -379,15 +390,16 @@ export function setupUI({ onSelect, onOverview, onStart }) {
     select(0);
   });
   document.getElementById('tour-next').addEventListener('click', () => select(current + 1));
-  document.getElementById('tour-prev').addEventListener('click', () => select(current <= 0 ? POIS.length - 1 : current - 1));
+  document.getElementById('tour-prev').addEventListener('click', () => select(current <= 0 ? pois.length - 1 : current - 1));
   document.getElementById('tour-overview').addEventListener('click', clear);
   document.getElementById('info-close').addEventListener('click', clear);
 
   return {
     selectPoi(poi) {
-      const i = POIS.indexOf(poi);
+      const i = pois.indexOf(poi);
       if (i >= 0) select(i);
       else selectExtra(poi);
     },
+    select,
   };
 }

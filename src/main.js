@@ -31,6 +31,7 @@ import { initIntro } from './intro.js';
 import BAKED_LAYOUT from './layout.json';
 import { initPeople, requestFigure } from './people.js';
 import { WalkMode } from './walk.js';
+import { flyToWorld } from './transition.js';
 
 // ---------------------------------------------------------------------------
 // Renderer / scene / camera
@@ -1453,6 +1454,11 @@ const intro = initIntro({
 });
 
 const ui = setupUI({
+  // the story continues into the client worlds PUSH has already built
+  nextWorld: {
+    label: 'See the worlds we\'ve built — Choice Hotels Canada',
+    go: () => flyToWorld({ scene, camera, url: '/choice.html?story' }),
+  },
   onStart() {
     if (walk.active) return false; // in walk mode, ignore
     rig.anim = null;

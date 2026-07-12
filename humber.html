@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PUSH + STRATIS × Humber Polytechnic — Campus World</title>
+  <link rel="stylesheet" href="/src/style.css" />
+  <style>
+    :root {
+      --puro-blue: #5c068c;        /* Humber purple accent */
+      --puro-blue-dark: #041e42;   /* Humber navy */
+      --puro-red: #cc9900;         /* Humber gold */
+    }
+    .brand-name { color: #041e42; }
+    .brand-leaf { background: #cc9900; clip-path: circle(50% at 50% 50%); }
+    .tour-start, .ic-btn { background: #5c068c; }
+    .tour-start:hover, .ic-btn:hover { background: #47056d; }
+    #info-stats .stat { background: #f1e9f8; color: #47056d; }
+    #walk-btn { display: none; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="ui">
+    <div id="brand">
+      <div class="brand-mark">
+        <span class="brand-name">HUMBER POLYTECHNIC</span>
+        <span class="brand-leaf"></span>
+      </div>
+      <div class="brand-sub">A PUSH + STRATIS world — Case Study · Education</div>
+    </div>
+
+    <div id="hint">Drag to spin &nbsp;·&nbsp; Right-drag to pan &nbsp;·&nbsp; Scroll to zoom &nbsp;·&nbsp; Click a pin</div>
+
+    <div id="info-card" class="hidden">
+      <button id="info-close" aria-label="Close">&times;</button>
+      <div id="info-step" class="info-step"></div>
+      <h2 id="info-title"></h2>
+      <p id="info-body"></p>
+      <div id="info-stats"></div>
+    </div>
+
+    <div id="tour-bar">
+      <button id="tour-prev" class="tour-btn" aria-label="Previous stop">&#8592;</button>
+      <button id="tour-start" class="tour-start">Start the story</button>
+      <div id="tour-dots"></div>
+      <button id="tour-next" class="tour-btn" aria-label="Next stop">&#8594;</button>
+      <button id="tour-overview" class="tour-btn wide">Overview</button>
+      <button id="walk-btn" hidden></button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/worlds/humber.js"></script>
+</body>
+</html>
