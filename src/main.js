@@ -18,7 +18,17 @@ import {
   makeOfficeBlock, makeLamppost, makeBench,
 } from './factories.js';
 import { makeTruck, makeVan, makeForklift, makeWorker, makePlane } from './vehicles.js';
-import { POIS, makePin, CameraRig, setupUI, poiDir, poiPinPos } from './tour.js';
+import {
+  makeBorderCrossing, makeColdChainHub, makeMonolithGateway, makeMarketSquare,
+} from './partnership.js';
+import {
+  makeZeroWasteVignette, makeSiloRing, makeProofPlaza,
+  makeStudioConveyor,
+} from './system.js';
+import { POIS, EXTRAS, findPoi, makePin, CameraRig, setupUI, poiDir, poiPinPos } from './tour.js';
+import { initEditor, applyLayout, applyLayoutOverrides } from './editor.js';
+import { initIntro } from './intro.js';
+import BAKED_LAYOUT from './layout.json';
 import { initPeople, requestFigure } from './people.js';
 import { WalkMode } from './walk.js';
 
@@ -46,7 +56,7 @@ scene.background = new THREE.Color(0x82b2ef); // sky blue
   pmrem.dispose();
 }
 
-const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.5, 1200);
+const camera = new THREE.PerspectiveCamera(34, window.innerWidth / window.innerHeight, 0.5, 1800);
 camera.position.copy(dirFromLatLon(30, -70).multiplyScalar(228));
 camera.lookAt(0, 10, 0);
 
@@ -223,27 +233,80 @@ animators.push(oceanFx);
 }
 
 function registerPoi(group, poiId) {
-  const poi = POIS.find((p) => p.id === poiId);
+  const poi = findPoi(poiId);
   group.traverse((o) => { if (o.isMesh) { o.userData.poi = poi; clickables.push(o); } });
+}
+
+// ---------------------------------------------------------------------------
+// Movable layout elements — everything registered here can be repositioned
+// and rotated in the layout editor (open the page with ?edit). Roads, rails,
+// the bridge, the HQ tower, the border crossing and the ocean stay fixed.
+// ---------------------------------------------------------------------------
+const MOVABLES = [];
+function getMovable(name, poiId = null) {
+  let m = MOVABLES.find((x) => x.name === name);
+  if (!m) {
+    m = { name, poiId, parts: [], base: null, lat: 0, lon: 0, heading: 0 };
+    MOVABLES.push(m);
+  }
+  if (poiId) m.poiId = poiId;
+  return m;
+}
+function registerPart(name, obj, kind, lat, lon, headingRad = 0, alt = 0) {
+  const m = getMovable(name);
+  if (!m.base && kind === 'surface') {
+    m.base = { lat, lon, headingRad };
+    m.lat = lat;
+    m.lon = lon;
+    m.heading = THREE.MathUtils.radToDeg(headingRad);
+  }
+  m.parts.push({ obj, kind, alt, headingRad });
+}
+/** surfacePlace + world.add + register with the layout editor. */
+function placeM(name, obj, lat, lon, heading = 0, alt = 0, poiId = null) {
+  surfacePlace(obj, dirFromLatLon(lat, lon), heading, alt);
+  world.add(obj);
+  getMovable(name, poiId);
+  registerPart(name, obj, 'surface', lat, lon, heading, alt);
+  return obj;
+}
+/** Unlisted movable — click-selectable in the scene, kept out of the dropdown. */
+function placeSmall(name, obj, lat, lon, heading = 0, alt = 0) {
+  placeM(name, obj, lat, lon, heading, alt);
+  getMovable(name).listed = false;
+  return obj;
+}
+/** Remove-only registration for procedurally placed pieces (street lamps etc.). */
+function registerRemovable(name, obj) {
+  const m = getMovable(name);
+  m.removableOnly = true;
+  m.listed = false;
+  m.parts.push({ obj, kind: 'fixed' });
 }
 
 // district platforms (staggered altitudes to avoid coplanar seams)
 const PLATES = [
-  { lat: 90, lon: 0, r: 0.3, alt: 0.3 },      // HQ plaza
-  { lat: 54, lon: -50, r: 0.22, alt: 0.34 },  // creative studio
-  { lat: 54, lon: 58, r: 0.22, alt: 0.31 },   // ideation lab
-  { lat: 28, lon: 20, r: 0.2, alt: 0.36 },    // pavilion
-  { lat: 55, lon: 115, r: 0.24, alt: 0.33 },  // depot
-  { lat: 31, lon: -72, r: 0.24, alt: 0.35 },  // port apron (quay over shore)
-  { lat: 22, lon: 47, r: 0.18, alt: 0.37 },   // rail freight yard
-  { lat: -50, lon: 95, r: 0.22, alt: 0.34 },  // southern warehouse
-  { lat: -52, lon: -50, r: 0.18, alt: 0.31 }, // southern rail yard
-  { lat: -80, lon: 60, r: 0.2, alt: 0.3 },    // south pole staging
-  { lat: 19, lon: 166, r: 0.2, alt: 0.32 },   // media lab (back)
-  { lat: 25, lon: -172, r: 0.19, alt: 0.34 }, // data command (back)
+  { lat: 90, lon: 0, r: 0.3, alt: 0.3 },                            // HQ plaza (fixed)
+  { lat: 54, lon: -50, r: 0.22, alt: 0.34, name: 'studio-p' },
+  { lat: 54, lon: 58, r: 0.22, alt: 0.31, name: 'ideation-lab' },
+  { lat: 28, lon: 20, r: 0.2, alt: 0.36, name: 'pavilion' },
+  { lat: 55, lon: 115, r: 0.24, alt: 0.33, name: 'depot' },
+  { lat: 31, lon: -72, r: 0.24, alt: 0.35, name: 'port' },
+  { lat: 22, lon: 47, r: 0.18, alt: 0.37, name: 'rail-yard-north' },
+  { lat: -50, lon: 95, r: 0.22, alt: 0.34, name: 'warehouse-south' },
+  { lat: -52, lon: -50, r: 0.18, alt: 0.31, name: 'rail-yard-south' },
+  { lat: -80, lon: 60, r: 0.2, alt: 0.3, name: 'pole-staging' },
+  { lat: 19, lon: 166, r: 0.2, alt: 0.32, name: 'media-lab' },
+  { lat: 25, lon: -172, r: 0.19, alt: 0.34, name: 'stratis-centre' },
+  { lat: -47, lon: -20, r: 0.17, alt: 0.33, name: 'cold-chain' },
+  { lat: 53, lon: 8, r: 0.2, alt: 0.31, name: 'zerowaste' },
+  { lat: 33, lon: -18, r: 0.17, alt: 0.33, name: 'proof-plaza' },
+  { lat: 15, lon: -45, r: 0.15, alt: 0.28, name: 'market-square' },
 ];
 for (const p of PLATES) {
-  world.add(makeCapPatch(dirFromLatLon(p.lat, p.lon), p.r, p.alt, mat(0xeaeff7, { roughness: 0.92 })));
+  const plate = makeCapPatch(dirFromLatLon(p.lat, p.lon), p.r, p.alt, mat(0xeaeff7, { roughness: 0.92 }));
+  world.add(plate);
+  if (p.name) registerPart(p.name, plate, 'plate', p.lat, p.lon, 0, p.alt);
 }
 
 // ---------------------------------------------------------------------------
@@ -254,7 +317,7 @@ for (const p of PLATES) {
 // ---------------------------------------------------------------------------
 {
   const foundM = mat(0xe6e9f0, { roughness: 0.9 });
-  const foundation = (lat, lon, heading, w, d, alt, { round = false, dz = 0 } = {}) => {
+  const foundation = (lat, lon, heading, w, d, alt, { round = false, dz = 0, name = null } = {}) => {
     const reach = round ? w / 2 + Math.abs(dz) : Math.hypot(w / 2, d / 2 + Math.abs(dz));
     const depth = (reach * reach) / (2 * R) + 0.8;
     const g = new THREE.Group();
@@ -265,19 +328,24 @@ for (const p of PLATES) {
     g.add(m);
     surfacePlace(g, dirFromLatLon(lat, lon), heading, alt);
     world.add(g);
+    if (name) registerPart(name, g, 'surface', lat, lon, heading, alt);
   };
-  foundation(54, -50, 0, 12.9, 10.6, 0.36, { dz: 0.5 });    // creative studio + entry step
-  foundation(54, 58, 0, 11.6, 11.6, 0.36, { round: true }); // ideation lab
-  foundation(28, 20, 0, 12.7, 12.7, 0.38, { round: true }); // pavilion
-  foundation(55, 115, 0, 13.8, 13.6, 0.36, { dz: 2.0 });    // depot + van apron
-  foundation(19, 166, 0, 11.3, 11.3, 0.36, { round: true });// media lab
-  foundation(25, -172, 0, 11.0, 9.0, 0.38, { dz: 0.3 });    // data command
-  foundation(-50, 95, Math.PI, 19, 14, 0.36);               // southern warehouse
-  foundation(31, -72, Math.PI * 0.55, 26, 20, 0.38);        // port quay
-  foundation(22, 47, 0, 21, 10, 0.38, { dz: 0.75 });        // north rail yard
-  foundation(-52, -50, Math.PI, 21, 9.5, 0.36);             // south rail yard
-  foundation(-80, 60, 0.4, 19, 10, 0.34, { dz: 0.8 });      // pole staging
-  foundation(15, -158, 0.5, 21, 9, 0.3, { dz: -1.2 });      // back transfer cluster
+  foundation(54, -50, 0, 12.9, 10.6, 0.36, { dz: 0.5, name: 'studio-p' });
+  foundation(54, 58, 0, 11.6, 11.6, 0.36, { round: true, name: 'ideation-lab' });
+  foundation(28, 20, 0, 12.7, 12.7, 0.38, { round: true, name: 'pavilion' });
+  foundation(55, 115, 0, 13.8, 13.6, 0.36, { dz: 2.0, name: 'depot' });
+  foundation(19, 166, 0, 11.3, 11.3, 0.36, { round: true, name: 'media-lab' });
+  foundation(25, -172, 0, 11.0, 9.0, 0.38, { dz: 0.3, name: 'stratis-centre' });
+  foundation(-50, 95, Math.PI, 19, 14, 0.36, { name: 'warehouse-south' });
+  foundation(31, -72, Math.PI * 0.55, 26, 20, 0.38, { name: 'port' });
+  foundation(22, 47, 0, 21, 10, 0.38, { dz: 0.75, name: 'rail-yard-north' });
+  foundation(-52, -50, Math.PI, 21, 9.5, 0.36, { name: 'rail-yard-south' });
+  foundation(-80, 60, 0.4, 19, 10, 0.34, { dz: 0.8, name: 'pole-staging' });
+  foundation(15, -158, 0.5, 21, 9, 0.3, { dz: -1.2, name: 'transfer-yard' });
+  foundation(-47, -20, 0, 17, 20, 0.36, { dz: 3.4, name: 'cold-chain' });
+  foundation(53, 8, 0, 20.5, 13, 0.34, { name: 'zerowaste' });
+  foundation(33, -18, 0, 18, 11, 0.36, { dz: -0.5, name: 'proof-plaza' });
+  foundation(15, -45, 0, 16, 11.5, 0.32, { name: 'market-square' });
 }
 
 // ---------------------------------------------------------------------------
@@ -305,12 +373,13 @@ const NEIGHBOURHOODS = [
 {
   const plateM = mat(0xe9eef6, { roughness: 0.92 });
   const ALT = 0.24;
-  // place an object at a tangent offset (du east, dv north, in units)
+  let npc = 0;
+  // place an object at a tangent offset (du east, dv north, in units);
+  // every neighbourhood piece registers with the editor (click to adjust)
   const put = (obj, n, du, dv, ry = 0) => {
     const lat = n.lat + dv / 0.733;
     const lon = n.lon + du / (0.733 * Math.cos(THREE.MathUtils.degToRad(n.lat)));
-    surfacePlace(obj, dirFromLatLon(lat, lon), ry, ALT);
-    world.add(obj);
+    placeSmall(`nbhd-${n.kind}-${++npc}`, obj, lat, lon, ry, ALT);
   };
   let v = 0;
   for (const n of NEIGHBOURHOODS) {
@@ -379,134 +448,152 @@ registerPoi(tower, 'hq');
   });
 }
 // plaza dressing
-for (const [lat, lon, h] of [[76, 45, 1.0], [76, -55, 1.1], [75, 150, 1.0], [77, -130, 0.9], [74, 100, 0.8]]) {
-  const t = makeTree(lon % 2 === 0 ? 0 : 1, h);
-  surfacePlace(t, dirFromLatLon(lat, lon), 0, 0.32);
-  world.add(t);
+{
+  let pt = 0;
+  for (const [lat, lon, h] of [[76, 45, 1.0], [76, -55, 1.1], [75, 150, 1.0], [77, -130, 0.9], [74, 100, 0.8]]) {
+    const t = makeTree(lon % 2 === 0 ? 0 : 1, h);
+    placeSmall(`plaza-tree-${++pt}`, t, lat, lon, 0, 0.32);
+  }
 }
+
+// One Partner, Not Three — brand monolith gateway beside the entrance walk
+const gateway = makeMonolithGateway();
+placeM('monolith-gateway', gateway, 77.5, -135, THREE.MathUtils.degToRad(-22), 0.34);
+registerPoi(gateway, 'hq');
 
 // ---------------------------------------------------------------------------
 // Northern districts
 // ---------------------------------------------------------------------------
 const studio = makeCreativeStudio();
 studio.scale.setScalar(1.0);
-surfacePlace(studio, dirFromLatLon(54, -50), 0, 0.36);
-world.add(studio);
+placeM('studio-p', studio, 54, -50, 0, 0.36, 'studio');
 registerPoi(studio, 'studio');
+{
+  // Studio P ships creative like freight: conveyor out the side bay,
+  // through the STRATIS signal check, toward the waiting van
+  const conveyor = makeStudioConveyor();
+  studio.add(conveyor.group);
+  animators.push(conveyor);
+  const van = makeVan({});
+  placeM('studio-van', van, 50.2, -46, Math.PI * 0.82, 0.34);
+  registerPoi(van, 'studio');
+}
 
 const lab = makeIdeationLab();
 lab.scale.setScalar(1.0);
-surfacePlace(lab, dirFromLatLon(54, 58), 0, 0.36);
-world.add(lab);
+placeM('ideation-lab', lab, 54, 58, 0, 0.36, 'lab');
 registerPoi(lab, 'lab');
 
 const pavilion = makePavilion();
 pavilion.scale.setScalar(1.0);
-surfacePlace(pavilion, dirFromLatLon(28, 20), 0, 0.38);
-world.add(pavilion);
+placeM('pavilion', pavilion, 28, 20, 0, 0.38, 'pavilion');
 registerPoi(pavilion, 'pavilion');
 
 const depot = makeDepot();
 depot.scale.setScalar(0.55);
-surfacePlace(depot, dirFromLatLon(55, 115), 0, 0.36);
-world.add(depot);
+placeM('depot', depot, 55, 115, 0, 0.36, 'depot');
 registerPoi(depot, 'depot');
 {
   const v1 = makeVan({});
-  surfacePlace(v1, dirFromLatLon(50, 105), Math.PI * 0.45, 0.36);
-  world.add(v1);
+  placeM('depot-van', v1, 50, 105, Math.PI * 0.45, 0.36);
   const ps = makePalletStack();
   ps.scale.setScalar(0.8);
-  surfacePlace(ps, dirFromLatLon(49.2, 120), 0, 0.36);
-  world.add(ps);
+  placeM('depot-pallets', ps, 49.2, 120, 0, 0.36);
   const w = makeWorker({ pose: 'carry' });
-  surfacePlace(w, dirFromLatLon(49, 115.5), -0.6, 0.36);
-  world.add(w);
+  placeM('depot-worker', w, 49, 115.5, -0.6, 0.36);
   const fk = makeForklift({ carrying: true });
   fk.scale.setScalar(0.9);
-  surfacePlace(fk, dirFromLatLon(49.3, 110), 2.4, 0.36);
-  world.add(fk);
+  placeM('depot-forklift', fk, 49.3, 110, 2.4, 0.36);
 }
 
 // --- back-hemisphere marketing district
 const mediaLab = makeMediaLab();
-surfacePlace(mediaLab, dirFromLatLon(19, 166), 0, 0.36);
-world.add(mediaLab);
+placeM('media-lab', mediaLab, 19, 166, 0, 0.36);
 registerPoi(mediaLab, 'lab');
 
+// STRATIS intelligence centre + the channel-silo ring move as one piece
+const stratisCentre = new THREE.Group();
 const dataCommand = makeDataCommand();
-surfacePlace(dataCommand, dirFromLatLon(25, -172), 0, 0.38);
-world.add(dataCommand);
-registerPoi(dataCommand, 'impact');
+stratisCentre.add(dataCommand);
+const siloRing = makeSiloRing();
+stratisCentre.add(siloRing.group);
+placeM('stratis-centre', stratisCentre, 25, -172, Math.PI, 0.38);
+registerPoi(stratisCentre, 'stratis');
+animators.push(siloRing);
 
-const billST = makeBillboard(['SMARTER', 'TOGETHER']);
-surfacePlace(billST, dirFromLatLon(33.5, -152), 0.2, 0.32);
-world.add(billST);
-registerPoi(billST, 'impact');
+const billST = makeBillboard(['ONE BIGGER', 'PUROLATOR']);
+placeM('billboard-one-bigger', billST, 33.5, -152, 0.2, 0.32);
+registerPoi(billST, 'hq');
 
 // container transfer cluster serving the back districts
 {
   const stacksB = makeContainerYardStacks([C.puroBlue, C.puroBlueDark]);
   stacksB.scale.setScalar(0.5);
-  surfacePlace(stacksB, dirFromLatLon(15, -158), 0.5, 0.3);
-  world.add(stacksB);
+  placeM('transfer-yard', stacksB, 15, -158, 0.5, 0.3);
   const fkB = makeForklift({ carrying: true });
   fkB.scale.setScalar(0.85);
-  surfacePlace(fkB, dirFromLatLon(12, -165), 1.8, 0.3);
-  world.add(fkB);
+  placeM('transfer-forklift', fkB, 12, -165, 1.8, 0.3);
   const wB = makeWorker({ pose: 'carry' });
-  surfacePlace(wB, dirFromLatLon(13.5, -161), -0.4, 0.3);
-  world.add(wB);
+  placeM('transfer-worker', wB, 13.5, -161, -0.4, 0.3);
   const vB = makeVan({});
-  surfacePlace(vB, dirFromLatLon(18.5, -163), Math.PI * 0.6, 0.3);
-  world.add(vB);
+  placeM('transfer-van', vB, 18.5, -163, Math.PI * 0.6, 0.3);
   const psB = makePalletStack();
   psB.scale.setScalar(0.8);
-  surfacePlace(psB, dirFromLatLon(11, -156), 0.9, 0.3);
-  world.add(psB);
+  placeM('transfer-pallets', psB, 11, -156, 0.9, 0.3);
   const vM = makeVan({ color: C.white });
-  surfacePlace(vM, dirFromLatLon(9.5, 166), Math.PI * 0.3, 0.32);
-  world.add(vM);
+  placeM('media-lab-van', vM, 9.5, 166, Math.PI * 0.3, 0.32);
 }
 
-// billboards
-const bill1 = makeBillboard(['DELIVERING', 'IMPACT']);
-surfacePlace(bill1, dirFromLatLon(33, -18), 0, 0.34);
-world.add(bill1);
-registerPoi(bill1, 'impact');
+// proof plaza — the deck's real numbers as architecture
+const proofPlaza = makeProofPlaza();
+placeM('proof-plaza', proofPlaza, 33, -18, 0, 0.36, 'proof');
+registerPoi(proofPlaza, 'proof');
 
 const bill2 = makeBillboard(['EVERY', 'CONNECTION', 'DELIVERS'], { w: 11, h: 6.5 });
-surfacePlace(bill2, dirFromLatLon(59, 4), 0.15, 0.34);
-world.add(bill2);
-registerPoi(bill2, 'impact');
+placeM('billboard-connection', bill2, 60, -10, 0.15, 0.34);
+registerPoi(bill2, 'zerowaste');
 
 const bill3 = makeBillboard(['EXPERIENTIAL', 'ACTIVATION'], { w: 9, h: 5, chart: false });
 bill3.scale.setScalar(0.8);
-surfacePlace(bill3, dirFromLatLon(33, 52), -0.3, 0.34);
-world.add(bill3);
+placeM('billboard-experiential', bill3, 33, 52, -0.3, 0.34);
 registerPoi(bill3, 'pavilion');
+
+// --- Act I: the market square opener
+const marketSq = makeMarketSquare();
+placeM('market-square', marketSq, 15, -45, 0, 0.32, 'market');
+registerPoi(marketSq, 'market');
+
+// --- Act II: Williams PharmaLogistics cold chain hub
+{
+  const coldHub = makeColdChainHub();
+  placeM('cold-chain', coldHub, -47, -20, 0, 0.36, 'coldchain');
+  registerPoi(coldHub, 'coldchain');
+}
+
+// --- Act IV: ZeroWaste™ — the old linear way vs the PUSH loop
+{
+  const zw = makeZeroWasteVignette();
+  placeM('zerowaste', zw.group, 53, 8, 0, 0.34, 'zerowaste');
+  registerPoi(zw.group, 'zerowaste');
+  animators.push(zw);
+}
 
 // mid-band vignettes — keep the front of the globe busy between the roads
 {
   const ps1 = makePalletStack();
   ps1.scale.setScalar(0.85);
-  surfacePlace(ps1, dirFromLatLon(24.5, -31.5), 0.5, 0.3);
-  world.add(ps1);
+  placeM('midband-pallets-a', ps1, 24.5, -31.5, 0.5, 0.3);
   const ps2 = makePalletStack();
   ps2.scale.setScalar(0.75);
-  surfacePlace(ps2, dirFromLatLon(17, -3), -0.4, 0.3);
-  world.add(ps2);
+  placeM('midband-pallets-b', ps2, 17, -3, -0.4, 0.3);
   // curier hand-off: parked van + waving worker
   const cv = makeVan({});
-  surfacePlace(cv, dirFromLatLon(22, -10), Math.PI * 0.35, 0.3);
-  world.add(cv);
+  placeM('courier-van', cv, 22, -10, Math.PI * 0.35, 0.3);
   const cw = makeWorker({ pose: 'wave' });
-  surfacePlace(cw, dirFromLatLon(20.5, -14), Math.PI * 1.2, 0.3);
-  world.add(cw);
+  placeM('courier-worker', cw, 20.5, -14, Math.PI * 1.2, 0.3);
   const rk = makeRack(3, 3);
   rk.scale.setScalar(0.75);
-  surfacePlace(rk, dirFromLatLon(28, -38), 0.9, 0.3);
-  world.add(rk);
+  placeM('parcel-rack', rk, 28, -38, 0.9, 0.3);
 }
 
 // ---------------------------------------------------------------------------
@@ -531,8 +618,7 @@ registerPoi(bill3, 'pavilion');
   const w1 = makeWorker({});
   w1.position.set(-7, 0, 7);
   port.add(w1);
-  surfacePlace(port, dirFromLatLon(31, -72), Math.PI * 0.55, 0.38);
-  world.add(port);
+  placeM('port', port, 31, -72, Math.PI * 0.55, 0.38, 'port');
   registerPoi(port, 'port');
 
   const shipRoot = new THREE.Group();
@@ -598,8 +684,7 @@ registerPoi(bill3, 'pavilion');
   ps.scale.setScalar(0.75);
   ps.position.set(5, 0, 4.5);
   yard.add(ps);
-  surfacePlace(yard, dirFromLatLon(22, 47), 0, 0.38);
-  world.add(yard);
+  placeM('rail-yard-north', yard, 22, 47, 0, 0.38, 'rail');
   registerPoi(yard, 'rail');
 }
 
@@ -609,17 +694,14 @@ registerPoi(bill3, 'pavilion');
 {
   const wh = makeWarehouse();
   wh.scale.setScalar(0.6);
-  surfacePlace(wh, dirFromLatLon(-50, 95), Math.PI, 0.36);
-  world.add(wh);
+  placeM('warehouse-south', wh, -50, 95, Math.PI, 0.36);
   registerPoi(wh, 'depot');
   const fk = makeForklift({ carrying: true });
   fk.scale.setScalar(0.85);
-  surfacePlace(fk, dirFromLatLon(-45, 98), Math.PI * 0.8, 0.36);
-  world.add(fk);
+  placeM('warehouse-forklift', fk, -45, 98, Math.PI * 0.8, 0.36);
   const ps = makePalletStack();
   ps.scale.setScalar(0.75);
-  surfacePlace(ps, dirFromLatLon(-43, 102), Math.PI, 0.36);
-  world.add(ps);
+  placeM('warehouse-pallets', ps, -43, 102, Math.PI, 0.36);
 
   const yardS = new THREE.Group();
   const stacksS = makeContainerYardStacks([C.puroBlue, C.puroBlueDark]);
@@ -628,15 +710,13 @@ registerPoi(bill3, 'pavilion');
   const wS = makeWorker({});
   wS.position.set(-6, 0, 2);
   yardS.add(wS);
-  surfacePlace(yardS, dirFromLatLon(-52, -50), Math.PI, 0.36);
-  world.add(yardS);
+  placeM('rail-yard-south', yardS, -52, -50, Math.PI, 0.36);
   registerPoi(yardS, 'rail');
 
   const billS = makeBillboard(['ONE CONNECTED', 'NETWORK']);
   billS.scale.setScalar(0.9);
-  surfacePlace(billS, dirFromLatLon(-46, 176.5), Math.PI, 0.34);
-  world.add(billS);
-  registerPoi(billS, 'impact');
+  placeM('billboard-network', billS, -46, 176.5, Math.PI, 0.34);
+  registerPoi(billS, 'stratis');
 
   // south pole staging area
   const pole = new THREE.Group();
@@ -651,8 +731,7 @@ registerPoi(bill3, 'pavilion');
   const wP = makeWorker({ pose: 'carry' });
   wP.position.set(3, 0, 5);
   pole.add(wP);
-  surfacePlace(pole, dirFromLatLon(-80, 60), 0.4, 0.34);
-  world.add(pole);
+  placeM('pole-staging', pole, -80, 60, 0.4, 0.34);
   registerPoi(pole, 'rail');
 }
 
@@ -681,6 +760,33 @@ makeRoad(world, ringEq, { width: 5.0, altFn: bridgeAlt });
 
 const ringS = new CirclePath(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(125), 0.52);
 makeRoad(world, ringS, { width: 5.0, altFn: coastalAlt });
+
+// --- Act II: certainty at the border — straddles the equator highway where
+// it runs at grade, so the moving trucks drive straight through the plaza
+{
+  const border = makeBorderCrossing();
+  let tB = 0, bestB = 1e9;
+  const targetDir = dirFromLatLon(0, -28);
+  const _bd = new THREE.Vector3();
+  for (let i = 0; i < 2400; i++) {
+    const t = i / 2400;
+    ringEq.dir(t, _bd);
+    const a = _bd.angleTo(targetDir);
+    if (a < bestB) { bestB = a; tB = t; }
+  }
+  pathPlace(border, ringEq, tB);
+  world.add(border);
+  registerPoi(border, 'border');
+  registerRemovable('border-crossing', border); // position locked to the road, but removable
+  const beam = border.userData.scanBeam;
+  const fastLane = border.userData.fastLane;
+  animators.push({
+    update(dt, time) {
+      beam.material.opacity = 0.22 + Math.abs(Math.sin(time * 2.6)) * 0.3;
+      fastLane.material.opacity = 0.24 + Math.sin(time * 1.8) * 0.1;
+    },
+  });
+}
 
 // connector avenue — a great circle that crosses every ring road at grade,
 // tying the whole network together
@@ -953,6 +1059,7 @@ function rboxLike(w, h, d, material) {
   const crossings = [ring0, ring1, ringEq, ringS, connA, railN, railS];
   const _ld = new THREE.Vector3();
   let flip = 1;
+  let lampN = 0;
   for (const [path, w, altFn] of lampRings) {
     const count = Math.floor(path.length / 15);
     for (let i = 0; i < count; i++) {
@@ -968,16 +1075,19 @@ function rboxLike(w, h, d, material) {
       wrap.add(lamp);
       pathPlace(wrap, path, t, alt - path.alt);
       world.add(wrap);
+      registerRemovable(`lamp-${String(++lampN).padStart(3, '0')}`, wrap);
       flip = -flip;
     }
   }
 }
 
 // benches around the HQ plaza and pavilion
-for (const [lat, lon, ry] of [[77, 20, -0.4], [75.5, -25, 0.9], [76, 115, 2.2], [24, 13, 0.5], [23.5, 28, -2.4]]) {
-  const bench = makeBench();
-  surfacePlace(bench, dirFromLatLon(lat, lon), ry, lat > 50 ? 0.32 : 0.4);
-  world.add(bench);
+{
+  let bn = 0;
+  for (const [lat, lon, ry] of [[77, 20, -0.4], [75.5, -25, 0.9], [76, 115, 2.2], [24, 13, 0.5], [23.5, 28, -2.4]]) {
+    const bench = makeBench();
+    placeSmall(`bench-${++bn}`, bench, lat, lon, ry, lat > 50 ? 0.32 : 0.4);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1114,23 +1224,40 @@ world.add(cloudsGroup);
     { dir: OCEAN_DIR, ang: OCEAN.base + OCEAN.amp + 0.07 },
     { dir: dirFromLatLon(-68, -25), ang: 0.16 },
     { dir: dirFromLatLon(56, -18), ang: 0.13 },
+    { dir: dirFromLatLon(0, -28), ang: 0.4 },      // border plaza
+    { dir: dirFromLatLon(77.5, -135), ang: 0.2 },  // monolith gateway
+    { dir: dirFromLatLon(25.5, -3.5), ang: 0.1 },  // PUSH office pins
+    { dir: dirFromLatLon(11.5, 97), ang: 0.1 },
+    { dir: dirFromLatLon(-24.5, 55.5), ang: 0.1 },
+    { dir: dirFromLatLon(-17.5, 163), ang: 0.1 },
     ...PLATES.map((p) => ({ dir: dirFromLatLon(p.lat, p.lon), ang: p.r + 0.05 })),
     ...NEIGHBOURHOODS.map((n) => ({ dir: dirFromLatLon(n.lat, n.lon), ang: 0.17 })),
   ];
   const rings = [ring0, ring1, ringEq, ringS, railN, railS, connA, hwy, hwyS];
+  // deterministic scatter (seeded PRNG) — every tree keeps the same identity
+  // between reloads, so individual trees can be moved/removed in the editor
+  let seed = 1337;
+  const rand = () => {
+    seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
   let placed = 0, guard = 0;
   while (placed < 85 && guard < 900) {
     guard++;
-    const lat = -82 + Math.random() * 164;
-    const lon = -180 + Math.random() * 360;
+    const lat = -82 + rand() * 164;
+    const lon = -180 + rand() * 360;
     const d = dirFromLatLon(lat, lon);
+    const type = Math.floor(rand() * 3);
+    const scale = 0.85 + rand() * 1.0;
+    const ry = rand() * Math.PI * 2;
     if (exclude.some((e) => d.angleTo(e.dir) < e.ang)) continue;
     const nearRing = rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.08);
     if (nearRing) continue;
-    const t = makeTree(Math.floor(Math.random() * 3), 0.85 + Math.random() * 1.0);
-    surfacePlace(t, d, Math.random() * Math.PI * 2, 0.12);
-    world.add(t);
+    const t = makeTree(type, scale);
     placed++;
+    placeSmall(`tree-${String(placed).padStart(2, '0')}`, t, lat, lon, ry, 0.12);
   }
 }
 
@@ -1139,7 +1266,8 @@ world.add(cloudsGroup);
 // ---------------------------------------------------------------------------
 const pins = [];
 const _Y = new THREE.Vector3(0, 1, 0);
-for (const poi of POIS) {
+for (const poi of [...POIS, ...EXTRAS]) {
+  if (poi.pin === false) continue;
   const pin = makePin(poi);
   pin.userData.noWalk = true;
   pin.scale.setScalar(0.85);
@@ -1156,6 +1284,33 @@ rig.saveHome();
 
 // first-person walk mode (WASD + mouse look at ground level)
 const walk = new WalkMode({ camera, world, dom: renderer.domElement });
+
+// ---------------------------------------------------------------------------
+// Saved layout overrides + the layout editor (open with ?edit). When a story
+// element moves, its tour stop, camera target and pin follow it.
+// ---------------------------------------------------------------------------
+const syncPoiToMovable = (m) => {
+  if (!m.poiId) return;
+  const poi = findPoi(m.poiId);
+  if (!poi) return;
+  poi.lat = m.lat;
+  poi.lon = m.lon;
+  const pin = pins.find((p) => p.userData.poi === poi);
+  if (pin) pin.userData.dir = poiDir(poi);
+};
+applyLayout(MOVABLES, BAKED_LAYOUT, syncPoiToMovable); // baked into the bundle
+applyLayoutOverrides(MOVABLES, syncPoiToMovable);      // this browser's newer tweaks
+// in dev the layout file on disk can be newer than the bundled import (the
+// watcher ignores it to avoid reload loops), so pull the live copy too
+fetch('/__layout')
+  .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('json') ? r.json() : null))
+  .then((live) => { if (live) applyLayout(MOVABLES, live, syncPoiToMovable); })
+  .catch(() => {});
+const editing = initEditor({
+  dom: renderer.domElement, camera, world,
+  movables: MOVABLES, animators, onMoved: syncPoiToMovable,
+});
+window.__movables = MOVABLES; // debug/console access
 
 // ---------------------------------------------------------------------------
 // Custom controller — object rotation (left-drag), camera pan (right-drag),
@@ -1207,12 +1362,117 @@ dom.addEventListener('wheel', (e) => {
   camera.position.copy(camFocus).addScaledVector(dir.normalize(), dist);
 }, { passive: false });
 
+// deck-style animated intro; when it ends the camera starts high above the
+// haze and dives home through a field of clouds that sweep past and part
+let cloudDive = null;
+function spawnCloudDive(startDir) {
+  if (cloudDive) {
+    scene.remove(cloudDive.group);
+    cloudDive.done = true;
+  }
+  const group = new THREE.Group();
+  // unlit, pure-white, and faded per-cloud by camera proximity — close clouds
+  // dissolve into a soft whiteout instead of passing through as hard polygons
+  const baseM = new THREE.MeshBasicMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.94, depthWrite: false, fog: false,
+  });
+  const from = startDir.clone().multiplyScalar(540);
+  const to = rig.homePos.clone().setLength(300);
+  const axis = to.clone().sub(from).normalize();
+  const ref = Math.abs(axis.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+  const u = new THREE.Vector3().crossVectors(axis, ref).normalize();
+  const v = new THREE.Vector3().crossVectors(axis, u).normalize();
+  const puffGeo = new THREE.IcosahedronGeometry(1, 2);
+  for (let i = 0; i < 26; i++) {
+    const t = i / 25;
+    const centre = from.clone().lerp(to, t);
+    // clouds hug the flight path only at the very start (they whip past in the
+    // first second); everything deeper drifts wide so the world parts out of them
+    const near = t < 0.22;
+    const ringR = near ? 4 + Math.random() * 9 : 24 + Math.random() * (14 + t * 55);
+    const a = Math.random() * Math.PI * 2;
+    centre.addScaledVector(u, Math.cos(a) * ringR).addScaledVector(v, Math.sin(a) * ringR);
+    const cloud = new THREE.Group();
+    const m = baseM.clone();
+    const n = 4 + Math.floor(Math.random() * 3);
+    for (let j = 0; j < n; j++) {
+      const p = new THREE.Mesh(puffGeo, m);
+      const s = 6 + Math.random() * 9;
+      p.scale.set(s, s * 0.55, s * 0.8);
+      p.position.set(
+        (j - (n - 1) / 2) * 7 + (Math.random() - 0.5) * 3,
+        (Math.random() - 0.5) * 3.5,
+        (Math.random() - 0.5) * 6
+      );
+      p.castShadow = false;
+      p.receiveShadow = false;
+      cloud.add(p);
+    }
+    cloud.position.copy(centre);
+    cloud.rotation.y = Math.random() * Math.PI;
+    cloud.userData.m = m;
+    cloud.userData.drift = (Math.random() - 0.5) * 0.9;
+    group.add(cloud);
+  }
+  scene.add(group);
+  const dive = { group, done: false, t: 0 };
+  cloudDive = dive;
+  animators.push({
+    update(dt) {
+      if (dive.done) return;
+      dive.t += dt;
+      const endK = dive.t > 3.4 ? Math.max(0, 1 - (dive.t - 3.4) / 1.7) : 1;
+      let anyVisible = false;
+      for (const c of group.children) {
+        c.position.addScaledVector(u, c.userData.drift * dt);
+        c.rotation.y += dt * 0.05;
+        // dissolve as the camera closes in (whiteout, not polygon pass-through)
+        const d = c.position.distanceTo(camera.position);
+        const prox = THREE.MathUtils.clamp((d - 9) / 26, 0, 1);
+        const o = 0.94 * prox * endK;
+        c.userData.m.opacity = o;
+        if (o > 0.01) anyVisible = true;
+      }
+      if (!anyVisible && dive.t > 3.4) {
+        scene.remove(group);
+        dive.done = true;
+      }
+    },
+  });
+}
+
+const intro = initIntro({
+  onDone() {
+    const startDir = dirFromLatLon(32, -60);
+    camera.position.copy(startDir).multiplyScalar(560);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(camFocus);
+    spawnCloudDive(startDir);
+    rig.flyHome(5.0);
+  },
+});
+
 const ui = setupUI({
+  onStart() {
+    if (walk.active) return false; // in walk mode, ignore
+    rig.anim = null;
+    spin.speed = 0;
+    // park the camera wide and high so the post-intro push-in has room to move
+    world.quaternion.identity();
+    camera.position.copy(dirFromLatLon(32, -60)).multiplyScalar(315);
+    camFocus.copy(rig.homeFocus);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(camFocus);
+    intro.start();
+    return true; // handled — the tour begins after the reveal
+  },
   onSelect(poi) {
     rig.flyToDir(poiDir(poi), poi.dist, {
       side: poi.side ?? 0.42,
       look: poiDir(poi).multiplyScalar(poi.lookR ?? 32),
     });
+    // story moment: the silo walls come down
+    if (poi.id === 'stratis') siloRing.trigger();
   },
   onOverview() {
     rig.flyHome();
@@ -1344,12 +1604,15 @@ function pick(e) {
     -(e.clientY / window.innerHeight) * 2 + 1
   );
   raycaster.setFromCamera(pointer, camera);
-  const hits = raycaster.intersectObjects(clickables, false);
+  const hits = raycaster.intersectObjects(clickables, false).filter((h) => {
+    for (let n = h.object; n; n = n.parent) if (n.visible === false) return false;
+    return true;
+  });
   return hits.length ? hits[0].object.userData.poi : null;
 }
 
 renderer.domElement.addEventListener('pointermove', (e) => {
-  if (walk.active) return;
+  if (walk.active || editing) return;
   const poi = pick(e);
   if (poi) {
     tooltip.textContent = poi.title;
@@ -1368,7 +1631,7 @@ renderer.domElement.addEventListener('pointerdown', (e) => {
   downPos = [e.clientX, e.clientY];
 });
 renderer.domElement.addEventListener('pointerup', (e) => {
-  if (walk.active || !downPos) return;
+  if (walk.active || editing || !downPos) return;
   const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
   downPos = null;
   if (moved > 6) return;

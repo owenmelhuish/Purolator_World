@@ -490,28 +490,28 @@ function ventGrille(w = 1.2, h = 0.7) {
 // ---------------------------------------------------------------------------
 const GREETERS = {
   STRATEGY: {
-    name: 'Jason', title: 'Chief Strategy Officer · PUSH',
-    line: "Hi, I'm Jason — Chief Strategy Officer at PUSH. I work with Purolator to turn everything this network learns into the brand's next big move.",
+    name: 'Jason', title: 'Chief Strategy & Innovation Officer · PUSH',
+    line: "Hi, I'm Jason — Chief Strategy & Innovation Officer at PUSH. The market is re-choosing carriers right now, and today's choices hold for years. My job: make sure the business that's changing hands changes into Purolator's.",
     x: 1.9, z: 2.2,
   },
   MEDIA: {
-    name: 'Darren', title: 'Director of Media · PUSH Canada',
-    line: "Hi, I'm Darren — Director of Media at PUSH in Canada. I work with Purolator to put the brand everywhere its network runs. Every screen on this floor is a live campaign.",
+    name: 'Darren', title: 'Managing Director, Media · PUSH',
+    line: "Hi, I'm Darren — I run Media at PUSH. Every screen on this floor is a live campaign, and STRATIS re-allocates budget as the signals move. That's ZeroWaste: no dollar sits idle, budgets go further.",
     x: 1.6, z: 1.6,
   },
   CREATIVE: {
-    name: 'Maya', title: 'Executive Creative Director · PUSH',
-    line: "Hi, I'm Maya — Executive Creative Director at PUSH. My team turns Purolator's delivery promise into stories people feel, shipped as reliably as the parcels.",
+    name: 'Maya', title: 'Executive Creative Director · Studio P',
+    line: "Hi, I'm Maya — I lead Studio P, PUSH's high-velocity creative studio. Live media signals tell us what to make next; what works gets amplified. We ship stories as reliably as Purolator ships parcels.",
     x: -0.9, z: 0.6,
   },
   ANALYTICS: {
-    name: 'Priya', title: 'Head of Analytics · PUSH',
-    line: "Hi, I'm Priya — Head of Analytics at PUSH. Up here we measure brand lift and delivery performance on the same dashboard, so every idea has proof behind it.",
+    name: 'Priya', title: 'Head of Analytics & Decision Science · PUSH',
+    line: "Hi, I'm Priya — Head of Analytics at PUSH. In 90 days STRATIS surfaced 189 insights no dashboard showed, and took decisions 10× faster. Up here, every idea has proof behind it.",
     x: 0.8, z: 1.6,
   },
   COLLABORATION: {
-    name: 'Kirsten', title: 'Managing Director, Client Services · PUSH',
-    line: "Hi, I'm Kirsten — Managing Director of Client Services at PUSH. This floor is where PUSH and Purolator work as one team. Grab a coffee and stay a while!",
+    name: 'Kirsten', title: 'Managing Director, Client Partnerships · PUSH',
+    line: "Hi, I'm Kirsten — Managing Director of Client Partnerships at PUSH. We integrated agency and technology ourselves, so we know exactly what bringing Purolator, Livingston and Williams to market as one feels like. Grab a coffee!",
     x: -1.3, z: 1.2,
   },
 };
@@ -797,7 +797,7 @@ export function makeHQTower() {
     const rp = seated(0); rp.position.set(1.0, y0 + 0.02, -3.05); g.add(rp);
     rp.userData.npc = {
       name: 'Alex', title: 'Front Desk · Partnership HQ',
-      line: "Welcome to Partnership HQ! I'm Alex. Take the lift at the back-left — there's someone worth meeting on every floor.",
+      line: "Welcome to Partnership HQ — one team for one bigger Purolator. I'm Alex. Take the lift at the back-left; there's someone worth meeting on every floor.",
       h: 1.8,
     };
   }
@@ -1124,6 +1124,29 @@ const CS_SLATE = 0x6b7c93;
 const CS_COOL = 0xa9b3c2;
 const CS_GREEN = 0x2f9e55;
 
+function studioPSignMaterial() {
+  const cv = document.createElement('canvas');
+  cv.width = 1024; cv.height = 160;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = '#f8fafd';
+  ctx.fillRect(0, 0, 1024, 160);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = '800 92px Inter, -apple-system, Arial, sans-serif';
+  ctx.fillStyle = '#2d5bff';
+  ctx.fillText('STUDIO', 400, 84);
+  ctx.fillStyle = '#e3172e';
+  ctx.fillText('P', 690, 84);
+  // small "by PUSH" tag
+  ctx.fillStyle = '#6b7c93';
+  ctx.font = '700 34px Inter, -apple-system, Arial, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('by PUSH', 740, 92);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshStandardMaterial({ map: tex, roughness: 0.6 });
+}
+
 function purolatorOnBlueMaterial() {
   const cv = document.createElement('canvas');
   cv.width = 768; cv.height = 96;
@@ -1242,10 +1265,10 @@ export function makeCreativeStudio() {
   g.add(rbox(1.3, 0.35, 1.0, grey1, W / 2 - 2.6, roofY + 0.55, 1.0, 0.08));
 
   // --- signage & graphics
-  // front sign panel (3.2 × 0.6 white pill, blue text)
+  // front sign panel (3.2 × 0.6 white pill, blue text + red P accent)
   const frontSign = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.66, 0.22), [
     white, white, white, white,
-    brandedMaterial({ text: 'CREATIVE STUDIO', bg: '#f8fafd', fg: '#2d5bff', w: 1024, h: 160, fontSize: 86 }),
+    studioPSignMaterial(),
     white,
   ]);
   frontSign.position.set(0, DECK + 3.75, D / 2 + 0.14);
@@ -1805,7 +1828,7 @@ export function makeDataCommand() {
   // header sign
   const sign = new THREE.Mesh(new THREE.BoxGeometry(4.4, 0.6, 0.2), [
     white, white, white, white,
-    emissiveSignMaterial('DATA COMMAND', null, { w: 640, h: 96, fontSize: 52 }),
+    emissiveSignMaterial('STRATIS', 'INTELLIGENCE CENTRE', { w: 640, h: 96, fontSize: 46 }),
     white,
   ]);
   sign.position.set(0, DECK + 3.35, D / 2 + 0.12);

@@ -1,0 +1,303 @@
+{
+  "studio-p": {
+    "lat": 55.41,
+    "lon": -40.51,
+    "heading": -45
+  },
+  "studio-van": {
+    "lat": 7.1,
+    "lon": -68.16,
+    "heading": 147.6
+  },
+  "zerowaste": {
+    "lat": -18.99,
+    "lon": 169.95,
+    "heading": -15
+  },
+  "pavilion": {
+    "lat": -50.24,
+    "lon": -150.99,
+    "heading": 0
+  },
+  "billboard-connection": {
+    "lat": 53.82,
+    "lon": 4.07,
+    "heading": 8.6
+  },
+  "transfer-yard": {
+    "lat": 16.95,
+    "lon": -141.72,
+    "heading": 28.6,
+    "removed": true
+  },
+  "rail-yard-north": {
+    "lat": 27.19,
+    "lon": 53.05,
+    "heading": 60
+  },
+  "billboard-experiential": {
+    "lat": 14.46,
+    "lon": 38.89,
+    "heading": 42.8
+  },
+  "tree-39": {
+    "lat": 31.96,
+    "lon": 65.13,
+    "heading": 84.3,
+    "removed": true
+  },
+  "tree-11": {
+    "lat": 29.74,
+    "lon": 75.78,
+    "heading": 336.3
+  },
+  "tree-46": {
+    "lat": 34.9,
+    "lon": 76.58,
+    "heading": 219.8
+  },
+  "proof-plaza": {
+    "lat": -18.88,
+    "lon": 31.65,
+    "heading": 30
+  },
+  "nbhd-offices-1": {
+    "lat": 26.05,
+    "lon": -3.3,
+    "heading": 11.5,
+    "removed": true
+  },
+  "nbhd-offices-2": {
+    "lat": 27.95,
+    "lon": 1.45,
+    "heading": -8.6,
+    "removed": true
+  },
+  "tree-08": {
+    "lat": 33.39,
+    "lon": 2.31,
+    "heading": 222.2
+  },
+  "push-toronto": {
+    "lat": 25.48,
+    "lon": -2.26,
+    "heading": 22.9,
+    "removed": true
+  },
+  "tree-75": {
+    "lat": 35.38,
+    "lon": 9.86,
+    "heading": 244.5
+  },
+  "courier-van": {
+    "lat": 22,
+    "lon": -10,
+    "heading": 63,
+    "removed": true
+  },
+  "midband-pallets-b": {
+    "lat": 27.68,
+    "lon": 2.8,
+    "heading": -22.9,
+    "removed": true
+  },
+  "nbhd-offices-3": {
+    "lat": 31.48,
+    "lon": 0.24,
+    "heading": 180
+  },
+  "tree-35": {
+    "lat": 30.74,
+    "lon": -18.86,
+    "heading": 179.3
+  },
+  "monolith-gateway": {
+    "lat": 77.5,
+    "lon": -135,
+    "heading": -22,
+    "removed": true
+  },
+  "nbhd-offices-15": {
+    "lat": -25.29,
+    "lon": 56.48,
+    "heading": -8.6,
+    "removed": true
+  },
+  "nbhd-offices-14": {
+    "lat": -22.95,
+    "lon": 55.79,
+    "heading": 20.1,
+    "removed": true
+  },
+  "pole-staging": {
+    "lat": -85.51,
+    "lon": 154.98,
+    "heading": 22.9,
+    "removed": true
+  },
+  "nbhd-offices-48": {
+    "lat": -55.99,
+    "lon": -4.94,
+    "heading": 11.5,
+    "removed": true
+  },
+  "nbhd-offices-49": {
+    "lat": -56.05,
+    "lon": 0.01,
+    "heading": -8.6,
+    "removed": true
+  },
+  "cold-chain": {
+    "lat": -79.23,
+    "lon": 125.99,
+    "heading": -855
+  },
+  "tree-09": {
+    "lat": -54.34,
+    "lon": 123.09,
+    "heading": 300.2,
+    "removed": true
+  },
+  "nbhd-suburb-57": {
+    "lat": -66.09,
+    "lon": 121.16,
+    "heading": 20.1,
+    "removed": true
+  },
+  "nbhd-suburb-58": {
+    "lat": -63.77,
+    "lon": 131.16,
+    "heading": 165.7,
+    "removed": true
+  },
+  "tree-64": {
+    "lat": -45.61,
+    "lon": 120.06,
+    "heading": 194.5,
+    "removed": true
+  },
+  "tree-54": {
+    "lat": -52.5,
+    "lon": 139.46,
+    "heading": 328.4,
+    "removed": true
+  },
+  "nbhd-suburb-53": {
+    "lat": -51.83,
+    "lon": -126.33,
+    "heading": 20.1,
+    "removed": true
+  },
+  "nbhd-suburb-54": {
+    "lat": -47.77,
+    "lon": -120.67,
+    "heading": 165.7,
+    "removed": true
+  },
+  "nbhd-offices-36": {
+    "lat": -15.05,
+    "lon": 167.27,
+    "heading": -8.6,
+    "removed": true
+  },
+  "nbhd-offices-35": {
+    "lat": -16.95,
+    "lon": 162.87,
+    "heading": 11.5,
+    "removed": true
+  },
+  "stratis-centre": {
+    "lat": 23.9,
+    "lon": -166.32,
+    "heading": 0,
+    "removed": true
+  },
+  "tree-02": {
+    "lat": 21.88,
+    "lon": -156.3,
+    "heading": 300.1,
+    "removed": true
+  },
+  "transfer-van": {
+    "lat": 13.05,
+    "lon": -161.6,
+    "heading": 108,
+    "removed": true
+  },
+  "media-lab": {
+    "lat": 19.52,
+    "lon": -179.11,
+    "heading": 0
+  },
+  "nbhd-fuel-13": {
+    "lat": -19.95,
+    "lon": 41,
+    "heading": 8.6,
+    "removed": true
+  },
+  "nbhd-retail-10": {
+    "lat": -19.19,
+    "lon": 21.08,
+    "heading": 5.7,
+    "removed": true
+  },
+  "nbhd-suburb-8": {
+    "lat": -24.18,
+    "lon": 10.53,
+    "heading": 0,
+    "removed": true
+  },
+  "nbhd-suburb-7": {
+    "lat": -20.77,
+    "lon": 9.35,
+    "heading": 165.7,
+    "removed": true
+  },
+  "nbhd-suburb-6": {
+    "lat": -23.09,
+    "lon": 4.79,
+    "heading": 20.1,
+    "removed": true
+  },
+  "port": {
+    "lat": 22.85,
+    "lon": -139.27,
+    "heading": 39
+  },
+  "warehouse-south": {
+    "lat": -50,
+    "lon": 95,
+    "heading": 180,
+    "removed": true
+  },
+  "nbhd-retail-28": {
+    "lat": 12.32,
+    "lon": 115,
+    "heading": 5.7,
+    "removed": true
+  },
+  "nbhd-suburb-30": {
+    "lat": 14.23,
+    "lon": 127.15,
+    "heading": 20.1,
+    "removed": true
+  },
+  "nbhd-suburb-31": {
+    "lat": 16.29,
+    "lon": 132.47,
+    "heading": 165.7,
+    "removed": true
+  },
+  "nbhd-offices-24": {
+    "lat": 9.63,
+    "lon": 100.9,
+    "heading": -8.6,
+    "removed": true
+  },
+  "nbhd-offices-23": {
+    "lat": 8.86,
+    "lon": 94.73,
+    "heading": 11.5,
+    "removed": true
+  }
+}

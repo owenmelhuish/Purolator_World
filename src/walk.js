@@ -83,7 +83,7 @@ export class WalkMode {
   _collectWalkables() {
     const list = [];
     const visit = (o) => {
-      if (o.userData.noWalk) return;
+      if (o.userData.noWalk || o.visible === false) return;
       if (o.isMesh && !o.isSkinnedMesh) {
         const m = o.material;
         if (!(m && m.transparent && (m.opacity ?? 1) < 0.9)) list.push(o);
