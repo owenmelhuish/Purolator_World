@@ -296,27 +296,56 @@ export function makeGoose(scale = 1, { honking = false } = {}) {
 /** Bernard's plaza — plaid ground, the statue, an intimidated shop owner. */
 export function makeGoosePlaza() {
   const g = new THREE.Group();
-  // plaid plaza disc
+  // cream outer walk + plaid plaza disc with gold edge banding
+  g.add(cyl(9.4, 9.6, 0.22, mat(CI.cream, { roughness: 0.85 }), 0, 0.11, 0, 48));
   const plaid = new THREE.Mesh(
-    new THREE.CylinderGeometry(7.4, 7.6, 0.34, 44),
+    new THREE.CylinderGeometry(8.0, 8.2, 0.34, 48),
     [canvasMat(1024, 1024, (ctx, W, H) => drawPlaid(ctx, W, H, 84), { roughness: 0.85 }),
       canvasMat(1024, 1024, (ctx, W, H) => drawPlaid(ctx, W, H, 84), { roughness: 0.85 }),
       canvasMat(1024, 1024, (ctx, W, H) => drawPlaid(ctx, W, H, 84), { roughness: 0.85 })]
   );
-  plaid.position.y = 0.17;
+  plaid.position.y = 0.3;
   plaid.receiveShadow = true;
   g.add(plaid);
-  // plinth + Bernard, honking
-  g.add(cyl(2.0, 2.3, 0.9, mat(CI.redDark, { roughness: 0.7 }), 0, 0.79, 0, 24));
-  const ring = new THREE.Mesh(new THREE.TorusGeometry(2.15, 0.07, 8, 40), mat(0xd9b64c, { roughness: 0.4 }));
-  ring.rotation.x = Math.PI / 2;
-  ring.position.y = 1.26;
-  g.add(ring);
-  const bernard = makeGoose(2.4, { honking: true });
-  bernard.position.y = 1.24;
+  const edgeRing = new THREE.Mesh(new THREE.TorusGeometry(8.05, 0.09, 8, 64), mat(0xd9b64c, { roughness: 0.45 }));
+  edgeRing.rotation.x = Math.PI / 2;
+  edgeRing.position.y = 0.47;
+  g.add(edgeRing);
+  // Bernard's grand round podium — tiered red drum with gold bands
+  g.add(cyl(3.1, 3.4, 0.5, mat(CI.redDark, { roughness: 0.6 }), 0, 0.72, 0, 32));
+  g.add(cyl(2.5, 2.8, 0.85, mat(CI.red, { roughness: 0.45 }), 0, 1.35, 0, 32));
+  for (const [ry, rr] of [[1.0, 2.85], [1.78, 2.55]]) {
+    const band = new THREE.Mesh(new THREE.TorusGeometry(rr, 0.07, 8, 48), mat(0xd9b64c, { roughness: 0.4 }));
+    band.rotation.x = Math.PI / 2;
+    band.position.y = ry;
+    g.add(band);
+  }
+  const bernard = makeGoose(2.7, { honking: true });
+  bernard.position.y = 1.78;
   bernard.rotation.y = -0.5;
   g.add(bernard);
   g.userData.bernard = bernard;
+  // picnic blanket + solar plaque (the plaid life)
+  const blanket = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.06, 1.7),
+    canvasMat(256, 200, (ctx, W, H) => drawPlaid(ctx, W, H, 40), { roughness: 0.9 }));
+  blanket.position.set(-4.6, 0.5, 2.6);
+  blanket.rotation.y = 0.4;
+  g.add(blanket);
+  const solar = new THREE.Group();
+  const panel = box(1.5, 0.08, 1.05, mat(0x13293d, { roughness: 0.35, metalness: 0.4 }), 0, 0.62, 0);
+  panel.rotation.x = -0.5;
+  solar.add(panel);
+  solar.add(box(0.14, 0.5, 0.14, mat(CI.snowshoe), 0, 0.25, 0));
+  solar.position.set(-3.4, 0.47, -3.6);
+  solar.rotation.y = 0.7;
+  g.add(solar);
+  // wandering geese on the plaid
+  for (const [gx, gz, ry] of [[3.4, 3.2, -1.1], [-5.6, -1.2, 0.7], [1.8, -4.6, 2.2]]) {
+    const wg = makeGoose(0.75);
+    wg.position.set(gx, 0.47, gz);
+    wg.rotation.y = ry;
+    g.add(wg);
+  }
   // plaque
   const plaque = new THREE.Mesh(
     new THREE.BoxGeometry(2.6, 1.0, 0.14),
@@ -339,36 +368,72 @@ export function makeGoosePlaza() {
       }, { emissive: 0xffffff, emissiveIntensity: 0.15 }),
       mat(CI.maroon)]
   );
-  plaque.position.set(0, 1.1, 2.6);
+  plaque.position.set(0, 1.15, 4.2);
   plaque.rotation.x = -0.2;
   g.add(plaque);
   // a small-business owner, gently terrified
   const owner = makePerson({});
-  owner.position.set(3.2, 0.34, 1.6);
+  owner.position.set(3.6, 0.47, 2.2);
   owner.rotation.y = -2.4;
   g.add(owner);
-  // pizza shop stand (StraightFirePizza.ca cue)
+  // StraightFirePizza.ca kiosk — red marquee stand with awning + counter
   const stand = new THREE.Group();
-  stand.add(rbox(2.4, 1.9, 1.8, mat(CI.cream, { roughness: 0.8 }), 0, 0.95, 0, 0.08));
-  stand.add(box(2.6, 0.3, 2.0, mat(CI.red, { roughness: 0.6 }), 0, 2.0, 0));
+  stand.add(rbox(3.0, 2.3, 2.2, mat(CI.red, { roughness: 0.55 }), 0, 1.15, 0, 0.08));
+  // serving window with warm interior + counter person
+  stand.add(box(1.9, 1.05, 0.1, mat(CI.maroon, { roughness: 0.7 }), 0, 1.35, 1.08));
+  const windowGlow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 0.9), new THREE.MeshStandardMaterial({
+    color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.7, roughness: 0.5,
+  }));
+  windowGlow.position.set(0, 1.35, 1.14);
+  stand.add(windowGlow);
+  const cook = makePerson({});
+  cook.scale.setScalar(0.85);
+  cook.position.set(0, 0.5, 0.4);
+  stand.add(cook);
+  stand.add(box(2.2, 0.12, 0.5, mat(CI.cream, { roughness: 0.7 }), 0, 0.95, 1.25));
+  // gold-trimmed marquee PIZZA sign
+  const marquee = new THREE.Mesh(
+    new THREE.BoxGeometry(2.5, 0.72, 0.3),
+    [mat(0xd9b64c), mat(0xd9b64c), mat(0xd9b64c), mat(0xd9b64c),
+      canvasMat(480, 140, (ctx, W, H) => {
+        ctx.fillStyle = '#7e0e27';
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#d9b64c';
+        ctx.lineWidth = 8;
+        ctx.strokeRect(6, 6, W - 12, H - 12);
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.font = '900 74px Montserrat, Inter, Arial, sans-serif';
+        ctx.fillText('PIZZA', W / 2, 96);
+      }, { emissive: 0xffffff, emissiveIntensity: 0.35 }),
+      mat(0xd9b64c)]
+  );
+  marquee.position.set(0, 2.75, 0.4);
+  marquee.castShadow = true;
+  stand.add(marquee);
+  // striped awning
+  const awning = box(2.7, 0.08, 1.0, mat(CI.redBright, { roughness: 0.7 }), 0, 2.1, 1.45);
+  awning.rotation.x = 0.25;
+  stand.add(awning);
   const shopSign = new THREE.Mesh(
-    new THREE.BoxGeometry(2.3, 0.55, 0.1),
+    new THREE.BoxGeometry(2.4, 0.42, 0.1),
     [mat(CI.white), mat(CI.white), mat(CI.white), mat(CI.white),
-      canvasMat(460, 110, (ctx, W, H) => {
+      canvasMat(460, 84, (ctx, W, H) => {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, W, H);
         ctx.fillStyle = '#aa1e3a';
         ctx.textAlign = 'center';
-        ctx.font = '800 40px Inter, Arial, sans-serif';
-        ctx.fillText('StraightFirePizza.ca', W / 2, 68);
+        ctx.font = '800 36px Inter, Arial, sans-serif';
+        ctx.fillText('StraightFirePizza.ca', W / 2, 56);
       }, { emissive: 0xffffff, emissiveIntensity: 0.25 }),
       mat(CI.white)]
   );
-  shopSign.position.set(0, 2.5, 0.1);
+  shopSign.position.set(0, 2.32, 1.0);
   stand.add(shopSign);
-  stand.position.set(4.4, 0.34, -0.6);
+  stand.position.set(5.6, 0.47, -1.2);
   stand.rotation.y = -0.9;
   g.add(stand);
+  // bench + fall maple at the rim
   return g;
 }
 
@@ -377,14 +442,15 @@ export function makeGoosePlaza() {
 /** Giant .CA letters built from boxes, red dot, on a stone base. */
 export function makeDotCaMonument() {
   const g = new THREE.Group();
-  const redM = mat(CI.red, { roughness: 0.45 });
+  const redM = mat(CI.red, { roughness: 0.3 });
   const t = 0.85; // stroke thickness
   const H = 5.2, D = 0.9;
-  // base
-  g.add(rbox(13, 0.7, 4.6, mat(CI.cream, { roughness: 0.85 }), 0, 0.35, 0, 0.12));
+  // stepped plaza base
+  g.add(rbox(15.5, 0.4, 6.4, mat(CI.cream, { roughness: 0.85 }), 0, 0.2, 0, 0.1));
+  g.add(rbox(13, 0.5, 4.6, mat(0xf0e7d2, { roughness: 0.85 }), 0, 0.55, 0, 0.12));
   // the dot
-  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.72, 18, 14), mat(CI.redBright, { roughness: 0.35 }));
-  dot.position.set(-4.6, 0.7 + 0.72, 0);
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.78, 18, 14), mat(CI.redBright, { roughness: 0.25 }));
+  dot.position.set(-4.6, 0.7 + 0.78, 0);
   dot.castShadow = true;
   g.add(dot);
   // C — from box segments (open right)
@@ -413,95 +479,261 @@ export function makeDotCaMonument() {
   return g;
 }
 
-/** CIRA HQ — Ottawa-flavoured brick block with the connected-c tile up top. */
+/** CIRA HQ — grand Parliament-style headquarters: red brick, cream stone,
+ *  pale verdigris mansard roofs, dormers, central pavilion with pediment. */
 export function makeCiraHQ() {
   const g = new THREE.Group();
-  const brick = mat(0xa9705a, { roughness: 0.85 });
-  const stone = mat(CI.cream, { roughness: 0.8 });
-  const W = 9.5, H = 6.4, D = 6.5;
-  g.add(rbox(W, H, D, brick, 0, 0.5 + H / 2, 0, 0.1));
-  // stone corners + cornice
-  for (const sx of [-W / 2 + 0.3, W / 2 - 0.3]) {
-    g.add(box(0.65, H, 0.65, stone, sx, 0.5 + H / 2, D / 2 - 0.3));
-    g.add(box(0.65, H, 0.65, stone, sx, 0.5 + H / 2, -D / 2 + 0.3));
-  }
-  g.add(box(W + 0.5, 0.5, D + 0.5, stone, 0, 0.5 + H + 0.25, 0));
-  // windows
-  const glass = mat(C.glass, { roughness: 0.25, metalness: 0.35 });
-  for (let fy = 1.6; fy < H - 0.4; fy += 1.5) {
-    for (let fx = -W / 2 + 1.5; fx <= W / 2 - 1.5; fx += 1.6) {
-      g.add(box(0.9, 1.0, 0.06, glass, fx, 0.5 + fy, D / 2 + 0.03));
+  const stone = mat(0xe9dfc8, { roughness: 0.8 });
+  const copper = mat(0x9db5a0, { roughness: 0.65 });
+  const copperDark = mat(0x8aa38e, { roughness: 0.65 });
+  const glow = new THREE.MeshStandardMaterial({
+    color: 0xffe0b0, emissive: 0xffc27a, emissiveIntensity: 0.6, roughness: 0.4,
+  });
+
+  /** red-brick facade with arched cream windows, most lit warm. */
+  const facade = (w, floors) => canvasMat(Math.round(w * 56), floors * 84, (ctx, W, H) => {
+    ctx.fillStyle = '#a04a38';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(122,48,36,0.4)';
+    ctx.lineWidth = 2;
+    for (let y = 0; y < H; y += 11) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    for (let f = 0; f < floors; f++) {
+      const yy = f * 84;
+      ctx.fillStyle = '#e9dfc8';
+      ctx.fillRect(0, yy + 76, W, 6);
+      for (let x = 20; x + 38 < W; x += 58) {
+        ctx.fillStyle = '#e9dfc8';
+        ctx.beginPath();
+        ctx.moveTo(x - 4, yy + 70);
+        ctx.lineTo(x - 4, yy + 26);
+        ctx.arc(x + 15, yy + 26, 19, Math.PI, 0);
+        ctx.lineTo(x + 34, yy + 70);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = Math.random() < 0.72 ? '#f3b566' : '#5a6a80';
+        ctx.beginPath();
+        ctx.moveTo(x, yy + 68);
+        ctx.lineTo(x, yy + 28);
+        ctx.arc(x + 15, yy + 28, 15, Math.PI, 0);
+        ctx.lineTo(x + 30, yy + 68);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = 'rgba(80,40,30,0.5)';
+        ctx.fillRect(x + 13, yy + 13, 3, 55);
+      }
     }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.32 });
+
+  /** 4-sided mansard frustum sized to a rectangular footprint. */
+  const mansard = (w, d, h, material) => {
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 4.42, h, 4), material);
+    m.rotation.y = Math.PI / 4;
+    m.scale.set(w / 6.25, 1, d / 6.25);
+    m.castShadow = true;
+    return m;
+  };
+  const dormer = (scale = 1) => {
+    const dm = new THREE.Group();
+    dm.add(box(0.62 * scale, 0.62 * scale, 0.42 * scale, stone, 0, 0, 0));
+    const cap = new THREE.Mesh(new THREE.ConeGeometry(0.48 * scale, 0.44 * scale, 4), copperDark);
+    cap.rotation.y = Math.PI / 4;
+    cap.position.y = 0.53 * scale;
+    dm.add(cap);
+    const win = new THREE.Mesh(new THREE.PlaneGeometry(0.3 * scale, 0.34 * scale), glow);
+    win.position.set(0, -0.02, 0.22 * scale);
+    dm.add(win);
+    return dm;
+  };
+
+  // stone terrace + front steps
+  g.add(rbox(19, 0.5, 11, stone, 0, 0.25, 0, 0.1));
+  for (let s = 0; s < 3; s++) {
+    g.add(box(7 + s * 1.2, 0.17, 0.7, stone, 0, 0.42 - s * 0.15, 5.6 + s * 0.55));
   }
-  // copper mansard roof (Ottawa cue)
-  const roof = new THREE.Mesh(new THREE.CylinderGeometry(3.2, 4.6, 2.0, 4), mat(0x3f7f70, { roughness: 0.6 }));
-  roof.rotation.y = Math.PI / 4;
-  roof.position.y = 0.5 + H + 1.5;
-  roof.scale.set(W / 6.4, 1, D / 6.4);
-  roof.castShadow = true;
-  g.add(roof);
-  // cira tile sign on the roof
-  const tile = new THREE.Mesh(
-    new THREE.BoxGeometry(5.5, 1.4, 0.3),
-    [stone, stone, stone, stone,
-      canvasMat(768, 196, (ctx, Wc, Hc) => {
-        ctx.fillStyle = '#faf6ec';
-        ctx.fillRect(0, 0, Wc, Hc);
-        ciraLockup(ctx, 250, Hc / 2, 1.5);
-        ctx.fillStyle = '#615750';
-        ctx.font = '600 30px Inter, Arial, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('.CA registry · Ottawa', 400, Hc / 2 + 12);
-      }, { emissive: 0xffffff, emissiveIntensity: 0.22 }),
-      stone]
-  );
-  tile.position.set(0, 0.5 + H + 3.1, 0.3);
-  tile.castShadow = true;
-  g.add(tile);
-  // entrance
-  g.add(box(2.4, 2.2, 0.5, stone, 0, 0.5 + 1.1, D / 2 + 0.2));
-  g.add(box(1.4, 1.8, 0.2, mat(CI.red, { roughness: 0.5 }), 0, 0.5 + 0.9, D / 2 + 0.42));
+
+  // main block — three storeys
+  const W = 15, D = 7, FL = 3, fh = 1.42;
+  const H = FL * fh;
+  const f = facade(W, FL);
+  const sMat = facade(D, FL);
+  const main = new THREE.Mesh(new THREE.BoxGeometry(W, H, D), [sMat, sMat, stone, stone, f, f]);
+  main.position.y = 0.5 + H / 2;
+  main.castShadow = true;
+  g.add(main);
+  // quoins + cornice
+  for (const sx of [-W / 2 + 0.2, W / 2 - 0.2]) {
+    for (const sz of [-D / 2 + 0.2, D / 2 - 0.2]) g.add(box(0.45, H, 0.45, stone, sx, 0.5 + H / 2, sz));
+  }
+  g.add(box(W + 0.4, 0.3, D + 0.4, stone, 0, 0.5 + H + 0.14, 0));
+
+  // main mansard + iron cresting + dormers
+  const roofMain = mansard(W + 0.6, D + 0.6, 1.9, copper);
+  roofMain.position.y = 0.5 + H + 0.3 + 0.95;
+  g.add(roofMain);
+  g.add(box(W * 0.62, 0.09, D * 0.5, copperDark, 0, 0.5 + H + 2.3, 0));
+  for (const dx of [-5.2, -2.6, 2.6, 5.2]) {
+    const dm = dormer();
+    dm.position.set(dx, 0.5 + H + 1.15, D / 2 + 0.62);
+    g.add(dm);
+  }
+
+  // end pavilions with steeper caps + finials
+  for (const px of [-(W / 2 - 1.5), W / 2 - 1.5]) {
+    const pw = 3.6, pd = D + 1.2, ph = H + 0.7;
+    const pf = facade(pw, FL);
+    const ps = facade(pd, FL);
+    const pav = new THREE.Mesh(new THREE.BoxGeometry(pw, ph, pd), [ps, ps, stone, stone, pf, pf]);
+    pav.position.set(px, 0.5 + ph / 2, 0);
+    pav.castShadow = true;
+    g.add(pav);
+    g.add(box(pw + 0.3, 0.26, pd + 0.3, stone, px, 0.5 + ph + 0.12, 0));
+    const cap = mansard(pw + 0.5, pd + 0.5, 1.7, copperDark);
+    cap.position.set(px, 0.5 + ph + 0.26 + 0.85, 0);
+    g.add(cap);
+    g.add(cyl(0.04, 0.04, 0.75, mat(0xd9b64c, { roughness: 0.4 }), px, 0.5 + ph + 1.85, 0, 6));
+    const dm = dormer(0.9);
+    dm.position.set(px, 0.5 + ph + 0.75, pd / 2 + 0.5);
+    g.add(dm);
+  }
+
+  // central pavilion: projecting entrance bay + pediment + columns + tower cap
+  {
+    const cw = 4.6, cd = 1.5, ch = H + 1.1;
+    const cf = facade(cw, FL);
+    const bay = new THREE.Mesh(new THREE.BoxGeometry(cw, ch, cd), [stone, stone, stone, stone, cf, cf]);
+    bay.position.set(0, 0.5 + ch / 2, D / 2 + cd / 2);
+    bay.castShadow = true;
+    g.add(bay);
+    // porch columns + entablature
+    for (const cx of [-1.5, -0.5, 0.5, 1.5]) {
+      g.add(cyl(0.14, 0.16, 2.0, stone, cx, 0.5 + 1.0, D / 2 + cd + 0.55, 10));
+    }
+    g.add(box(cw - 0.4, 0.35, 1.1, stone, 0, 0.5 + 2.15, D / 2 + cd + 0.5));
+    // pediment — extruded triangle
+    const tri = new THREE.Shape();
+    tri.moveTo(-cw / 2 + 0.2, 0); tri.lineTo(cw / 2 - 0.2, 0); tri.lineTo(0, 1.0); tri.closePath();
+    const ped = new THREE.Mesh(new THREE.ExtrudeGeometry(tri, { depth: 1.1, bevelEnabled: false }), stone);
+    ped.position.set(0, 0.5 + 2.32, D / 2 + cd - 0.05);
+    ped.castShadow = true;
+    g.add(ped);
+    // arched doorway
+    g.add(box(1.6, 2.0, 0.14, stone, 0, 0.5 + 1.0, D / 2 + cd + 0.02));
+    const door = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.7), glow);
+    door.position.set(0, 0.5 + 0.9, D / 2 + cd + 0.1);
+    g.add(door);
+    // tower cap: steep mansard + white cira sign panel + gold finial
+    const cap = mansard(cw + 0.4, cd + 2.6, 1.9, copperDark);
+    cap.position.set(0, 0.5 + ch + 0.95, D / 2 - 0.6);
+    g.add(cap);
+    const sign = new THREE.Mesh(
+      new THREE.BoxGeometry(3.6, 1.1, 0.24),
+      [stone, stone, stone, stone,
+        canvasMat(640, 196, (ctx, Wc, Hc) => {
+          ctx.fillStyle = '#faf6ec';
+          ctx.fillRect(0, 0, Wc, Hc);
+          ciraLockup(ctx, 200, Hc / 2, 1.35);
+          ctx.fillStyle = '#615750';
+          ctx.font = '600 30px Inter, Arial, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillText('Ottawa · .CA', 330, Hc / 2 + 12);
+        }, { emissive: 0xffffff, emissiveIntensity: 0.22 }),
+        stone]
+    );
+    sign.position.set(0, 0.5 + ch + 2.35, D / 2 - 0.6);
+    sign.castShadow = true;
+    g.add(sign);
+    g.add(cyl(0.04, 0.04, 0.7, mat(0xd9b64c, { roughness: 0.4 }), 0, 0.5 + ch + 3.2, D / 2 - 0.6, 6));
+  }
+
+  // forecourt dressing: planters with fall shrubs
+  for (const px of [-4.6, 4.6]) {
+    g.add(rbox(1.1, 0.55, 1.1, stone, px, 0.55, 5.2, 0.06));
+    const bush = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55, 1), mat(0xd2452e, { roughness: 0.9 }));
+    bush.position.set(px, 1.15, 5.2);
+    bush.castShadow = true;
+    g.add(bush);
+  }
   return g;
 }
 
 // --- infrastructure district ------------------------------------------------------------
 
-/** Canadian Shield — translucent red dome protecting a mini neighbourhood. */
+/** Angular Canadian-Shield rock shards — dark faceted stones. */
+export function makeShardCluster(scale = 1) {
+  const g = new THREE.Group();
+  const rockM = mat(0x2b2530, { roughness: 0.55, metalness: 0.15 });
+  const rockM2 = mat(0x453c47, { roughness: 0.6 });
+  const shapes = [
+    [0.6, 0, 0, 0.5, 0.3], [-0.5, 0.15, 0.4, 0.8, -0.4], [0.1, 0, -0.55, 0.42, 1.1], [-0.2, 0.05, -0.1, 0.32, 2.2],
+  ];
+  shapes.forEach(([sx, sy, sz, s, ry], i) => {
+    const geo = i % 2 ? new THREE.TetrahedronGeometry(s) : new THREE.OctahedronGeometry(s);
+    const m = new THREE.Mesh(geo, i % 2 ? rockM : rockM2);
+    m.position.set(sx, sy + s * 0.6, sz);
+    m.rotation.set(0.3 + i, ry, 0.2 * i);
+    m.castShadow = true;
+    g.add(m);
+  });
+  g.scale.setScalar(scale);
+  return g;
+}
+
+/** Canadian Shield — translucent red hex dome protecting a mini neighbourhood. */
 export function makeShieldDome() {
   const g = new THREE.Group();
-  g.add(cyl(6.2, 6.4, 0.3, mat(CI.cream, { roughness: 0.85 }), 0, 0.15, 0, 36));
+  g.add(cyl(7.6, 7.8, 0.3, mat(CI.cream, { roughness: 0.85 }), 0, 0.15, 0, 40));
+  g.add(cyl(6.2, 6.4, 0.22, mat(0xe8c8c2, { roughness: 0.85 }), 0, 0.34, 0, 40));
   // houses inside
   const houseM = mat(CI.white, { roughness: 0.8 });
-  for (const [hx, hz, ry] of [[-1.8, -0.6, 0.3], [0.6, -1.6, -0.4], [1.9, 0.9, 0.8], [-0.6, 1.7, 2.6]]) {
+  for (const [hx, hz, ry] of [[-2.2, -0.7, 0.3], [0.7, -2.0, -0.4], [2.3, 1.1, 0.8], [-0.7, 2.1, 2.6], [-2.6, 1.6, 1.4]]) {
     const h = new THREE.Group();
-    h.add(rbox(1.3, 0.9, 1.1, houseM, 0, 0.45, 0, 0.05));
-    const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 1.35, 3), mat(CI.maritime, { roughness: 0.7 }));
+    h.add(rbox(1.5, 1.05, 1.25, houseM, 0, 0.52, 0, 0.05));
+    const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1.55, 3), mat(CI.maritime, { roughness: 0.7 }));
     roof.rotation.z = Math.PI / 2;
-    roof.rotation.x = Math.PI / 2;
+    roof.rotation.x = -Math.PI / 2;
     roof.scale.y = 0.6;
-    roof.position.y = 1.15;
+    roof.position.y = 1.3;
     h.add(roof);
-    h.position.set(hx, 0.3, hz);
+    h.add(new THREE.Mesh(new THREE.PlaneGeometry(0.42, 0.36), new THREE.MeshStandardMaterial({
+      color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.8,
+    })).translateZ(0.64).translateY(0.55));
+    h.position.set(hx, 0.44, hz);
     h.rotation.y = ry;
     g.add(h);
   }
-  const family = makePerson({});
-  family.position.set(0.2, 0.32, 0.3);
-  g.add(family);
-  // the shield dome
+  for (const [px, pz, ry] of [[0.3, 0.4, 0.4], [-0.5, 0.9, -1.8]]) {
+    const person = makePerson({});
+    person.position.set(px, 0.45, pz);
+    person.rotation.y = ry;
+    g.add(person);
+  }
+  // the shield dome — soft red glass + hex facet lines
   const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(4.6, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2),
+    new THREE.SphereGeometry(5.7, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2),
     new THREE.MeshPhysicalMaterial({
-      color: 0xd96a80, transparent: true, opacity: 0.22, roughness: 0.15,
+      color: 0xd96a80, transparent: true, opacity: 0.2, roughness: 0.15,
       metalness: 0, side: THREE.DoubleSide, depthWrite: false,
     })
   );
-  dome.position.y = 0.3;
+  dome.position.y = 0.34;
   g.add(dome);
-  const rim = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.1, 8, 48), mat(CI.redBright, { roughness: 0.4 }));
+  const hexDome = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(5.74, 1),
+    new THREE.MeshBasicMaterial({
+      color: 0xd94a63, wireframe: true, transparent: true, opacity: 0.3, depthWrite: false,
+    })
+  );
+  hexDome.scale.y = 0.98;
+  hexDome.position.y = 0.3;
+  g.add(hexDome);
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(5.7, 0.12, 8, 56), mat(CI.redBright, { roughness: 0.4 }));
   rim.rotation.x = Math.PI / 2;
-  rim.position.y = 0.32;
+  rim.position.y = 0.36;
   g.add(rim);
+  // shard outcrops at the rim (the Shield itself)
+  const shards = makeShardCluster(1.3);
+  shards.position.set(-6.8, 0.3, 1.8);
+  g.add(shards);
   g.userData.dome = dome;
   // deflected threat particles (little dark cubes bouncing off)
   const threats = [];
@@ -515,7 +747,7 @@ export function makeShieldDome() {
     dome.material.opacity = 0.18 + Math.sin(time * 1.2) * 0.05;
     for (const t of threats) {
       const k = (time * 0.4 + t.ph) % 2;
-      const rr = 7.2 - Math.min(k, 1) * 2.4; // fly in, stop at the dome
+      const rr = 8.8 - Math.min(k, 1) * 2.8; // fly in, stop at the dome
       const bounce = k > 1 ? (k - 1) * 1.8 : 0;
       t.cube.position.set(
         Math.cos(t.a) * (rr + bounce * 2),
@@ -529,69 +761,114 @@ export function makeShieldDome() {
   return g;
 }
 
-/** .CA registry data centre — server hall with a live domain ticker. */
+/** .CA registry data centre — long server hall with a rooftop domain ticker. */
 export function makeRegistry() {
   const g = new THREE.Group();
-  const W = 8.5, H = 3.6, D = 6;
+  const W = 12, H = 4.4, D = 8;
+  // white hall with red parapet + corner pilasters
   g.add(rbox(W, H, D, mat(CI.white, { roughness: 0.75 }), 0, 0.4 + H / 2, 0, 0.1));
-  g.add(box(W + 0.4, 0.35, D + 0.4, mat(CI.red, { roughness: 0.55 }), 0, 0.4 + H + 0.17, 0));
-  // open server bay on the front: racks with blinking lights
-  g.add(box(W * 0.86, H * 0.62, 0.1, mat(CI.navy, { roughness: 0.6 }), 0, 0.4 + H * 0.45, D / 2 + 0.02));
-  const rackFace = canvasMat(768, 256, (ctx, Wc, Hc) => {
+  g.add(box(W + 0.4, 0.45, D + 0.4, mat(CI.red, { roughness: 0.55 }), 0, 0.4 + H + 0.22, 0));
+  g.add(box(W + 0.2, 0.35, D + 0.2, mat(CI.red, { roughness: 0.55 }), 0, 0.55, 0));
+  for (const sx of [-W / 2 + 0.25, W / 2 - 0.25]) {
+    g.add(box(0.5, H, 0.5, mat(CI.red, { roughness: 0.6 }), sx, 0.4 + H / 2, D / 2 - 0.25));
+  }
+  // server bays along the front: dark racks with blinking LED columns
+  const rackFace = canvasMat(1024, 300, (ctx, Wc, Hc) => {
     ctx.fillStyle = '#0c1c2b';
     ctx.fillRect(0, 0, Wc, Hc);
-    for (let x = 20; x < Wc - 20; x += 52) {
-      for (let y = 16; y < Hc - 16; y += 22) {
+    for (let x = 16; x < Wc - 16; x += 50) {
+      ctx.fillStyle = '#091522';
+      ctx.fillRect(x, 10, 42, Hc - 20);
+      for (let y = 20; y < Hc - 20; y += 21) {
         ctx.fillStyle = '#13293d';
-        ctx.fillRect(x, y, 44, 16);
+        ctx.fillRect(x + 3, y, 36, 15);
         ctx.fillStyle = Math.random() < 0.5 ? '#ba2241' : '#2479ba';
         ctx.beginPath();
-        ctx.arc(x + 36, y + 8, 3, 0, Math.PI * 2);
+        ctx.arc(x + 32, y + 7, 3, 0, Math.PI * 2);
         ctx.fill();
         ctx.fillStyle = '#9bbfe5';
-        ctx.fillRect(x + 4, y + 5, 18, 2);
-        ctx.fillRect(x + 4, y + 10, 12, 2);
+        ctx.fillRect(x + 6, y + 4, 16, 2);
+        ctx.fillRect(x + 6, y + 9, 11, 2);
       }
     }
-  }, { emissive: 0xffffff, emissiveIntensity: 0.45 });
-  const racks = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.8, H * 0.56), rackFace);
-  racks.position.set(0, 0.4 + H * 0.45, D / 2 + 0.09);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.5 });
+  g.add(box(W * 0.9, H * 0.64, 0.1, mat(CI.navy, { roughness: 0.6 }), 0, 0.4 + H * 0.46, D / 2 + 0.02));
+  const racks = new THREE.Mesh(new THREE.PlaneGeometry(W * 0.84, H * 0.58), rackFace);
+  racks.position.set(0, 0.4 + H * 0.46, D / 2 + 0.09);
   g.add(racks);
-  // ticker sign
-  const ticker = new THREE.Mesh(
-    new THREE.BoxGeometry(7.4, 1.0, 0.24),
-    [mat(CI.navy), mat(CI.navy), mat(CI.navy), mat(CI.navy),
-      canvasMat(1024, 138, (ctx, Wc, Hc) => {
-        ctx.fillStyle = '#0c1c2b';
-        ctx.fillRect(0, 0, Wc, Hc);
-        ctx.fillStyle = '#ba2241';
-        ctx.font = '900 74px Montserrat, Inter, Arial, sans-serif';
-        ctx.textAlign = 'left';
-        ctx.fillText('3,426,339', 36, 92);
-        ctx.fillStyle = '#9bbfe5';
-        ctx.font = '700 34px Inter, Arial, sans-serif';
-        ctx.fillText('.CA DOMAINS AND COUNTING', 440, 88);
-      }, { emissive: 0xffffff, emissiveIntensity: 0.5 }),
-      mat(CI.navy)]
-  );
-  ticker.position.set(0, 0.4 + H + 1.0, 0.3);
+  // glass entry at the corner
+  const entry = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 2.0), new THREE.MeshStandardMaterial({
+    color: 0xcfe4f5, emissive: 0x9bbfe5, emissiveIntensity: 0.35, roughness: 0.3,
+  }));
+  entry.position.set(W / 2 - 1.6, 0.4 + 1.0, D / 2 + 0.115);
+  g.add(entry);
+  // roof AC units
+  for (const [ax, az] of [[-3.4, -1.6], [-1.0, -2.2], [2.6, -1.4]]) {
+    g.add(rbox(1.3, 0.6, 1.0, mat(0xd8d3c8, { roughness: 0.7 }), ax, 0.4 + H + 0.65, az, 0.06));
+  }
+  // rooftop LED ticker on posts — the counter that only goes up
+  const tickerFace = canvasMat(1280, 170, (ctx, Wc, Hc) => {
+    ctx.fillStyle = '#0c0d12';
+    ctx.fillRect(0, 0, Wc, Hc);
+    ctx.strokeStyle = '#aa1e3a';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(4, 4, Wc - 8, Hc - 8);
+    ctx.fillStyle = '#ff4560';
+    ctx.font = '900 96px Montserrat, Inter, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('3,426,339', 46, 118);
+    ctx.fillStyle = '#9bbfe5';
+    ctx.font = '700 42px Inter, Arial, sans-serif';
+    ctx.fillText('.CA DOMAINS AND COUNTING', 560, 110);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.6 });
+  const ticker = new THREE.Mesh(new THREE.BoxGeometry(10.5, 1.4, 0.3), mat(CI.navy, { roughness: 0.6 }));
+  ticker.position.set(0, 0.4 + H + 1.7, 0);
   ticker.castShadow = true;
   g.add(ticker);
+  const tickFront = new THREE.Mesh(new THREE.PlaneGeometry(10.3, 1.25), tickerFace);
+  tickFront.position.set(0, 0.4 + H + 1.7, 0.16);
+  g.add(tickFront);
+  const tickBack = new THREE.Mesh(new THREE.PlaneGeometry(10.3, 1.25), tickerFace);
+  tickBack.rotation.y = Math.PI;
+  tickBack.position.set(0, 0.4 + H + 1.7, -0.16);
+  g.add(tickBack);
+  for (const px of [-4.4, 4.4]) {
+    g.add(box(0.16, 1.3, 0.16, mat(0x3b4046, { roughness: 0.55, metalness: 0.3 }), px, 0.4 + H + 0.75, 0));
+  }
   return g;
 }
 
-/** IXP node — small exchange station where the red arcs land. */
+/** IXP node — exchange cabinet on a stepped pad with a red beacon mast. */
 export function makeIxpNode(city) {
   const g = new THREE.Group();
-  g.add(cyl(1.7, 1.9, 0.3, mat(CI.cream, { roughness: 0.85 }), 0, 0.15, 0, 20));
-  g.add(rbox(1.6, 1.7, 1.6, mat(CI.navy, { roughness: 0.6 }), 0, 0.3 + 0.85, 0, 0.08));
-  // glowing core
-  const core = new THREE.Mesh(new THREE.SphereGeometry(0.42, 14, 12), new THREE.MeshStandardMaterial({
-    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.4, roughness: 0.3,
+  g.add(cyl(2.3, 2.5, 0.26, mat(CI.cream, { roughness: 0.85 }), 0, 0.13, 0, 24));
+  g.add(cyl(1.8, 2.0, 0.24, mat(0xe6dcc6, { roughness: 0.85 }), 0, 0.38, 0, 24));
+  const cab = rbox(1.8, 1.9, 1.8, mat(CI.navy, { roughness: 0.55 }), 0, 0.5 + 0.95, 0, 0.08);
+  g.add(cab);
+  // LED status strip on the cabinet
+  const leds = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.5), canvasMat(280, 100, (ctx, W, H) => {
+    ctx.fillStyle = '#091522';
+    ctx.fillRect(0, 0, W, H);
+    for (let x = 14; x < W - 10; x += 26) {
+      ctx.fillStyle = Math.random() < 0.6 ? '#ba2241' : '#2479ba';
+      ctx.beginPath();
+      ctx.arc(x, 34, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#9bbfe5';
+      ctx.fillRect(x - 8, 60, 18, 4);
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.6 }));
+  leds.position.set(0, 1.7, 0.92);
+  g.add(leds);
+  // beacon mast with blinking red light + crossarms
+  const steel = mat(CI.snowshoe, { roughness: 0.5, metalness: 0.3 });
+  g.add(cyl(0.06, 0.1, 1.8, steel, 0, 2.45 + 0.9, 0, 8));
+  g.add(box(0.7, 0.05, 0.05, steel, 0, 3.7, 0));
+  const core = new THREE.Mesh(new THREE.SphereGeometry(0.3, 14, 12), new THREE.MeshStandardMaterial({
+    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.6, roughness: 0.3,
   }));
-  core.position.y = 2.6;
+  core.position.y = 4.35;
   g.add(core);
-  g.add(cyl(0.07, 0.09, 0.9, mat(CI.snowshoe, { roughness: 0.5 }), 0, 2.0, 0, 8));
   g.userData.core = core;
   const label = new THREE.Mesh(
     new THREE.BoxGeometry(1.7, 0.45, 0.1),
@@ -606,45 +883,83 @@ export function makeIxpNode(city) {
       }),
       mat(CI.white)]
   );
-  label.position.set(0, 1.05, 0.9);
+  label.position.set(0, 1.05, 1.02);
   g.add(label);
   return g;
 }
 
-/** Northern community — Net Good grants: connected cabins + comm mast. */
+/** Northern community — Net Good grants: snowy cabins + lattice comm tower. */
 export function makeNorthernCommunity() {
   const g = new THREE.Group();
-  g.add(cyl(5.4, 5.6, 0.26, mat(0xe9edf2, { roughness: 0.9 }), 0, 0.13, 0, 32));
-  const timber = mat(0x8a6f55, { roughness: 0.85 });
-  for (const [hx, hz, ry] of [[-2.2, -0.4, 0.3], [-0.2, -1.8, -0.3], [1.8, -0.2, 0.7], [0.2, 1.6, 2.4]]) {
+  g.add(cyl(7.2, 7.4, 0.26, mat(0xe9edf2, { roughness: 0.9 }), 0, 0.13, 0, 40));
+  const timber = mat(0x7c6248, { roughness: 0.85 });
+  const timberDark = mat(0x64503c, { roughness: 0.85 });
+  for (const [hx, hz, ry, s] of [
+    [-2.9, -0.6, 0.3, 1.15], [-0.3, -2.4, -0.3, 1.0], [2.4, -0.4, 0.7, 1.25],
+    [0.3, 2.1, 2.4, 1.0], [-2.4, 2.4, 1.7, 0.9], [3.0, 2.6, -2.2, 0.95],
+  ]) {
     const cabin = new THREE.Group();
-    cabin.add(rbox(1.5, 1.0, 1.2, timber, 0, 0.5, 0, 0.05));
-    const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1.6, 3), mat(CI.white, { roughness: 0.85 }));
+    cabin.add(rbox(1.6, 1.05, 1.3, timber, 0, 0.52, 0, 0.05));
+    // log coursing
+    for (let ly = 0.25; ly < 1.0; ly += 0.28) {
+      cabin.add(box(1.64, 0.07, 1.34, timberDark, 0, ly, 0));
+    }
+    // snow-capped gable roof (vertex up)
+    const roof = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 1.7, 3), mat(CI.white, { roughness: 0.9 }));
     roof.rotation.z = Math.PI / 2;
-    roof.rotation.x = Math.PI / 2;
+    roof.rotation.x = -Math.PI / 2;
     roof.scale.y = 0.55;
-    roof.position.y = 1.25;
+    roof.position.y = 1.3;
     cabin.add(roof);
-    // warm window
-    cabin.add(new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.35), new THREE.MeshStandardMaterial({
+    // chimney with ember glow
+    cabin.add(box(0.18, 0.55, 0.18, mat(0x9c948b), 0.45, 1.55, -0.2));
+    // warm windows both sides
+    cabin.add(new THREE.Mesh(new THREE.PlaneGeometry(0.44, 0.38), new THREE.MeshStandardMaterial({
       color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.9,
-    })).translateZ(0.61).translateY(0.55));
+    })).translateZ(0.67).translateY(0.55));
+    cabin.add(new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.3), new THREE.MeshStandardMaterial({
+      color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.8,
+    })).translateX(0.83).translateY(0.55).rotateY(Math.PI / 2));
+    cabin.scale.setScalar(s);
     cabin.position.set(hx, 0.26, hz);
     cabin.rotation.y = ry;
     g.add(cabin);
   }
-  // connectivity mast with red link light
-  const mast = new THREE.Group();
-  mast.add(cyl(0.08, 0.14, 4.6, mat(CI.snowshoe, { roughness: 0.5, metalness: 0.3 }), 0, 2.3, 0, 8));
-  for (const my of [3.0, 3.8]) {
-    mast.add(box(1.2, 0.06, 0.06, mat(CI.snowshoe, { roughness: 0.5 }), 0, my, 0));
+  // snow drifts
+  for (const [dx, dz, s] of [[-1.4, 0.8, 0.8], [1.4, 1.4, 0.6], [-3.6, -2.2, 0.7], [2.2, -2.6, 0.5]]) {
+    const drift = new THREE.Mesh(new THREE.SphereGeometry(s, 12, 8), mat(0xf4f7fa, { roughness: 0.95 }));
+    drift.scale.y = 0.32;
+    drift.position.set(dx, 0.28, dz);
+    g.add(drift);
   }
-  const beaconTop = new THREE.Mesh(new THREE.SphereGeometry(0.18, 10, 8), new THREE.MeshStandardMaterial({
+  // steel lattice comm tower with dish + red link light
+  const steel = mat(CI.snowshoe, { roughness: 0.5, metalness: 0.3 });
+  const mast = new THREE.Group();
+  const legs = 4, tw = 0.55, th = 6.4;
+  for (let i = 0; i < legs; i++) {
+    const a = (i / legs) * Math.PI * 2 + Math.PI / 4;
+    const leg = cyl(0.035, 0.05, th, steel, Math.cos(a) * tw * 0.5, th / 2, Math.sin(a) * tw * 0.5, 6);
+    leg.rotation.z = Math.cos(a) * 0.045;
+    leg.rotation.x = -Math.sin(a) * 0.045;
+    mast.add(leg);
+  }
+  for (let ly = 0.8; ly < th; ly += 0.8) {
+    const w = tw * (1 - ly / th * 0.55);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(w * 0.71, 0.022, 6, 12), steel);
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = ly;
+    mast.add(ring);
+  }
+  const dish = new THREE.Mesh(new THREE.SphereGeometry(0.42, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2.6), steel);
+  dish.rotation.z = 1.9;
+  dish.position.set(0.35, th * 0.72, 0);
+  mast.add(dish);
+  const beaconTop = new THREE.Mesh(new THREE.SphereGeometry(0.2, 10, 8), new THREE.MeshStandardMaterial({
     color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.6,
   }));
-  beaconTop.position.y = 4.7;
+  beaconTop.position.y = th + 0.15;
   mast.add(beaconTop);
-  mast.position.set(-0.4, 0.26, 0.2);
+  mast.position.set(-0.5, 0.26, 0.2);
   g.add(mast);
   g.userData.beaconTop = beaconTop;
   // sign
@@ -673,9 +988,12 @@ export function makeNorthernCommunity() {
 /** +66% unaided recall monument. */
 export function makeRecallMonument() {
   const g = new THREE.Group();
-  g.add(rbox(12, 0.5, 8, mat(CI.cream, { roughness: 0.85 }), 0, 0.25, 0, 0.15));
+  g.add(rbox(14.5, 0.5, 9.6, mat(CI.cream, { roughness: 0.85 }), 0, 0.25, 0, 0.15));
+  // red stepped pedestal beneath the slab
+  g.add(rbox(12.4, 0.5, 2.4, mat(CI.redDark, { roughness: 0.6 }), 0, 0.75, -2.7, 0.06));
+  g.add(rbox(11.4, 0.5, 1.8, mat(CI.red, { roughness: 0.5 }), 0, 1.2, -2.7, 0.06));
   const slab = new THREE.Mesh(
-    new THREE.BoxGeometry(9.5, 4.2, 0.45),
+    new THREE.BoxGeometry(11, 4.9, 0.5),
     [mat(CI.white), mat(CI.white), mat(CI.white), mat(CI.white),
       canvasMat(1024, 452, (ctx, W, H) => {
         const grad = ctx.createLinearGradient(0, 0, 0, H);
@@ -698,13 +1016,15 @@ export function makeRecallMonument() {
       }, { emissive: 0xffffff, emissiveIntensity: 0.28 }),
       mat(CI.white)]
   );
-  slab.position.set(0, 2.7, -2.4);
+  slab.position.set(0, 1.45 + 2.45, -2.7);
   slab.castShadow = true;
   g.add(slab);
-  g.add(box(10.2, 0.4, 1.1, mat(CI.red, { roughness: 0.55 }), 0, 0.65, -2.4));
-  // mini geese honouring the result
-  for (const [gx, gz, ry] of [[-3.2, 1.6, 0.4], [-1.6, 2.4, -0.3], [2.8, 1.8, 2.8]]) {
-    const goose = makeGoose(0.7);
+  // an honour guard of geese admiring the result
+  for (const [gx, gz, ry, s] of [
+    [-4.2, 1.8, 0.4, 0.8], [-2.2, 3.0, -0.3, 0.7], [3.4, 2.2, 2.8, 0.85],
+    [1.2, 3.6, 0.2, 0.65], [5.2, 0.6, -2.2, 0.7],
+  ]) {
+    const goose = makeGoose(s);
     goose.position.set(gx, 0.5, gz);
     goose.rotation.y = ry;
     g.add(goose);
@@ -729,14 +1049,15 @@ export function makeAurora() {
   const auroraTex = new THREE.CanvasTexture(cv);
   auroraTex.colorSpace = THREE.SRGBColorSpace;
   const m = new THREE.MeshBasicMaterial({
-    map: auroraTex, transparent: true, opacity: 0.34, side: THREE.DoubleSide,
+    map: auroraTex, transparent: true, opacity: 0.13, side: THREE.DoubleSide,
     blending: THREE.AdditiveBlending, depthWrite: false, fog: false,
   });
   const sheets = [];
   for (let i = 0; i < 4; i++) {
-    const sheet = new THREE.Mesh(new THREE.PlaneGeometry(16 + i * 5, 9 + i * 1.5, 24, 1), m);
-    sheet.position.set(i * 2 - 3, 12 + i * 1.2, -i * 2.5);
+    const sheet = new THREE.Mesh(new THREE.PlaneGeometry(14 + i * 4, 4.2 + i * 0.7, 24, 1), m);
+    sheet.position.set(i * 2 - 3, 6.5 + i * 0.9, -i * 2.2);
     sheet.rotation.y = i * 0.25 - 0.4;
+    sheet.rotation.x = -0.25;
     sheets.push(sheet);
     g.add(sheet);
   }
