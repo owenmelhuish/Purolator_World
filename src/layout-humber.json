@@ -1,28 +1,20 @@
 {
-  "city": {
-    "lat": -44,
-    "lon": 162.26,
-    "heading": 182
-  },
-  "stage": {
-    "lat": 43.82,
-    "lon": -30.65,
-    "heading": -36
-  },
   "barrett": {
-    "lat": -53.81,
-    "lon": -17.61,
+    "lat": -74.28,
+    "lon": -135.99,
     "heading": 0
   },
   "impact": {
-    "lat": 14.03,
-    "lon": -146.26,
-    "heading": -146
+    "lat": 16.34,
+    "lon": -150.96,
+    "heading": -149,
+    "scale": 1.3
   },
   "signals": {
-    "lat": -19.46,
-    "lon": 177.72,
-    "heading": 180
+    "lat": -20.83,
+    "lon": 176.41,
+    "heading": 180,
+    "scale": 1.2
   },
   "lakeshore": {
     "lat": 34.86,
@@ -190,9 +182,79 @@
     "heading": -11.5,
     "removed": true
   },
+  "toronto": {
+    "lat": -77.2,
+    "lon": 101.12,
+    "heading": 156,
+    "scale": 1.5
+  },
+  "residence": {
+    "lat": -49.15,
+    "lon": -133.67,
+    "heading": 46
+  },
+  "studio": {
+    "lat": 13.5,
+    "lon": 31.1,
+    "heading": 29,
+    "scale": 1.4
+  },
+  "drivein": {
+    "lat": 33.05,
+    "lon": 94.17,
+    "heading": 126,
+    "scale": 1.3
+  },
+  "platform": {
+    "lat": 32.69,
+    "lon": -99.46,
+    "heading": 51,
+    "scale": 1.5
+  },
+  "pylon": {
+    "lat": -30.27,
+    "lon": 111.82,
+    "heading": 28.6
+  },
+  "city": {
+    "lat": -59.05,
+    "lon": 159.45,
+    "heading": 182
+  },
+  "stage": {
+    "lat": 38.25,
+    "lon": -28.76,
+    "heading": -36
+  },
   "hq": {
     "lat": 90,
     "lon": 0,
     "heading": -38
+  },
+  "__cameras": {
+    "city": {
+      "pos": [
+        11.87,
+        -112.22,
+        -34.48
+      ],
+      "look": [
+        7.25,
+        -33.92,
+        -19.92
+      ]
+    },
+    "signals": {
+      "pos": [
+        3.86,
+        -68.39,
+        -55.25
+      ],
+      "look": [
+        2.55,
+        -15.45,
+        -40.58
+      ]
+    }
   }
 }
