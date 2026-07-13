@@ -42,7 +42,7 @@ const POIS = [
     step: 'Case Study · Chapter 1 · The Relaunch',
     body: 'In August 2024, Humber College became Humber Polytechnic — a once-in-a-generation brand relaunch for 86,000+ learners. PUSH ran awareness and presence for the launch: a full-funnel media strategy with planning and oversight across every traditional and digital platform. This is the campus the country got reintroduced to.',
     stats: [['Learners', '86,000+'], ['Relaunched', 'August 2024']],
-    lat: 90, lon: 0, dist: 142, pinAlt: 26, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 185, pinAlt: 36, side: 0.85, lookR: 42,
   },
   {
     id: 'stage',
@@ -87,7 +87,7 @@ const EXTRAS = [
     step: 'The Media · Transit',
     body: 'A full streetcar wrap moving through the city — the campaign\'s black-and-ice type rolling past a million commuters a week.',
     stats: [['Format', 'Full wrap'], ['Route', 'Crosstown loop']],
-    lat: 52, lon: 150, dist: 100, pinAlt: 9, side: 0.5, lookR: 42.5,
+    lat: 44, lon: 150, dist: 100, pinAlt: 9, side: 0.5, lookR: 42.5,
   },
 ];
 
@@ -107,14 +107,14 @@ function build(ctx) {
   ];
   for (const t of TERRACES) terrace(t.lat, t.lon, t.r, t.alt, t.c);
 
-  plate(null, 90, 0, 0.48, 0.3, 0xebeef6);
+  plate(null, 90, 0, 0.6, 0.3, 0xebeef6);
   plate('stage', 54, -50, 0.28, 0.34, 0xe8ebf4);
   plate('signals', 54, 58, 0.25, 0.31, 0xebeef6);
   plate('city', 33, -18, 0.25, 0.34, 0xe8ebf4);
   plate('impact', 20, -15, 0.21, 0.33, 0xebeef6);
   plate('hawks', 55, 115, 0.29, 0.3, 0xe4ecdf);
 
-  foundation(90, 0, 0, 33, 26, 0.35, { dz: 0, name: 'hq' });
+  foundation(90, 0, 0, 43, 33, 0.35, { dz: 0, name: 'hq' });
   foundation(76, -95, 0, 15, 15, 0.33, { round: true, name: 'barrett' });
   foundation(78, 95, 0, 18.5, 18.5, 0.32, { round: true, name: 'quad' });
   foundation(54, -50, 0, 24, 24, 0.36, { round: true, name: 'stage' });
@@ -126,6 +126,7 @@ function build(ctx) {
 
   // --- North Campus at the pole -----------------------------------------------
   const hq = makeHumberHQ();
+  hq.scale.setScalar(1.4);
   placeM('hq', hq, 90, 0, -1.1, 0.35, 'campus');
   registerPoi(hq, 'campus');
   const barrett = makeBarrettCTI();
@@ -136,7 +137,7 @@ function build(ctx) {
   quad.scale.setScalar(1.45);
   placeM('quad', quad, 78, 95, 0, 0.32, 'campus');
   registerPoi(quad, 'campus');
-  placeSmall('campus-flag', makeFlag(), 80, -35, 0.5, 0.32);
+  placeSmall('campus-flag', makeFlag(), 57, -35, 0.5, 0.32);
 
   // --- the campaign stage --------------------------------------------------------
   const stage = makeCampaignStage();
@@ -205,8 +206,8 @@ function build(ctx) {
     const CROWD = [
       // around the quad
       [76, 78, 5], [80, 108, 4], [74, 100, 3],
-      // pole campus paths
-      [80, -20, 4], [78, 40, 3], [82, -60, 3],
+      // campus grounds at the podium edge
+      [57, -20, 4], [55, 40, 3], [58, -60, 3],
       // screen corner plaza
       [30, -14, 5], [35, -22, 4],
       // stage surroundings
@@ -286,7 +287,7 @@ function build(ctx) {
   const connA = new CirclePath(dir(40, 40), THREE.MathUtils.degToRad(90), 0.52);
   road(connA, { width: 4.4 });
   // crosstown streetcar loop
-  const railLoop = buildRail(dir(63, 20), THREE.MathUtils.degToRad(58), { ballast: 0xc3cbdb, rail: 0x46536b, sleeper: 0x93a0b5 });
+  const railLoop = buildRail(dir(63, 20), THREE.MathUtils.degToRad(66), { ballast: 0xc3cbdb, rail: 0x46536b, sleeper: 0x93a0b5 });
 
   // --- transit with the wrap ----------------------------------------------------------------------------
   const streetcar = makeStreetcar({ base: 0xd8dee9, accent: 0xc8102e, drawWrap: streetcarWrap });
@@ -346,7 +347,7 @@ function build(ctx) {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
     const exclude = [
-      { lat: 90, lon: 0, ang: 0.56 }, { lat: 76, lon: -95, ang: 0.3 }, { lat: 78, lon: 95, ang: 0.32 },
+      { lat: 90, lon: 0, ang: 0.72 }, { lat: 76, lon: -95, ang: 0.3 }, { lat: 78, lon: 95, ang: 0.32 },
       { lat: 54, lon: -50, ang: 0.34 }, { lat: 54, lon: 58, ang: 0.3 }, { lat: 33, lon: -18, ang: 0.32 },
       { lat: 20, lon: -15, ang: 0.26 }, { lat: 55, lon: 115, ang: 0.34 }, { lat: 34, lon: -108, ang: 0.28 },
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
