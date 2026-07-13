@@ -136,7 +136,7 @@ function studioDiagram() {
   const tiles = [['ENTERPRISE', 8], ['HEALTHCARE', 86], ['SMB', 164], ['E-COMMERCE', 242]];
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">One message hierarchy, built modular</div>
+      <div class="ic-diagram-title">One idea in, variants at scale out</div>
       <div class="ic-panel">
         <svg viewBox="0 0 320 178">
           ${brands.map(([b, x], i) => `
@@ -158,7 +158,7 @@ function studioDiagram() {
           <g class="rise" style="animation-delay:1.3s">
             <rect class="sp-strip" x="8" y="140" width="304" height="32" rx="10"/>
             <text class="sp-stript" x="160" y="155">BRAND · DIGITAL · EVENTS · SALES ENABLEMENT</text>
-            <text class="sp-stripc" x="160" y="166">same assets, every channel</text>
+            <text class="sp-stripc" x="160" y="166">versioned, refreshed, always on brand</text>
           </g>
         </svg>
       </div>
@@ -243,9 +243,9 @@ export const POIS = [
   {
     id: 'studio',
     title: 'Studio P',
-    step: 'Chapter 4 · One Story, Every Audience',
-    body: 'PUSH\'s high-velocity creative studio, embedded inside the system. Purolator, Livingston and Williams have to sound like one company: to the enterprise account, the healthcare buyer, and the SMB owner who is, after all, a person too. Live media signals decide what gets made, refined and scaled: one message hierarchy, modular assets, reusable from national campaign to event booth to sales deck. For Purolator: message consistency by design. One narrative everywhere, including the markets where you\'re still introducing yourselves.',
-    stats: [['Three brands', 'One voice'], ['Assets', 'Built once, used everywhere']],
+    step: 'Chapter 4 · Creative, At Scale',
+    body: 'Studio P is PUSH\'s creative arm, embedded inside the system: creative development, design and production under the same roof as the media it feeds. One master idea becomes a hundred working variants: every audience, every format, every language, versioned and refreshed as the signals come in. What works is scaled the same day; what tires is retired before it costs you. For Purolator: the campaign never runs out of creative, and Purolator, Livingston and Williams speak as one, in every buyer\'s language, at the pace media actually burns.',
+    stats: [['Variants', 'At scale, on brand'], ['Refresh', 'As fast as media burns']],
     html: studioDiagram(),
     lat: 54, lon: -50, dist: 66, pinAlt: 9, side: -0.85, lookR: 44.5,
   },
