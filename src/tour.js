@@ -165,6 +165,73 @@ function studioDiagram() {
     </div>`;
 }
 
+// STRATIS — the molecular data network: every point connected, correlations surfaced
+function stratisDiagram() {
+  const CX = 160, CY = 118, R1 = 44, R2 = 100;
+  const ring1 = ['CAMPAIGNS', 'AUDIENCES', 'PRODUCTS', 'REGIONS', 'CREATIVE', 'SALES'];
+  const ring2 = ['SOCIAL', 'SEARCH', 'CTV', 'DISPLAY', 'PROGRAMMATIC', 'AUDIO', 'OOH', 'EMAIL'];
+  const p1 = ring1.map((t, i) => {
+    const a = (i / 6) * Math.PI * 2 - Math.PI / 2 + 0.28;
+    return [CX + Math.cos(a) * R1, CY + Math.sin(a) * R1, t];
+  });
+  const p2 = ring2.map((t, i) => {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    return [CX + Math.cos(a) * R2, CY + Math.sin(a) * R2, t];
+  });
+  const spokes = p1.map(([x, y]) => `<line class="st-ln" x1="${CX}" y1="${CY}" x2="${x}" y2="${y}"/>`).join('');
+  const webs = p2.map(([x, y], i) => {
+    const [ax, ay] = p1[i % 6];
+    const [bx, by] = p1[(i + 2) % 6];
+    return `<line class="st-ln" x1="${x}" y1="${y}" x2="${ax}" y2="${ay}"/><line class="st-mesh" x1="${x}" y1="${y}" x2="${bx}" y2="${by}"/>`;
+  }).join('');
+  const mesh = p2.map(([x, y], i) => {
+    const [nx, ny] = p2[(i + 3) % 8];
+    return `<line class="st-mesh" x1="${x}" y1="${y}" x2="${nx}" y2="${ny}"/>`;
+  }).join('');
+  const corr = `M ${p2[1][0].toFixed(1)} ${p2[1][1].toFixed(1)} L ${p1[2][0].toFixed(1)} ${p1[2][1].toFixed(1)} L ${CX} ${CY} L ${p1[4][0].toFixed(1)} ${p1[4][1].toFixed(1)} L ${p2[5][0].toFixed(1)} ${p2[5][1].toFixed(1)}`;
+  const nodes1 = p1.map(([x, y, t], i) => `
+    <g class="loop-node" style="animation-delay:${(0.25 + i * 0.07).toFixed(2)}s">
+      <circle class="st-n1" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.6"/>
+      <text class="st-l1" x="${x.toFixed(1)}" y="${(y - 8.5).toFixed(1)}">${t}</text>
+    </g>`).join('');
+  const nodes2 = p2.map(([x, y, t], i) => {
+    const mid = Math.abs(x - CX) < 20;
+    const anchor = mid ? 'middle' : (x > CX ? 'start' : 'end');
+    const lx = mid ? x : (x > CX ? x + 8 : x - 8);
+    const ly = mid ? (y > CY ? y + 13.5 : y - 8.5) : y + 3;
+    return `
+    <g class="loop-node" style="animation-delay:${(0.55 + i * 0.06).toFixed(2)}s">
+      <circle class="st-n2" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4"/>
+      <text class="st-l2" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}">${t}</text>
+    </g>`;
+  }).join('');
+  const blips = [p2[1], p1[2], p1[4], p2[5]].map(([x, y], i) =>
+    `<circle class="st-blip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" style="animation-delay:${(1.5 + i * 0.35).toFixed(2)}s"/>`).join('');
+  return `
+    <div class="ic-diagram">
+      <div class="ic-diagram-title">Every data point, one connected network</div>
+      <div class="ic-panel">
+        <svg viewBox="0 0 320 238">
+          <circle class="st-ring" cx="${CX}" cy="${CY}" r="${R1}"/>
+          <circle class="st-ring st-ring2" cx="${CX}" cy="${CY}" r="${(R1 + R2) / 2}"/>
+          <circle class="st-ring" cx="${CX}" cy="${CY}" r="${R2}"/>
+          ${mesh}${spokes}${webs}
+          <path class="st-corr" pathLength="100" d="${corr}"/>
+          ${blips}
+          <circle class="st-core" cx="${CX}" cy="${CY}" r="8"/>
+          <text class="st-brand" x="${CX}" y="${CY + 21}">PUROLATOR</text>
+          ${nodes1}${nodes2}
+        </svg>
+      </div>
+      <div class="st-legend">
+        <span><i class="st-d st-d-core"></i>BRAND</span>
+        <span><i class="st-d st-d-n1"></i>CAMPAIGN DATA</span>
+        <span><i class="st-d st-d-n2"></i>CHANNELS</span>
+        <span><i class="st-d st-d-t"></i>HIDDEN CORRELATION</span>
+      </div>
+    </div>`;
+}
+
 // PUSH + Studio P + STRATIS — the closed loop as an infinity, built for momentum
 function loopDiagram() {
   const INF = "M 160 70 C 120 20, 55 20, 55 70 C 55 120, 120 120, 160 70 C 200 20, 265 20, 265 70 C 265 120, 200 120, 160 70";
@@ -265,10 +332,10 @@ export const POIS = [
   {
     id: 'stratis',
     title: 'STRATIS',
-    step: 'Chapter 5 · Spend → Pipeline',
-    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems, and the gap between spend and pipeline is where budgets go to be questioned. STRATIS connects every data stream around the business and reads them as one system, surfacing what no dashboard shows while the budget is still live. On $14.4M of live media: 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to. For Purolator: a straight line from spend to pipeline, with MQLs that convert and leads that stop leaking. See it for real:',
-    stats: [['Spend → pipeline', 'One view'], ['To decision', '10× faster']],
-    html: `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
+    step: 'Chapter 5 · The End of Marketing Silos',
+    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems, forcing teams to interpret performance through fragmented, delayed views. STRATIS breaks down those walls: a connected data infrastructure that reads every stream surrounding your business as one network, and surfaces the correlations that would otherwise stay hidden. You act on the relationships between signals, not on any one of them in isolation. For Purolator: one live view of the whole marketing system, informing every decision while the budget is still in flight. See it for real:',
+    stats: [['Silos', 'Broken down'], ['Signals', 'One connected network']],
+    html: stratisDiagram() + `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
     lat: 90, lon: 0, dist: 64, pinAlt: 0, pin: false, side: 1.35, lookR: 72,
   },
   {

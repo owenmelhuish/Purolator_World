@@ -279,6 +279,30 @@ html, body {
 .sp-stript { fill: #5a6480; font: 800 8.2px Inter, sans-serif; letter-spacing: 0.08em; text-anchor: middle; }
 .sp-stripc { fill: #9aa4bb; font: 600 7.5px Inter, sans-serif; text-anchor: middle; }
 
+/* ch5 · stratis molecular network */
+.st-ring { fill: none; stroke: rgba(28, 79, 196, 0.16); stroke-width: 1; stroke-dasharray: 2 6; animation: ic-orbit 22s linear infinite; }
+.st-ring2 { stroke: rgba(28, 79, 196, 0.1); animation-direction: reverse; animation-duration: 30s; }
+.st-mesh { stroke: rgba(28, 79, 196, 0.07); stroke-width: 0.8; }
+.st-ln { stroke: rgba(28, 79, 196, 0.17); stroke-width: 1; }
+.st-corr {
+  fill: none; stroke: #14b8a8; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 100; animation: ic-draw 1.6s ease-out 1.1s both;
+}
+.st-blip { fill: none; stroke: #14b8a8; stroke-width: 1.6; opacity: 0; animation: ic-blip 2.4s ease-in-out infinite; }
+.st-core { fill: var(--puro-blue-dark); filter: drop-shadow(0 2px 6px rgba(16, 48, 124, 0.35)); }
+.st-brand { fill: var(--puro-blue-dark); font: 900 9px Inter, sans-serif; letter-spacing: 0.1em; text-anchor: middle; }
+.st-n1 { fill: var(--puro-blue); stroke: #fff; stroke-width: 1.4; }
+.st-n2 { fill: #fff; stroke: var(--puro-blue); stroke-width: 1.6; }
+.st-l1 { fill: #5a6480; font: 800 6.4px Inter, sans-serif; letter-spacing: 0.06em; text-anchor: middle; }
+.st-l2 { fill: #8b96af; font: 700 6.8px Inter, sans-serif; letter-spacing: 0.06em; }
+.st-legend { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 8px; justify-content: center; }
+.st-legend span { display: flex; align-items: center; gap: 4px; font-size: 7.5px; font-weight: 800; letter-spacing: 0.08em; color: #8b96af; }
+.st-d { width: 7px; height: 7px; border-radius: 50%; }
+.st-d-core { background: var(--puro-blue-dark); }
+.st-d-n1 { background: var(--puro-blue); }
+.st-d-n2 { background: #fff; border: 1.5px solid var(--puro-blue); }
+.st-d-t { background: #14b8a8; }
+
 /* ch6 · infinity loop */
 @keyframes inf-travel { to { offset-distance: 100%; } }
 .inf-base { fill: none; stroke: rgba(28, 79, 196, 0.22); stroke-width: 2.6; }
