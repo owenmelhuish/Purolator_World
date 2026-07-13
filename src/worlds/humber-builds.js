@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { C, mat, box, cyl } from '../materials.js';
 import { makePerson } from '../hero.js';
-import { rbox, canvasMat, makeSpotlightPair } from './props.js';
+import { rbox, canvasMat, makeSpotlightPair, makeCar } from './props.js';
 
 // ---------------------------------------------------------------------------
 // Humber Polytechnic — campus-world builds. Verified palette: navy #041E42,
@@ -1161,6 +1161,516 @@ export function makeHumberHQ() {
     lamp.position.y = 2.65;
     lampG.add(lamp);
     conform(lampG, lx, 8.6, 0.42);
+  }
+  return g;
+}
+
+// --- media-city set pieces: the full-funnel story fills the globe ------------------
+
+/** CN Tower — the "everywhere the city looks" landmark. */
+export function makeCNTower(scale = 1) {
+  const g = new THREE.Group();
+  const concrete = mat(0xdfe3ea, { roughness: 0.7 });
+  const concreteDark = mat(0xc7cdd8, { roughness: 0.75 });
+  // tapered shaft with a flared base
+  g.add(cyl(1.5, 2.4, 1.2, concreteDark, 0, 0.6, 0, 8));
+  g.add(cyl(0.52, 1.5, 9.6, concrete, 0, 5.4, 0, 8));
+  // main pod: lower ring, glazing band, white cap, red trim
+  g.add(cyl(1.55, 1.15, 0.55, concrete, 0, 10.3, 0, 20));
+  const podGlass = canvasMat(512, 64, (ctx, W, H) => {
+    ctx.fillStyle = '#20304c';
+    ctx.fillRect(0, 0, W, H);
+    for (let x = 4; x < W; x += 22) {
+      ctx.fillStyle = Math.random() < 0.55 ? '#f3e7c4' : '#41597e';
+      ctx.fillRect(x, 12, 16, 40);
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.4 });
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(1.62, 1.62, 0.7, 24, 1, true), podGlass);
+  band.position.y = 10.95;
+  g.add(band);
+  g.add(cyl(1.65, 1.62, 0.16, mat(0xb7413c, { roughness: 0.5 }), 0, 11.38, 0, 24));
+  g.add(cyl(1.2, 1.62, 0.5, concrete, 0, 11.7, 0, 20));
+  // skypod + antenna + beacon
+  g.add(cyl(0.62, 0.78, 0.6, concrete, 0, 13.3, 0, 12));
+  g.add(cyl(0.05, 0.3, 2.6, concreteDark, 0, 15.0, 0, 8));
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), new THREE.MeshStandardMaterial({
+    color: 0xff9a9a, emissive: 0xd83a3a, emissiveIntensity: 1.6,
+  }));
+  beacon.position.y = 16.4;
+  g.add(beacon);
+  g.scale.setScalar(scale);
+  return g;
+}
+
+/** Downtown Toronto cluster: CN Tower + glass condo towers on a paved podium. */
+export function makeTorontoCluster() {
+  const g = new THREE.Group();
+  g.add(rbox(13, 0.4, 10, mat(0xd9dee8, { roughness: 0.8 }), 0, 0.2, 0, 0.08));
+  const tower = (w, h, d, px, pz, ry, litRatio) => {
+    const f = hqGlazing(w, Math.max(3, Math.round(h / 1.6)), { litRatio });
+    const s = hqGlazing(d, Math.max(3, Math.round(h / 1.6)), { litRatio });
+    const t = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [s, s, mat(0xedf0f7), mat(0xedf0f7), f, f]);
+    t.position.set(px, 0.4 + h / 2, pz);
+    t.rotation.y = ry;
+    t.castShadow = true;
+    g.add(t);
+    const cap = box(w * 0.8, 0.3, d * 0.8, mat(0xc7cdd8, { roughness: 0.7 }), px, 0.4 + h + 0.15, pz);
+    cap.rotation.y = ry;
+    g.add(cap);
+  };
+  tower(3.4, 7.5, 3.0, -4.2, -2.4, 0.15, 0.5);
+  tower(2.8, 5.8, 2.6, -1.0, -3.4, -0.2, 0.4);
+  tower(3.0, 6.6, 2.8, 4.3, -2.8, 0.3, 0.45);
+  tower(2.5, 4.6, 2.4, 4.8, 1.4, -0.25, 0.4);
+  const cn = makeCNTower(1.0);
+  cn.position.set(-0.4, 0.4, 0.8);
+  g.add(cn);
+  // waterfront promenade dressing
+  for (const [tx, tz, s] of [[-5.6, 2.6, 0.6], [2.0, 3.2, 0.5], [6.2, -0.6, 0.55]]) {
+    const t = makeFrostTree(s);
+    t.position.set(tx, 0.4, tz);
+    g.add(t);
+  }
+  for (const [px, pz, ry] of [[0.8, 3.4, 0.4], [-2.6, 3.0, -1.2]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.4, pz);
+    p.rotation.y = ry;
+    g.add(p);
+  }
+  return g;
+}
+
+/** Broadcast studio — the TV buy: dish, red mast, ON AIR, campaign on the wall. */
+export function makeBroadcastStudio() {
+  const g = new THREE.Group();
+  const white = mat(0xf3f5fa, { roughness: 0.75 });
+  const navy = mat(HU.navy, { roughness: 0.55 });
+  const steel = mat(0x9aa3b2, { roughness: 0.5, metalness: 0.3 });
+  g.add(rbox(12.5, 0.4, 9, mat(0xdde2ec, { roughness: 0.8 }), 0, 0.2, 0, 0.08));
+  // studio hall
+  g.add(rbox(9.5, 3.8, 6.4, white, -0.8, 0.4 + 1.9, -0.6, 0.1));
+  g.add(box(9.9, 0.55, 6.8, navy, -0.8, 0.4 + 3.55, -0.6));
+  // station lettering band
+  const nameFace = canvasMat(880, 96, (ctx, W, H) => {
+    ctx.fillStyle = '#041e42';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#f8fafd';
+    ctx.font = '800 52px Inter, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('HUMBER MEDIA STUDIOS · STUDIO B', 28, 64);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.3 });
+  const nameP = new THREE.Mesh(new THREE.PlaneGeometry(9.6, 1.0), nameFace);
+  nameP.position.set(-0.8, 0.4 + 3.55, 2.85);
+  g.add(nameP);
+  // campaign playing on the studio wall
+  const wallScreen = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 2.6),
+    canvasMat(760, 360, (ctx, W, H) => adsHU.campaign(ctx, W, H), { emissive: 0xffffff, emissiveIntensity: 0.45 }));
+  wallScreen.position.set(-2.2, 0.4 + 1.85, 2.62);
+  g.add(wallScreen);
+  // glowing ON AIR box
+  const onAir = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.62, 0.24),
+    [navy, navy, navy, navy,
+      canvasMat(300, 100, (ctx, W, H) => {
+        ctx.fillStyle = '#2a0a12';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#ff4560';
+        ctx.font = '900 56px Inter, Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ON AIR', W / 2, 70);
+      }, { emissive: 0xffffff, emissiveIntensity: 0.8 }),
+      navy]
+  );
+  onAir.position.set(2.6, 0.4 + 3.0, 2.72);
+  g.add(onAir);
+  // roof: satellite dish + AC
+  const dish = new THREE.Group();
+  const bowl = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2.7), steel);
+  bowl.rotation.z = 2.2;
+  bowl.position.y = 1.0;
+  dish.add(bowl);
+  dish.add(cyl(0.09, 0.12, 1.0, steel, 0, 0.4, 0, 8));
+  dish.position.set(-3.4, 0.4 + 3.8, -1.6);
+  g.add(dish);
+  g.add(rbox(1.6, 0.7, 1.2, mat(0xc3c9d4, { roughness: 0.75 }), 1.8, 0.4 + 4.1, -2.0, 0.06));
+  // red/white broadcast mast with beacon + microwave drums
+  const mast = new THREE.Group();
+  mast.add(makeTruss(7.2, 0.55, 0xb7413c));
+  const drum = cyl(0.28, 0.28, 0.3, mat(0xe8ecf2, { roughness: 0.5 }), 0.32, 4.6, 0, 10);
+  drum.rotation.z = Math.PI / 2;
+  mast.add(drum);
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), new THREE.MeshStandardMaterial({
+    color: 0xff9a9a, emissive: 0xd83a3a, emissiveIntensity: 1.7,
+  }));
+  beacon.position.y = 7.45;
+  mast.add(beacon);
+  mast.position.set(4.6, 0.4, -2.2);
+  g.add(mast);
+  // OB van + crew
+  const van = new THREE.Group();
+  van.add(rbox(2.4, 1.15, 1.1, white, 0, 0.85, 0, 0.08));
+  van.add(box(2.45, 0.35, 1.14, navy, 0, 1.15, 0));
+  van.add(cyl(0.28, 0.28, 0.2, mat(0x2b2f38), -0.75, 0.28, 0.56, 10).rotateX(Math.PI / 2));
+  van.add(cyl(0.28, 0.28, 0.2, mat(0x2b2f38), 0.75, 0.28, 0.56, 10).rotateX(Math.PI / 2));
+  van.add(cyl(0.28, 0.28, 0.2, mat(0x2b2f38), -0.75, 0.28, -0.56, 10).rotateX(Math.PI / 2));
+  van.add(cyl(0.28, 0.28, 0.2, mat(0x2b2f38), 0.75, 0.28, -0.56, 10).rotateX(Math.PI / 2));
+  van.add(cyl(0.05, 0.05, 0.9, steel, -0.7, 1.85, 0, 6));
+  const vDish = new THREE.Mesh(new THREE.SphereGeometry(0.34, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2.6), steel);
+  vDish.rotation.z = 1.8;
+  vDish.position.set(-0.7, 2.3, 0);
+  van.add(vDish);
+  van.position.set(4.6, 0.4, 2.0);
+  van.rotation.y = 0.5;
+  g.add(van);
+  for (const [px, pz, ry] of [[1.2, 3.6, 0.2], [3.4, 3.4, -0.8]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.4, pz);
+    p.rotation.y = ry;
+    g.add(p);
+  }
+  return g;
+}
+
+/** Drive-in premiere — the anthem film playing to a lot full of cars. */
+export function makeDriveIn() {
+  const g = new THREE.Group();
+  const charcoal = mat(0x3a4048, { roughness: 0.7 });
+  // lot
+  g.add(rbox(14, 0.3, 11, mat(0xcfd5e0, { roughness: 0.9 }), 0, 0.15, 0.5, 0.1));
+  // the big screen, angled down toward the lot
+  const scr = new THREE.Group();
+  scr.add(rbox(11.5, 6.2, 0.5, mat(0xe8ecf2, { roughness: 0.6 }), 0, 3.6, 0, 0.1));
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(10.7, 5.4),
+    canvasMat(1024, 520, (ctx, W, H) => adsHU.campaign(ctx, W, H), { emissive: 0xffffff, emissiveIntensity: 0.55 }));
+  face.position.set(0, 3.6, 0.28);
+  scr.add(face);
+  for (const sx of [-4.6, 0, 4.6]) {
+    scr.add(box(0.35, 1.0, 0.35, charcoal, sx, 0.5, -0.3));
+  }
+  scr.rotation.x = 0.06;
+  scr.position.set(0, 0.3, -4.2);
+  g.add(scr);
+  // rows of cars watching
+  const carCols = [0x35547e, 0x6e7d9e, 0x8a5a83, 0xbfc6d8, 0x494e58, 0x9e3b47];
+  let ci = 0;
+  for (const [cx, cz] of [[-4.4, -0.4], [-1.5, -0.6], [1.6, -0.5], [4.5, -0.3], [-3.0, 2.2], [0.2, 2.4], [3.3, 2.3]]) {
+    const car = makeCar(carCols[ci++ % carCols.length]);
+    car.position.set(cx, 0.3, cz);
+    car.rotation.y = Math.PI + (ci % 3 - 1) * 0.08;
+    g.add(car);
+  }
+  // projector hut with beam + marquee at the entrance
+  const hut = new THREE.Group();
+  hut.add(rbox(1.8, 1.5, 1.6, mat(0xf3f5fa, { roughness: 0.75 }), 0, 0.75, 0, 0.06));
+  const lens = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.4), new THREE.MeshStandardMaterial({
+    color: 0xfff3d0, emissive: 0xffe2a0, emissiveIntensity: 1.1,
+  }));
+  lens.position.set(0, 0.95, -0.82);
+  hut.add(lens);
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(1.6, 9.5, 4, 1, true), new THREE.MeshBasicMaterial({
+    color: 0xfff6e0, transparent: true, opacity: 0.10, depthWrite: false, side: THREE.DoubleSide,
+  }));
+  beam.rotation.x = -Math.PI / 2 + 0.28;
+  beam.position.set(0, 2.4, -5.2);
+  hut.add(beam);
+  hut.position.set(0, 0.3, 5.0);
+  g.add(hut);
+  const marquee = new THREE.Mesh(
+    new THREE.BoxGeometry(4.6, 1.15, 0.24),
+    [charcoal, charcoal, charcoal, charcoal,
+      canvasMat(640, 160, (ctx, W, H) => {
+        ctx.fillStyle = '#f8fafd';
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#041e42';
+        ctx.lineWidth = 6;
+        ctx.strokeRect(5, 5, W - 10, H - 10);
+        ctx.fillStyle = '#041e42';
+        ctx.textAlign = 'center';
+        ctx.font = '900 44px Inter, Arial, sans-serif';
+        ctx.fillText('TONIGHT · THE ANTHEM FILM', W / 2, 62);
+        ctx.fillStyle = '#5c068c';
+        ctx.font = '800 36px Inter, Arial, sans-serif';
+        ctx.fillText('SUNG BY HUMBER STUDENTS', W / 2, 118);
+      }, { emissive: 0xffffff, emissiveIntensity: 0.35 }),
+      charcoal]
+  );
+  marquee.position.set(4.2, 2.0, 5.2);
+  marquee.rotation.y = -0.3;
+  g.add(marquee);
+  g.add(box(0.22, 1.6, 0.22, charcoal, 3.4, 0.9, 5.2));
+  g.add(box(0.22, 1.6, 0.22, charcoal, 5.0, 0.9, 5.2));
+  return g;
+}
+
+/** Roadside digital pylon — the social/digital buy: 9:16 campaign reel. */
+export function makeSocialPylon() {
+  const g = new THREE.Group();
+  const navy = mat(HU.navy, { roughness: 0.5 });
+  g.add(cyl(1.7, 1.9, 0.35, mat(0xdde2ec, { roughness: 0.85 }), 0, 0.17, 0, 20));
+  g.add(rbox(2.9, 6.4, 0.55, navy, 0, 0.35 + 3.2, 0, 0.14));
+  const reel = canvasMat(300, 620, (ctx, W, H) => {
+    ctx.fillStyle = '#101216';
+    ctx.fillRect(0, 0, W, H);
+    drawSpotlights(ctx, W, H, 0.5, 0.35);
+    drawStackedType(ctx, W, H, { x: 0.14, y: 0.3, size: H * 0.075 });
+    // reel UI chrome
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    ctx.font = '700 22px Inter, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('@humbercollege', 20, H - 68);
+    ctx.font = '600 19px Inter, Arial, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.fillText('#TheYouYouKnew · 2.4M views', 20, H - 38);
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(W - 34, H * 0.42 + i * 64, 15, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#101216';
+    ctx.font = '900 22px Inter, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('♥', W - 34, H * 0.42 + 8);
+    ctx.fillRect(0, H - 8, W * 0.62, 4);
+    ctx.fillStyle = '#5c068c';
+    ctx.fillRect(0, H - 8, W * 0.4, 4);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.5 });
+  const scrF = new THREE.Mesh(new THREE.PlaneGeometry(2.45, 5.7), reel);
+  scrF.position.set(0, 0.35 + 3.2, 0.29);
+  g.add(scrF);
+  const scrB = new THREE.Mesh(new THREE.PlaneGeometry(2.45, 5.7), reel);
+  scrB.rotation.y = Math.PI;
+  scrB.position.set(0, 0.35 + 3.2, -0.29);
+  g.add(scrB);
+  // gold plinth ring + admirers
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.45, 0.05, 8, 36), mat(HU.gold, { roughness: 0.4 }));
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.38;
+  g.add(ring);
+  for (const [px, pz, ry] of [[1.8, 1.4, -2.5], [-1.5, 1.8, 2.6]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.3, pz);
+    p.rotation.y = ry;
+    g.add(p);
+  }
+  return g;
+}
+
+/** Humber residence hall — campus life fills the south. */
+export function makeResidenceHall() {
+  const g = new THREE.Group();
+  const white = mat(0xf0f2f8, { roughness: 0.75 });
+  const navy = mat(HU.navy, { roughness: 0.55 });
+  g.add(rbox(11.5, 0.4, 8.5, mat(0xdde2ec, { roughness: 0.8 }), 0, 0.2, 0, 0.08));
+  const facade = canvasMat(760, 4 * 66, (ctx, W, H) => {
+    ctx.fillStyle = '#e8ecf4';
+    ctx.fillRect(0, 0, W, H);
+    for (let f = 0; f < 4; f++) {
+      const yy = f * 66;
+      for (let x = 10; x + 56 < W; x += 66) {
+        ctx.fillStyle = '#041e42';
+        ctx.fillRect(x, yy + 10, 56, 46);
+        ctx.fillStyle = Math.random() < 0.55 ? '#f3d9a0' : '#5a6a80';
+        ctx.fillRect(x + 4, yy + 14, 30, 38);
+        ctx.fillStyle = '#cfd5e2';
+        ctx.fillRect(x + 38, yy + 14, 14, 38); // balcony panel
+      }
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.3 });
+  const hall = new THREE.Mesh(new THREE.BoxGeometry(9, 5.2, 5.6), [white, white, white, white, facade, facade]);
+  hall.position.set(-0.4, 0.4 + 2.6, -0.6);
+  hall.castShadow = true;
+  g.add(hall);
+  g.add(box(9.4, 0.35, 6.0, navy, -0.4, 0.4 + 5.35, -0.6));
+  // gold entrance canopy + glowing lobby
+  g.add(box(2.6, 0.14, 1.5, mat(HU.gold, { roughness: 0.4 }), -0.4, 0.4 + 1.7, 2.5));
+  g.add(cyl(0.06, 0.06, 1.7, navy, -1.5, 0.4 + 0.85, 3.1, 8));
+  g.add(cyl(0.06, 0.06, 1.7, navy, 0.7, 0.4 + 0.85, 3.1, 8));
+  const lobby = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 1.4), new THREE.MeshStandardMaterial({
+    color: 0xffe9c4, emissive: 0xffc987, emissiveIntensity: 0.6,
+  }));
+  lobby.position.set(-0.4, 0.4 + 0.85, 2.24);
+  g.add(lobby);
+  const sign = new THREE.Mesh(
+    new THREE.BoxGeometry(4.4, 0.75, 0.2),
+    [navy, navy, navy, navy,
+      canvasMat(620, 104, (ctx, W, H) => {
+        ctx.fillStyle = '#041e42';
+        ctx.fillRect(0, 0, W, H);
+        humberLockup(ctx, 70, H / 2, 0.9, true);
+        ctx.fillStyle = '#f8fafd';
+        ctx.font = '800 44px Inter, Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('RESIDENCE', 130, 68);
+      }, { emissive: 0xffffff, emissiveIntensity: 0.3 }),
+      navy]
+  );
+  sign.position.set(-0.4, 0.4 + 4.6, 2.32);
+  g.add(sign);
+  // moving-in vignette + bikes
+  for (const [px, pz, ry] of [[2.4, 3.0, 0.6], [3.0, 2.2, -0.4], [-3.2, 3.2, 1.8]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.4, pz);
+    p.rotation.y = ry;
+    g.add(p);
+  }
+  g.add(rbox(0.9, 0.55, 0.55, mat(0x8a5a83, { roughness: 0.7 }), 3.6, 0.68, 3.0, 0.06));
+  const rackM = mat(0x9aa3b2, { roughness: 0.5, metalness: 0.3 });
+  for (let i = 0; i < 4; i++) {
+    g.add(box(0.05, 0.5, 0.7, rackM, -4.4 + i * 0.4, 0.65, 3.0));
+  }
+  const tree = makeFrostTree(0.7);
+  tree.position.set(4.6, 0.4, -2.4);
+  g.add(tree);
+  return g;
+}
+
+/** Arboretum grove — boardwalk, pergola, birches by the pond. */
+export function makeArboretum() {
+  const g = new THREE.Group();
+  const timber = mat(0xb9a184, { roughness: 0.85 });
+  // lawn
+  g.add(cyl(6.8, 7.0, 0.22, mat(0xdfe7dc, { roughness: 0.95 }), 0, 0.11, 0, 36));
+  // boardwalk toward the pond
+  for (let i = 0; i < 7; i++) {
+    const plank = box(1.5, 0.1, 0.62, timber, 3.2 + i * 0.32, 0.3 - i * 0.012, 2.6 + i * 0.62);
+    plank.rotation.y = 0.18;
+    g.add(plank);
+  }
+  // pergola with benches
+  const perg = new THREE.Group();
+  for (const [cx, cz] of [[-1.1, -1.1], [1.1, -1.1], [-1.1, 1.1], [1.1, 1.1]]) {
+    perg.add(box(0.14, 1.9, 0.14, timber, cx, 0.95, cz));
+  }
+  for (let i = 0; i < 6; i++) {
+    perg.add(box(2.9, 0.06, 0.16, timber, 0, 1.95, -1.2 + i * 0.48));
+  }
+  perg.add(box(2.9, 0.1, 0.24, timber, 0, 1.86, -1.25));
+  perg.add(box(2.9, 0.1, 0.24, timber, 0, 1.86, 1.25));
+  perg.add(box(1.7, 0.1, 0.5, timber, 0, 0.5, 0.7));
+  perg.add(box(1.7, 0.1, 0.5, timber, 0, 0.5, -0.7));
+  perg.position.set(-1.6, 0.2, -0.8);
+  g.add(perg);
+  // birch grove + boulders
+  for (const [tx, tz, s] of [[-4.4, 2.2, 0.9], [-3.6, -3.4, 0.75], [2.6, -3.8, 0.85], [4.6, -1.2, 0.7], [0.6, 3.8, 0.8]]) {
+    const t = makeFrostTree(s);
+    t.position.set(tx, 0.2, tz);
+    g.add(t);
+  }
+  const rockM = mat(0xc9cfd9, { roughness: 0.9 });
+  for (const [rx, rz, s] of [[1.8, 1.8, 0.5], [-0.6, 3.2, 0.35], [4.0, 2.6, 0.4]]) {
+    const r = new THREE.Mesh(new THREE.DodecahedronGeometry(s), rockM);
+    r.position.set(rx, 0.2 + s * 0.5, rz);
+    r.rotation.set(rx, rz, 0.4);
+    g.add(r);
+  }
+  // interpretive sign
+  const sign = new THREE.Mesh(
+    new THREE.BoxGeometry(1.9, 0.8, 0.1),
+    [timber, timber, timber, timber,
+      canvasMat(340, 150, (ctx, W, H) => {
+        ctx.fillStyle = '#f4efe2';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#2d5a3c';
+        ctx.font = '800 34px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('HUMBER', W / 2, 62);
+        ctx.fillText('ARBORETUM', W / 2, 104);
+      }, {}),
+      timber]
+  );
+  sign.position.set(3.0, 0.85, 1.4);
+  sign.rotation.y = 0.5;
+  g.add(sign);
+  g.add(box(0.12, 0.7, 0.12, timber, 3.0, 0.4, 1.4));
+  const p = makePerson({});
+  p.position.set(-2.6, 0.2, 1.8);
+  p.rotation.y = 0.8;
+  g.add(p);
+  return g;
+}
+
+/** Streetcar platform — the transit buy, wrapped shelter on the crosstown line. */
+export function makeTransitPlatform() {
+  const g = new THREE.Group();
+  const navy = mat(HU.navy, { roughness: 0.55 });
+  const glass = new THREE.MeshPhysicalMaterial({
+    color: 0xc4d2e4, transparent: true, opacity: 0.5, roughness: 0.15,
+  });
+  // raised platform beside the tracks
+  g.add(rbox(9, 0.5, 3.2, mat(0xd6dbe6, { roughness: 0.8 }), 0, 0.25, 0, 0.08));
+  g.add(box(9, 0.08, 0.3, mat(HU.gold, { roughness: 0.6 }), 0, 0.52, -1.35));
+  // shelter: navy roof on posts, glass back, campaign poster
+  for (const px of [-3.2, 3.2]) {
+    g.add(box(0.14, 2.1, 0.14, navy, px, 0.5 + 1.05, 0.9));
+    g.add(box(0.14, 2.1, 0.14, navy, px, 0.5 + 1.05, -0.5));
+  }
+  g.add(rbox(7.6, 0.18, 2.0, navy, 0, 0.5 + 2.2, 0.2, 0.05));
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 1.9), glass);
+  back.position.set(0, 0.5 + 1.1, 1.0);
+  g.add(back);
+  const poster = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.7),
+    canvasMat(420, 280, (ctx, W, H) => adsHU.campaign(ctx, W, H), { emissive: 0xffffff, emissiveIntensity: 0.4 }));
+  poster.rotation.y = Math.PI;
+  poster.position.set(-2.0, 0.5 + 1.15, 0.97);
+  g.add(poster);
+  const poster2 = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 1.7),
+    canvasMat(420, 280, (ctx, W, H) => adsHU.applyNow(ctx, W, H), { emissive: 0xffffff, emissiveIntensity: 0.4 }));
+  poster2.position.set(2.0, 0.5 + 1.15, 1.03);
+  g.add(poster2);
+  // station sign
+  const sign = new THREE.Mesh(
+    new THREE.BoxGeometry(3.4, 0.55, 0.14),
+    [navy, navy, navy, navy,
+      canvasMat(520, 84, (ctx, W, H) => {
+        ctx.fillStyle = '#041e42';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#cc9900';
+        ctx.beginPath(); ctx.arc(40, H / 2, 18, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#f8fafd';
+        ctx.font = '800 40px Inter, Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('HUMBER LINE · CAMPUS', 76, 58);
+      }, { emissive: 0xffffff, emissiveIntensity: 0.35 }),
+      navy]
+  );
+  sign.position.set(0, 0.5 + 2.75, 0.2);
+  g.add(sign);
+  // waiting students + bench
+  for (const [px, ry] of [[-1.2, -0.2], [0.3, 0.4], [1.6, -2.9]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.5, 0.1);
+    p.rotation.y = ry;
+    g.add(p);
+  }
+  g.add(box(2.2, 0.1, 0.5, mat(0xb9a184, { roughness: 0.8 }), -2.6, 0.85, 0.5));
+  g.add(box(0.12, 0.35, 0.5, mat(0xb9a184, { roughness: 0.8 }), -3.5, 0.65, 0.5));
+  g.add(box(0.12, 0.35, 0.5, mat(0xb9a184, { roughness: 0.8 }), -1.7, 0.65, 0.5));
+  return g;
+}
+
+/** Campaign banner pole pair — street-level OOH along the roads. */
+export function makeCampusBannerPair() {
+  const g = new THREE.Group();
+  const steel = mat(0x8b94a6, { roughness: 0.5, metalness: 0.3 });
+  const bannerFace = canvasMat(200, 460, (ctx, W, H) => {
+    ctx.fillStyle = '#101216';
+    ctx.fillRect(0, 0, W, H);
+    drawSpotlights(ctx, W, H, 0.5, 0.4);
+    drawStackedType(ctx, W, H, { x: 0.12, y: 0.24, size: H * 0.085 });
+    ctx.fillStyle = '#cc9900';
+    ctx.fillRect(0, H - 26, W, 10);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.35 });
+  for (const px of [-2.4, 2.4]) {
+    g.add(cyl(0.07, 0.1, 4.2, steel, px, 2.1, 0, 8));
+    g.add(box(1.1, 0.06, 0.06, steel, px + 0.5, 3.9, 0));
+    g.add(box(1.1, 0.06, 0.06, steel, px + 0.5, 1.6, 0));
+    const banner = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 2.3), bannerFace);
+    banner.position.set(px + 0.55, 2.75, 0.04);
+    g.add(banner);
+    const bannerB = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 2.3), bannerFace);
+    bannerB.rotation.y = Math.PI;
+    bannerB.position.set(px + 0.55, 2.75, -0.04);
+    g.add(bannerB);
   }
   return g;
 }

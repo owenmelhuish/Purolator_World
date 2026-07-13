@@ -10,6 +10,8 @@ import {
   HU, adsHU, makeCampaignStage, makeHumberHQ, makeBarrettCTI, makeQuad,
   makeHeritageHall, makeHawksField, makeDataPavilion, makeEnrollmentMonument,
   makeFrostTree, makeFrostShrub, streetcarWrap, busWrap,
+  makeTorontoCluster, makeBroadcastStudio, makeDriveIn, makeSocialPylon,
+  makeResidenceHall, makeArboretum, makeTransitPlatform, makeCampusBannerPair,
 } from './humber-builds.js';
 import BAKED_LAYOUT from '../layout-humber.json';
 
@@ -199,6 +201,45 @@ function build(ctx) {
   placeM('hawks', field, 55, 115, 0.3, 0.32, 'hawks');
   registerPoi(field, 'hawks');
 
+  // --- the media city: every channel PUSH bought, as a place -------------------------------
+  {
+    plate(null, -28, -38, 0.19, 0.24, 0xe6eaf3);
+    const toronto = makeTorontoCluster();
+    placeM('toronto', toronto, -28, -38, 0.4, 0.26, 'city');
+    registerPoi(toronto, 'city');
+
+    plate(null, 32, 28, 0.18, 0.24, 0xe9edf5);
+    const studio = makeBroadcastStudio();
+    placeM('studio', studio, 32, 28, -0.5, 0.26, 'city');
+    registerPoi(studio, 'city');
+
+    plate(null, 30, 64, 0.19, 0.24, 0xe6eaf3);
+    const drivein = makeDriveIn();
+    placeM('drivein', drivein, 30, 64, 0.3, 0.26, 'stage');
+    registerPoi(drivein, 'stage');
+
+    const pylon = makeSocialPylon();
+    placeM('pylon', pylon, -44, 96, 0.5, 0.28, 'city');
+    registerPoi(pylon, 'city');
+
+    plate(null, -64, -45, 0.17, 0.24, 0xe9edf5);
+    const residence = makeResidenceHall();
+    placeM('residence', residence, -64, -45, 0.4, 0.26, 'campus');
+    registerPoi(residence, 'campus');
+
+    const arboretum = makeArboretum();
+    placeM('arboretum', arboretum, 56, 31, -0.6, 0.24, 'campus');
+    registerPoi(arboretum, 'campus');
+
+    const platform = makeTransitPlatform();
+    placeM('platform', platform, 42.1, -104.5, 0.4, 0.3, 'transit');
+    registerPoi(platform, 'transit');
+
+    placeSmall('banners-1', makeCampusBannerPair(), 6, -40, 0.35, 0.3);
+    placeSmall('banners-2', makeCampusBannerPair(), -5, 58, 0.3, 0.3);
+    placeSmall('banners-3', makeCampusBannerPair(), 6.5, 8, 0.4, 0.3);
+  }
+
   // --- student crowds — the campus is alive ----------------------------------------------
   {
     let cn = 0;
@@ -349,10 +390,13 @@ function build(ctx) {
       { lat: 90, lon: 0, ang: 0.72 }, { lat: 76, lon: -95, ang: 0.3 }, { lat: 78, lon: 95, ang: 0.32 },
       { lat: 54, lon: -50, ang: 0.34 }, { lat: 54, lon: 58, ang: 0.3 }, { lat: 33, lon: -18, ang: 0.32 },
       { lat: 20, lon: -15, ang: 0.26 }, { lat: 55, lon: 115, ang: 0.34 }, { lat: 34, lon: -108, ang: 0.28 },
+      { lat: -28, lon: -38, ang: 0.26 }, { lat: 32, lon: 28, ang: 0.24 }, { lat: 30, lon: 64, ang: 0.26 },
+      { lat: -64, lon: -45, ang: 0.22 }, { lat: 42.1, lon: -104.5, ang: 0.18 }, { lat: -44, lon: 96, ang: 0.14 },
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
     const rings = [ringEq, ringS, connA, railLoop];
+    const matRock = new THREE.MeshStandardMaterial({ color: 0xc9cfd9, roughness: 0.9 });
     let placed = 0, guard = 0;
-    while (placed < 95 && guard < 1100) {
+    while (placed < 150 && guard < 1800) {
       guard++;
       const lat = -80 + rand() * 160;
       const lon = -180 + rand() * 360;
@@ -361,7 +405,19 @@ function build(ctx) {
       if (exclude.some((e) => d.angleTo(e.dir) < e.ang)) continue;
       if (rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.08)) continue;
       placed++;
-      const t = rand() < 0.7 ? makeFrostTree(0.9 + rand() * 0.9) : makeFrostShrub(1.0 + rand() * 0.8);
+      const roll = rand();
+      let t;
+      if (roll < 0.62) t = makeFrostTree(0.9 + rand() * 0.9);
+      else if (roll < 0.86) t = makeFrostShrub(1.0 + rand() * 0.8);
+      else {
+        t = new THREE.Mesh(new THREE.DodecahedronGeometry(0.4 + rand() * 0.5), matRock);
+        t.rotation.set(rand() * 3, rand() * 3, rand());
+        t.castShadow = true;
+        const wrap = new THREE.Group();
+        t.position.y = 0.25;
+        wrap.add(t);
+        t = wrap;
+      }
       placeSmall(`tree-${String(placed).padStart(2, '0')}`, t, lat, lon, rand() * Math.PI * 2, 0.12);
     }
   }
