@@ -174,7 +174,8 @@ function build(ctx) {
   registerPoi(rewards, 'privileges');
   animators.push({
     update(dt, time) {
-      rewards.userData.cMark.rotation.y = time * 0.35;
+      // gentle showcase sway — the C stays readable, never shows its edge
+      rewards.userData.cMark.rotation.y = Math.sin(time * 0.5) * 0.35;
     },
   });
 
@@ -285,20 +286,21 @@ function build(ctx) {
   const shuttle = makeBus({
     base: 0xf8fafd,
     drawWrap: (ctx, W, H) => {
-      ctx.fillStyle = '#f8fafd';
+      // coach livery: white body, orange lower band + thin gold stripe
+      ctx.fillStyle = '#f9f6ee';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#f57f29';
-      ctx.fillRect(0, H * 0.62, W, H * 0.38);
+      ctx.fillRect(0, H * 0.72, W, H * 0.28);
       ctx.fillStyle = '#ffce34';
-      ctx.fillRect(0, H * 0.56, W, H * 0.08);
-      ctx.fillStyle = '#231f20';
-      ctx.font = `900 ${H * 0.3}px Inter, Arial, sans-serif`;
+      ctx.fillRect(0, H * 0.68, W, H * 0.05);
+      ctx.fillStyle = '#6a634d';
+      ctx.font = `900 ${H * 0.17}px Inter, Arial, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('EXPERIENCE MORE', W / 2, H * 0.3);
+      ctx.fillText('EXPERIENCE MORE', W / 2, H * 0.56);
       ctx.fillStyle = '#ffffff';
-      ctx.font = `700 ${H * 0.2}px Inter, Arial, sans-serif`;
-      ctx.fillText('CHOICE HOTELS CANADA', W / 2, H * 0.8);
+      ctx.font = `700 ${H * 0.14}px Inter, Arial, sans-serif`;
+      ctx.fillText('CHOICE HOTELS CANADA', W / 2, H * 0.87);
     },
   });
   addVehicle(shuttle, ringEq, 6.2, 0.62);

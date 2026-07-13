@@ -621,44 +621,71 @@ export function makeCottageDock() {
   return g;
 }
 
-// --- Choice Privileges rewards pavilion ------------------------------------------
+// --- Choice Privileges rewards pavilion — rebuilt to the model sheet ---------
+// Gold plinth ring around cream paving, tiered stone pedestal, glossy
+// extruded interlocking C sculpture (orange outer + nested gold), smartphone
+// monolith with glowing screen, planters with corner lights, admirers.
+
+/** Extruded letter-C shape (flat faces, rounded look). */
+function extrudedC(rOut, rIn, depth, color, gapHalf = 0.62) {
+  const shape = new THREE.Shape();
+  shape.absarc(0, 0, rOut, gapHalf, Math.PI * 2 - gapHalf, false);
+  shape.absarc(0, 0, rIn, Math.PI * 2 - gapHalf, gapHalf, true);
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth, bevelEnabled: true, bevelThickness: 0.09, bevelSize: 0.09, bevelSegments: 3, curveSegments: 40,
+  });
+  geo.translate(0, 0, -depth / 2); // gap stays at +x — reads as a C from the front
+  const m = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    color, roughness: 0.18, metalness: 0.12,
+  }));
+  m.castShadow = true;
+  return m;
+}
 
 export function makeRewardsPavilion() {
   const g = new THREE.Group();
-  // gold plaza disc
-  g.add(cyl(6.4, 6.6, 0.35, mat(CH.cream, { roughness: 0.85 }), 0, 0.18, 0, 36));
-  g.add(cyl(5.2, 5.2, 0.1, mat(CH.gold, { roughness: 0.6 }), 0, 0.4, 0, 36));
+  const goldMetal = new THREE.MeshStandardMaterial({ color: 0xd9ae4e, roughness: 0.3, metalness: 0.75 });
+  // base platform + cream paving + gold plinth ring
+  g.add(cyl(6.9, 7.2, 0.35, mat(0xd9ccb2, { roughness: 0.9 }), 0, 0.18, 0, 44));
+  g.add(cyl(6.3, 6.3, 0.16, mat(0xefe6d2, { roughness: 0.85 }), 0, 0.44, 0, 44));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(6.45, 0.17, 10, 64), goldMetal);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.5;
+  g.add(ring);
+  // tiny plaza lights on the ring line
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2;
+    const lightDot = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 10), new THREE.MeshStandardMaterial({
+      color: 0xfff1cc, emissive: 0xffd98a, emissiveIntensity: 1.2,
+    }));
+    lightDot.position.set(Math.cos(a) * 5.4, 0.54, Math.sin(a) * 5.4);
+    g.add(lightDot);
+  }
+  // tiered stone pedestal
+  g.add(cyl(2.6, 2.75, 0.5, mat(0xe4d7bd, { roughness: 0.85 }), 0, 0.75, 0, 32));
+  g.add(cyl(2.15, 2.3, 0.45, mat(0xd9ccb2, { roughness: 0.85 }), 0, 1.2, 0, 32));
 
-  // giant split-C monument — a thick wheel with a nested gold wedge, like the
-  // reference: fat orange C + gold blade filling part of the opening
+  // the interlocking C sculpture — glossy orange outer arc + nested gold arc
   const cGroup = new THREE.Group();
-  const seg1 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.95, 18, 48, Math.PI * 1.42), mat(CH.orange, { roughness: 0.4 }));
-  seg1.rotation.z = Math.PI * 0.29;
-  seg1.castShadow = true;
-  cGroup.add(seg1);
-  const seg2 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.78, 16, 26, Math.PI * 0.46), mat(CH.gold, { roughness: 0.4 }));
-  seg2.rotation.z = -Math.PI * 0.21;
-  seg2.position.z = 0.12;
-  seg2.castShadow = true;
-  cGroup.add(seg2);
-  // inner gold core disc peeking through the middle
-  const core = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.7, 24), mat(CH.gold, { roughness: 0.45 }));
-  core.rotation.x = Math.PI / 2;
-  core.castShadow = true;
-  cGroup.add(core);
-  cGroup.position.y = 3.5;
+  const orangeC = extrudedC(2.05, 1.12, 0.85, CH.orange);
+  cGroup.add(orangeC);
+  const goldC = extrudedC(1.06, 0.5, 0.7, 0xf2c14b);
+  goldC.position.set(0.18, 0, 0.16);
+  cGroup.add(goldC);
+  cGroup.scale.setScalar(1.25);
+  cGroup.position.y = 1.42 + 2.6;
   g.add(cGroup);
   g.userData.cMark = cGroup;
-  g.add(cyl(1.5, 1.8, 0.5, mat(CH.warmGrey, { roughness: 0.85 }), 0, 0.65, 0, 24));
 
-  // phone monolith with the app on screen
+  // smartphone monolith with the Privileges app glowing on screen
   const phone = new THREE.Group();
-  const phoneBody = rbox(2.3, 4.4, 0.32, mat(CH.ink, { roughness: 0.4 }), 0, 2.6, 0, 0.18);
+  const phoneBody = rbox(2.3, 4.4, 0.34, mat(0x2b2b2b, { roughness: 0.35, metalness: 0.2 }), 0, 2.6, 0, 0.22);
   phone.add(phoneBody);
+  phone.add(rbox(1.4, 0.28, 0.5, mat(0x232323, { roughness: 0.4 }), 0, 0.2, 0.02, 0.08)); // base foot
   const screen = new THREE.Mesh(
     new THREE.PlaneGeometry(2.0, 4.0),
     canvasMat(512, 1024, (ctx, W, H) => {
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#fff6e2';
       ctx.fillRect(0, 0, W, H);
       ctx.fillStyle = '#f57f29';
       ctx.fillRect(0, 0, W, 220);
@@ -674,7 +701,6 @@ export function makeRewardsPavilion() {
       ctx.fillStyle = '#f57f29';
       ctx.font = '900 68px Inter, Arial, sans-serif';
       ctx.fillText('POINTS', W / 2, 415);
-      // room cards
       for (let i = 0; i < 3; i++) {
         ctx.fillStyle = i === 1 ? '#fdeeda' : '#f4f0e8';
         ctx.beginPath();
@@ -690,7 +716,7 @@ export function makeRewardsPavilion() {
         ctx.fillText(['Comfort · Banff', 'Quality · Toronto', 'Clarion · Halifax'][i], 180, 535 + i * 150);
         ctx.fillStyle = '#f57f29';
         ctx.font = '800 26px Inter, Arial, sans-serif';
-        ctx.fillText('2× points tonight', 180, 572 + i * 150);
+        ctx.fillText('2\u00d7 points tonight', 180, 572 + i * 150);
         ctx.textAlign = 'center';
       }
       ctx.fillStyle = '#f57f29';
@@ -700,22 +726,37 @@ export function makeRewardsPavilion() {
       ctx.fillStyle = '#ffffff';
       ctx.font = '800 34px Inter, Arial, sans-serif';
       ctx.fillText('INSTALL NOW', W / 2, H - 47);
-    }, { emissive: 0xffffff, emissiveIntensity: 0.5 })
+    }, { emissive: 0xffffff, emissiveIntensity: 0.55 })
   );
-  screen.position.set(0, 2.6, 0.17);
+  screen.position.set(0, 2.6, 0.18);
   phone.add(screen);
-  phone.position.set(3.9, 0.4, 1.2);
-  phone.rotation.y = -0.5;
+  phone.position.set(5.5, 0.5, 1.4);
+  phone.rotation.y = -0.75;
+  phone.rotation.x = -0.06;
   g.add(phone);
 
-  // guests admiring
+  // planters with shrubs + gold corner lights
+  for (const [px, pz] of [[-4.9, -2.4], [4.6, -3.0]]) {
+    g.add(rbox(1.4, 0.6, 1.1, mat(0xd9ccb2, { roughness: 0.85 }), px, 0.8, pz, 0.06));
+    const s = makeShrub(1.0, 0x7a8f5a);
+    s.position.set(px, 1.1, pz);
+    g.add(s);
+    const glowSq = new THREE.Mesh(new THREE.PlaneGeometry(0.28, 0.28), new THREE.MeshStandardMaterial({
+      color: 0xffedbe, emissive: 0xffd98a, emissiveIntensity: 1.1,
+    }));
+    glowSq.position.set(px + 0.78, 0.8, pz);
+    glowSq.rotation.y = Math.PI / 2;
+    g.add(glowSq);
+  }
+
+  // admirers
   const p1 = makePerson({});
-  p1.position.set(-2.6, 0.45, 2.6);
+  p1.position.set(-2.9, 0.52, 2.7);
   p1.rotation.y = 0.6;
   g.add(p1);
   const p2 = makePerson({});
-  p2.position.set(-1.2, 0.45, 3.4);
-  p2.rotation.y = 0.2;
+  p2.position.set(2.1, 0.52, 3.6);
+  p2.rotation.y = -0.3;
   g.add(p2);
   return g;
 }
@@ -724,18 +765,41 @@ export function makeRewardsPavilion() {
 
 export function makeRoasMonument() {
   const g = new THREE.Group();
-  // circular stone terrace with a rim step, like the reference
-  g.add(cyl(7.6, 7.9, 0.4, mat(0xd9ccb2, { roughness: 0.9 }), 0, 0.2, 0, 40));
-  g.add(cyl(6.6, 6.6, 0.22, mat(CH.cream, { roughness: 0.85 }), 0, 0.51, 0, 40));
-  // rising bars: cream ledger bars growing into orange, peaking gold
+  // rectangular stone terrace with tile joints + tiny edge lights (model sheet)
+  const terrace = new THREE.Mesh(
+    new THREE.BoxGeometry(13.5, 0.55, 9),
+    [mat(0xd9ccb2), mat(0xd9ccb2),
+      canvasMat(768, 512, (ctx, W, H) => {
+        ctx.fillStyle = '#e6dac0';
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = 'rgba(160,140,100,0.3)';
+        ctx.lineWidth = 3;
+        for (let x = 0; x < W; x += 96) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+        for (let y = 0; y < H; y += 96) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+      }, { roughness: 0.9 }),
+      mat(0xd9ccb2), mat(0xd9ccb2), mat(0xd9ccb2)]
+  );
+  terrace.position.y = 0.28;
+  terrace.receiveShadow = true;
+  g.add(terrace);
+  g.add(rbox(14.2, 0.25, 9.7, mat(0xcdbfa3, { roughness: 0.9 }), 0, 0.12, 0, 0.06));
+  // terrace edge lights
+  for (const lx of [-5.5, -2.75, 0, 2.75, 5.5]) {
+    const dot = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.1), new THREE.MeshStandardMaterial({
+      color: 0xfff1cc, emissive: 0xffd98a, emissiveIntensity: 1.2,
+    }));
+    dot.position.set(lx, 0.42, 4.53);
+    g.add(dot);
+  }
+  // five rounded growth pillars: cream, cream, orange, orange, gold
   const barMs = [
-    mat(0xece4d2, { roughness: 0.7 }), mat(0xece4d2, { roughness: 0.7 }),
-    mat(0xe4d8c0, { roughness: 0.7 }), mat(CH.orange, { roughness: 0.45 }),
-    mat(CH.gold, { roughness: 0.45 }),
+    mat(0xf1e9d8, { roughness: 0.55 }), mat(0xf1e9d8, { roughness: 0.55 }),
+    mat(CH.orange, { roughness: 0.4 }), mat(CH.orange, { roughness: 0.4 }),
+    mat(CH.gold, { roughness: 0.4 }),
   ];
-  const hs = [1.0, 1.7, 2.6, 4.2, 6.0];
+  const hs = [1.1, 1.8, 2.7, 3.9, 5.4];
   hs.forEach((h, i) => {
-    g.add(rbox(1.45, h, 1.45, barMs[i], -4.4 + i * 1.95, 0.6 + h / 2, 1.7, 0.12));
+    g.add(rbox(1.5, h, 1.5, barMs[i], -4.5 + i * 2.0, 0.55 + h / 2, 1.8, 0.3));
   });
   // headline slab
   const slab = new THREE.Mesh(
@@ -762,28 +826,48 @@ export function makeRoasMonument() {
   return g;
 }
 
-// --- persona plaza — three travellers, three reasons -------------------------------
+// --- persona plaza — rebuilt to the model sheet -------------------------------
+// Tiered stone discs, raised segmented curb ring, bold compass rose inlay,
+// rustic blank waymarker signpost, three persona vignettes around the rim.
 
 export function makePersonaPlaza() {
   const g = new THREE.Group();
-  g.add(cyl(7.0, 7.2, 0.32, mat(CH.cream, { roughness: 0.85 }), 0, 0.16, 0, 36));
-  // compass inlay
+  const stone = mat(0xe6dac0, { roughness: 0.9 });
+  const stoneDark = mat(0xd6c8ab, { roughness: 0.9 });
+  // tiered discs: base platform -> plaza surface
+  g.add(cyl(7.5, 7.8, 0.4, stoneDark, 0, 0.2, 0, 48));
+  g.add(cyl(6.8, 6.8, 0.22, stone, 0, 0.51, 0, 48));
+  // segmented raised curb ring with periodic bevelled posts
+  for (let i = 0; i < 28; i++) {
+    const a = (i / 28) * Math.PI * 2;
+    const post = i % 7 === 0;
+    const b = rbox(post ? 0.55 : 1.35, post ? 0.62 : 0.34, 0.42, post ? stoneDark : stone,
+      Math.cos(a) * 6.55, post ? 0.93 : 0.79, Math.sin(a) * 6.55, 0.05);
+    b.rotation.y = -a + Math.PI / 2;
+    g.add(b);
+  }
+  // compass disc inlay
   const inlay = new THREE.Mesh(
-    new THREE.CircleGeometry(5.6, 48),
-    canvasMat(512, 512, (ctx, W, H) => {
-      // reference-style eight-point compass rose in orange and tan
-      ctx.fillStyle = '#f3ead8';
+    new THREE.CircleGeometry(4.9, 56),
+    canvasMat(640, 640, (ctx, W, H) => {
+      // stone tile field with concentric ring joints
+      ctx.fillStyle = '#efe4ca';
       ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = '#e0d2b4';
-      ctx.lineWidth = 10;
-      ctx.beginPath();
-      ctx.arc(W / 2, H / 2, 214, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.strokeStyle = '#f57f29';
-      ctx.lineWidth = 5;
-      ctx.beginPath();
-      ctx.arc(W / 2, H / 2, 188, 0, Math.PI * 2);
-      ctx.stroke();
+      ctx.strokeStyle = 'rgba(160,140,100,0.35)';
+      ctx.lineWidth = 3;
+      for (const r of [150, 220, 290]) {
+        ctx.beginPath();
+        ctx.arc(W / 2, H / 2, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      for (let i = 0; i < 24; i++) {
+        const a = (i / 24) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(W / 2 + Math.cos(a) * 150, H / 2 + Math.sin(a) * 150);
+        ctx.lineTo(W / 2 + Math.cos(a) * 310, H / 2 + Math.sin(a) * 310);
+        ctx.stroke();
+      }
+      // bold compass rose: tan under-star rotated 45deg + orange main star
       const star = (points, r1, r2, color, rot = 0) => {
         ctx.fillStyle = color;
         ctx.save();
@@ -793,27 +877,65 @@ export function makePersonaPlaza() {
         for (let i = 0; i < points * 2; i++) {
           const a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
           const r = i % 2 === 0 ? r1 : r2;
-          const x = Math.cos(a) * r, y = Math.sin(a) * r;
-          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          i ? ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r) : ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
         }
         ctx.closePath();
         ctx.fill();
         ctx.restore();
       };
-      star(4, 178, 34, '#e8d9b8', Math.PI / 4); // tan diagonal points
-      star(4, 178, 34, '#f57f29');              // orange cardinal points
+      star(4, 205, 52, '#e8cf9e', Math.PI / 4);
+      star(4, 250, 60, '#f57f29');
+      // inner detail: darker orange half-points for depth
+      star(4, 148, 34, '#d96a15');
       ctx.fillStyle = '#ffce34';
       ctx.beginPath();
-      ctx.arc(W / 2, H / 2, 22, 0, Math.PI * 2);
+      ctx.arc(W / 2, H / 2, 26, 0, Math.PI * 2);
       ctx.fill();
-    }, { roughness: 0.8 })
+      ctx.strokeStyle = '#d96a15';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, 26, 0, Math.PI * 2);
+      ctx.stroke();
+    }, { roughness: 0.85 })
   );
   inlay.rotation.x = -Math.PI / 2;
-  inlay.position.y = 0.34;
+  inlay.position.y = 0.63;
   inlay.receiveShadow = true;
   g.add(inlay);
 
-  // vignette 1: vacation family (parent + kid + beach ball)
+  // rustic waymarker signpost on a stone footing — three blank arrow boards
+  const wood = mat(0x9c7348, { roughness: 0.85 });
+  const woodDark = mat(0x82603c, { roughness: 0.85 });
+  const post = new THREE.Group();
+  post.add(cyl(0.55, 0.7, 0.35, stoneDark, 0, 0.17, 0, 14));
+  post.add(rbox(0.34, 3.9, 0.34, wood, 0, 2.1, 0, 0.05));
+  post.add(rbox(0.46, 0.16, 0.46, woodDark, 0, 4.08, 0, 0.04)); // cap
+  const arrow = (len, flip) => {
+    const a = new THREE.Group();
+    a.add(rbox(len, 0.46, 0.12, woodDark, 0, 0, 0, 0.05));
+    const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.325, 0.325, 0.12, 3), woodDark);
+    tip.rotation.x = Math.PI / 2;
+    tip.rotation.z = flip ? Math.PI / 2 : -Math.PI / 2;
+    tip.position.set((flip ? -1 : 1) * (len / 2 + 0.1), 0, 0);
+    a.add(tip);
+    return a;
+  };
+  const arms = [[1.9, false, 3.55, 0.35], [1.7, true, 2.95, -0.75], [1.55, false, 2.4, 1.85]];
+  for (const [len, flip, y, ry] of arms) {
+    const a = arrow(len, flip);
+    a.position.y = y;
+    a.rotation.y = ry;
+    a.position.x = (flip ? -1 : 1) * 0.5;
+    const wrap = new THREE.Group();
+    wrap.add(a);
+    wrap.rotation.y = ry;
+    wrap.position.y = 0;
+    post.add(a);
+  }
+  post.position.set(-0.3, 0.62, 0.2);
+  g.add(post);
+
+  // vignette 1: vacation family (beach ball)
   const fam = new THREE.Group();
   const fp1 = makePerson({});
   fam.add(fp1);
@@ -821,11 +943,14 @@ export function makePersonaPlaza() {
   fp2.scale.setScalar(0.68);
   fp2.position.set(0.8, 0, 0.3);
   fam.add(fp2);
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.3, 12, 10), mat(CH.orange, { roughness: 0.5 }));
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.3, 14, 12), mat(CH.orange, { roughness: 0.4 }));
   ball.position.set(1.5, 0.3, 0.7);
   ball.castShadow = true;
   fam.add(ball);
-  fam.position.set(-3.2, 0.32, -1.6);
+  const pine = makeConifer(0.8, 0x4a6e50);
+  pine.position.set(-1.2, 0, -0.6);
+  fam.add(pine);
+  fam.position.set(-3.6, 0.62, -2.4);
   fam.rotation.y = 0.7;
   g.add(fam);
 
@@ -833,55 +958,33 @@ export function makePersonaPlaza() {
   const biz = new THREE.Group();
   const bp = makePerson({ shirt: 0x4b2884 });
   biz.add(bp);
-  const case1 = rbox(0.5, 0.75, 0.32, mat(CH.sleep, { roughness: 0.5 }), 0.55, 0.4, 0.1, 0.06);
+  const case1 = rbox(0.5, 0.75, 0.32, mat(0x294a59, { roughness: 0.5 }), 0.55, 0.4, 0.1, 0.06);
   biz.add(case1);
   biz.add(cyl(0.02, 0.02, 0.5, mat(C.steel), 0.55, 0.95, 0.1, 6));
-  biz.position.set(3.1, 0.32, -1.2);
+  biz.position.set(4.0, 0.62, -0.6);
   biz.rotation.y = -0.6;
   g.add(biz);
 
-  // vignette 3: winter family (toque = little cone hats)
+  // vignette 3: winter family with red toques + red suitcase
   const win = new THREE.Group();
-  for (const [x, s] of [[0, 1], [0.75, 0.66]]) {
+  for (const [x, s] of [[0, 1], [0.75, 0.66], [-0.7, 0.8]]) {
     const p = makePerson({});
     p.scale.setScalar(s);
     p.position.x = x;
     win.add(p);
-    const toque = new THREE.Mesh(new THREE.ConeGeometry(0.16 * s, 0.25 * s, 10), mat(CH.econo, { roughness: 0.7 }));
-    toque.position.set(x, 1.62 * s, 0);
+    const toque = new THREE.Mesh(new THREE.ConeGeometry(0.17 * s, 0.26 * s, 12), mat(0xc0392b, { roughness: 0.7 }));
+    toque.position.set(x, 1.64 * s, 0);
     win.add(toque);
+    const pom = new THREE.Mesh(new THREE.SphereGeometry(0.05 * s, 8, 8), mat(0xf6f2ea, { roughness: 0.8 }));
+    pom.position.set(x, 1.78 * s, 0);
+    win.add(pom);
   }
-  win.position.set(0.2, 0.32, 3.4);
+  const redCase = rbox(0.46, 0.62, 0.3, mat(0xc0392b, { roughness: 0.5 }), 1.45, 0.33, 0.2, 0.06);
+  win.add(redCase);
+  win.position.set(0.4, 0.62, 4.2);
   win.rotation.y = Math.PI;
   g.add(win);
 
-  // waymarker signpost
-  const post = new THREE.Group();
-  post.add(cyl(0.09, 0.11, 3.2, mat(0x8a6a4d, { roughness: 0.85 }), 0, 1.6, 0, 8));
-  const places = [['BANFF 1,204 km', 0.5], ['MUSKOKA 186 km', -0.4], ['HALIFAX 1,792 km', 1.7]];
-  places.forEach(([label, ry], i) => {
-    const arm = new THREE.Mesh(
-      new THREE.BoxGeometry(1.9, 0.34, 0.08),
-      [mat(CH.orange), mat(CH.orange), mat(CH.orange), mat(CH.orange),
-        canvasMat(380, 68, (ctx, W, H) => {
-          ctx.fillStyle = '#f57f29';
-          ctx.fillRect(0, 0, W, H);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '800 30px Inter, Arial, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, W / 2, H / 2);
-        }),
-        mat(CH.orange)]
-    );
-    arm.position.set(0.75, 2.0 + i * 0.5, 0);
-    const wrap = new THREE.Group();
-    wrap.add(arm);
-    wrap.rotation.y = ry;
-    post.add(wrap);
-  });
-  post.position.set(-0.4, 0.32, 0.2);
-  g.add(post);
   return g;
 }
 

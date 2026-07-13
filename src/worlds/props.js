@@ -48,23 +48,38 @@ export function makeArtBillboard(drawFn, {
   // box faces display the canvas unmirrored from every side, so the same
   // material serves front and back
   const face = canvasMat(texW, texH, drawFn, { emissive: emissive ? 0xffffff : null, emissiveIntensity: 0.35 });
-  const frame = mat(frameColor, { roughness: 0.6 });
-  g.add(rbox(w + 0.7, h + 0.7, 0.3, frame, 0, h / 2 + 2.4, 0, 0.22));
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.44), [frame, frame, frame, frame, face, face]);
+  const frame = mat(frameColor, { roughness: 0.55 });
+  const steel = mat(0x3b4046, { roughness: 0.55, metalness: 0.3 });
+  // rounded-rectangle frame shell with soft premium bevels
+  g.add(rbox(w + 0.9, h + 0.9, 0.34, frame, 0, h / 2 + 2.4, 0, 0.34));
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.48), [frame, frame, frame, frame, face, face]);
   panel.position.set(0, h / 2 + 2.4, 0);
   panel.castShadow = true;
   g.add(panel);
-  // maintenance catwalk under the panel
-  g.add(box(w * 0.9, 0.12, 0.9, mat(legColor, { roughness: 0.6 }), 0, 2.05, 0.35));
-  for (let rx = -w * 0.42; rx <= w * 0.42; rx += w * 0.21) {
-    g.add(cyl(0.03, 0.03, 0.5, mat(legColor), rx, 2.36, 0.76, 6));
+  // top-mounted spotlight bar with lamp heads
+  g.add(cyl(0.05, 0.05, w * 0.86, steel, 0, h + 2.85, 0.3, 8).rotateZ(Math.PI / 2));
+  for (let lx = -w * 0.36; lx <= w * 0.36; lx += w * 0.18) {
+    g.add(cyl(0.03, 0.03, 0.3, steel, lx, h + 2.78, 0.16, 6).rotateX(0.7));
+    const lamp = new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.16, 4, 8), steel);
+    lamp.rotation.z = Math.PI / 2;
+    lamp.position.set(lx, h + 2.9, 0.32);
+    g.add(lamp);
   }
-  g.add(box(w * 0.9, 0.05, 0.05, mat(legColor), 0, 2.62, 0.76));
-  if (doubleLeg) {
-    g.add(cyl(0.28, 0.36, 4.6, mat(legColor), -w / 3, 0.3, 0, 10));
-    g.add(cyl(0.28, 0.36, 4.6, mat(legColor), w / 3, 0.3, 0, 10));
-  } else {
-    g.add(cyl(0.4, 0.5, 4.6, mat(legColor), 0, 0.3, 0, 12));
+  // underside maintenance catwalk with safety railing
+  g.add(box(w * 0.9, 0.12, 0.9, steel, 0, 2.05, 0.35));
+  for (let rx = -w * 0.42; rx <= w * 0.42; rx += w * 0.21) {
+    g.add(cyl(0.03, 0.03, 0.5, steel, rx, 2.36, 0.76, 6));
+  }
+  g.add(box(w * 0.9, 0.05, 0.05, steel, 0, 2.62, 0.76));
+  // twin tapered steel legs on concrete plinths
+  const legPositions = doubleLeg ? [-w / 3.2, w / 3.2] : [0];
+  for (const lx of legPositions) {
+    const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.52, 4.6, 4), steel);
+    leg.rotation.y = Math.PI / 4;
+    leg.position.set(lx, 0.3, 0);
+    leg.castShadow = true;
+    g.add(leg);
+    g.add(rbox(1.15, 0.4, 1.15, mat(0xd9d6cc, { roughness: 0.85 }), lx, 0.1, 0, 0.06));
   }
   return g;
 }
@@ -266,23 +281,40 @@ export function makePool(accent = 0xf2803a) {
 export function makeBus({ base = 0xffffff, drawWrap = null, len = 5.6 } = {}) {
   const g = new THREE.Group();
   const H = 1.7, W = 1.7;
-  const bodyM = mat(base, { roughness: 0.5 });
+  const bodyM = mat(base, { roughness: 0.45 });
   const sideM = drawWrap
-    ? canvasMat(1024, Math.round(1024 * (H / len)), drawWrap, { roughness: 0.5 })
+    ? canvasMat(1024, Math.round(1024 * (H / len)), drawWrap, { roughness: 0.45 })
     : bodyM;
-  const dark = mat(0x2b3346, { roughness: 0.4 });
+  const smoke = mat(0x2e333c, { roughness: 0.25, metalness: 0.2 });
   const body = new THREE.Mesh(
     new THREE.BoxGeometry(len, H, W),
-    // +x, -x, +y, -y, +z (side), -z (side)
     [bodyM, bodyM, bodyM, bodyM, sideM, sideM]
   );
   body.position.y = 0.62 + H / 2;
   body.castShadow = true;
   body.receiveShadow = true;
   g.add(body);
-  // windshield + roof strip
-  g.add(box(0.06, H * 0.55, W * 0.82, mat(C.glass, { roughness: 0.2, metalness: 0.3 }), len / 2 + 0.01, 0.62 + H * 0.62, 0));
-  g.add(box(len * 0.92, 0.09, W * 0.8, mat(0xdde3ee, { roughness: 0.6 }), 0, 0.62 + H + 0.05, 0));
+  // dark smoke window band along both sides + panoramic windshield
+  g.add(box(len * 0.78, H * 0.34, W + 0.02, smoke, -len * 0.06, 0.62 + H * 0.66, 0));
+  const shield = box(0.08, H * 0.52, W * 0.86, smoke, len / 2 + 0.01, 0.62 + H * 0.6, 0);
+  shield.rotation.z = -0.1;
+  g.add(shield);
+  // rounded white roof + AC module
+  g.add(rbox(len * 0.96, 0.18, W * 0.86, bodyM, 0, 0.62 + H + 0.08, 0, 0.09));
+  g.add(rbox(len * 0.28, 0.16, W * 0.5, mat(0xf1eee6, { roughness: 0.6 }), -len * 0.08, 0.62 + H + 0.24, 0, 0.06));
+  // mirrors + headlights + rear lights
+  for (const mz of [-W / 2 - 0.12, W / 2 + 0.12]) {
+    g.add(box(0.06, 0.22, 0.1, mat(0x2b2b2b, { roughness: 0.5 }), len / 2 - 0.15, 0.62 + H * 0.78, mz));
+  }
+  for (const hz of [-0.55, 0.55]) {
+    const hl = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.06, 10), new THREE.MeshStandardMaterial({
+      color: 0xfff4d8, emissive: 0xffdf9a, emissiveIntensity: 0.7,
+    }));
+    hl.rotation.z = Math.PI / 2;
+    hl.position.set(len / 2 + 0.02, 0.78, hz);
+    g.add(hl);
+    g.add(box(0.05, 0.3, 0.12, mat(0xb03030, { roughness: 0.4 }), -len / 2 - 0.01, 0.95, hz));
+  }
   // wheels
   const wheelM = mat(C.wheel, { roughness: 0.75 });
   for (const wx of [-len / 2 + 1.0, len / 2 - 1.2]) {
