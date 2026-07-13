@@ -188,7 +188,13 @@ function stratisDiagram() {
     const [nx, ny] = p2[(i + 3) % 8];
     return `<line class="st-mesh" x1="${x}" y1="${y}" x2="${nx}" y2="${ny}"/>`;
   }).join('');
-  const corr = `M ${p2[1][0].toFixed(1)} ${p2[1][1].toFixed(1)} L ${p1[2][0].toFixed(1)} ${p1[2][1].toFixed(1)} L ${CX} ${CY} L ${p1[4][0].toFixed(1)} ${p1[4][1].toFixed(1)} L ${p2[5][0].toFixed(1)} ${p2[5][1].toFixed(1)}`;
+  const CPATHS = [
+    [p2[1], p1[2], [CX, CY], p1[4], p2[5]],
+    [p2[7], p1[5], [CX, CY], p1[1], p2[3]],
+    [p2[6], p1[4], p1[3], p2[2]],
+  ];
+  const corrs = CPATHS.map((pts, i) =>
+    `<path class="st-corr" pathLength="100" style="animation-delay:${(i * 3.5).toFixed(1)}s" d="M ${pts.map(([x, y]) => `${x.toFixed(1)} ${y.toFixed(1)}`).join(' L ')}"/>`).join('');
   const nodes1 = p1.map(([x, y, t], i) => `
     <g class="loop-node" style="animation-delay:${(0.25 + i * 0.07).toFixed(2)}s">
       <circle class="st-n1" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.6"/>
@@ -205,8 +211,9 @@ function stratisDiagram() {
       <text class="st-l2" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}">${t}</text>
     </g>`;
   }).join('');
-  const blips = [p2[1], p1[2], p1[4], p2[5]].map(([x, y], i) =>
-    `<circle class="st-blip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" style="animation-delay:${(1.5 + i * 0.35).toFixed(2)}s"/>`).join('');
+  const blips = CPATHS.flatMap((pts, i) =>
+    pts.filter(([x, y]) => !(x === CX && y === CY)).map(([x, y], j) =>
+      `<circle class="st-blip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6" style="animation-delay:${(i * 3.5 + 0.5 + j * 0.4).toFixed(2)}s"/>`)).join('');
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">Every data point, one connected network</div>
@@ -216,7 +223,7 @@ function stratisDiagram() {
           <circle class="st-ring st-ring2" cx="${CX}" cy="${CY}" r="${(R1 + R2) / 2}"/>
           <circle class="st-ring" cx="${CX}" cy="${CY}" r="${R2}"/>
           ${mesh}${spokes}${webs}
-          <path class="st-corr" pathLength="100" d="${corr}"/>
+          ${corrs}
           ${blips}
           <circle class="st-core" cx="${CX}" cy="${CY}" r="8"/>
           <text class="st-brand" x="${CX}" y="${CY + 21}">PUROLATOR</text>
@@ -234,33 +241,46 @@ function stratisDiagram() {
 
 // PUSH + Studio P + STRATIS — the closed loop as an infinity, built for momentum
 function loopDiagram() {
-  const INF = "M 160 70 C 120 20, 55 20, 55 70 C 55 120, 120 120, 160 70 C 200 20, 265 20, 265 70 C 265 120, 200 120, 160 70";
+  // 3D tube infinity: media loop left, creative loop right, STRATIS veins wrapping around
+  const INF = "M 160 78 C 122 26, 42 34, 42 78 C 42 122, 122 130, 160 78 C 198 26, 278 34, 278 78 C 278 122, 198 130, 160 78";
+  const OVER = "M 140.5 97.4 C 150 90.6, 170 65.4, 179.5 58.6";
+  const GAP = "M 148 91 C 154 85.5, 166 70.5, 172 65";
+  const VEIN1 = "M 160 78 C 126 124, 48 118, 48 78 C 48 38, 126 32, 160 78 C 194 124, 272 118, 272 78 C 272 38, 194 32, 160 78";
+  const VEIN2 = "M 160 78 C 118 8, 30 20, 30 78 C 30 132, 118 146, 160 78 C 202 8, 290 20, 290 78 C 290 132, 202 146, 160 78";
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">A closed-loop system built for momentum</div>
       <div class="ic-panel">
-        <svg viewBox="0 0 320 140">
+        <svg viewBox="0 0 320 152">
           <defs>
-            <path id="inf-g1" d="M 58 54 C 66 20, 122 12, 156 50" fill="none"/>
-            <path id="inf-g2" d="M 218 122 C 244 116, 258 104, 262 84" fill="none"/>
-            <path id="inf-g3" d="M 174 46 C 204 12, 246 12, 262 42" fill="none"/>
+            <path id="inf-g1" d="M 52 60 C 62 28, 116 20, 150 54" fill="none"/>
+            <path id="inf-g2" d="M 196 140 C 226 148, 258 144, 282 128" fill="none"/>
+            <path id="inf-g3" d="M 178 40 C 208 6, 250 6, 266 36" fill="none"/>
           </defs>
-          <path class="inf-base" d="${INF}"/>
-          <path class="inf-flow" pathLength="100" d="${INF}"/>
-          <path class="inf-arr" d="M 106 27 L 94 32.5 L 104 39"/>
-          <path class="inf-arr" d="M 224 102 L 212 107.5 L 222 113"/>
+          <path class="inf-shadow" d="${INF}"/>
+          <path class="inf-vein inf-vein2" d="${VEIN2}"/>
+          <path class="inf-t1" d="${INF}"/>
+          <path class="inf-t2" d="${INF}"/>
+          <path class="inf-t3" d="${INF}"/>
+          <path class="inf-gap" d="${GAP}"/>
+          <path class="inf-t1" d="${OVER}"/>
+          <path class="inf-t2" d="${OVER}"/>
+          <path class="inf-t3" d="${OVER}"/>
+          <path class="inf-vein" d="${VEIN1}"/>
+          <circle class="inf-vdot" r="2.6" style="offset-path: path('${VEIN1}')"/>
+          <circle class="inf-vdot" r="2.2" style="offset-path: path('${VEIN2}'); animation-delay: -2.5s; animation-duration: 6.5s"/>
           <circle class="inf-dot" r="4.4" style="offset-path: path('${INF}')"/>
-          <text class="inf-name" x="105" y="75">PUSH</text>
-          <text class="inf-name" x="215" y="75">Studio P</text>
+          <text class="inf-name" x="96" y="83">MEDIA</text>
+          <text class="inf-name" x="224" y="83">CREATIVE</text>
           <text class="inf-curve"><textPath href="#inf-g1" startOffset="18%">STRATIS</textPath></text>
           <text class="inf-curve"><textPath href="#inf-g2" startOffset="8%">STRATIS</textPath></text>
           <text class="inf-zw"><textPath href="#inf-g3" startOffset="30%">ZeroWaste™</textPath></text>
         </svg>
       </div>
       <div class="ic-mini">
-        <div><b>Studio P</b> shapes creative designed to move with the market</div>
-        <div><b>PUSH</b> activates and scales it through modern media</div>
-        <div><b>STRATIS</b> connects insight, learning and opportunity in real time</div>
+        <div><b>Media</b>: PUSH activates and scales across every channel</div>
+        <div><b>Creative</b>: Studio P shapes work built to move with the market</div>
+        <div><b>STRATIS</b>: the veins connecting both, feeding learning back in real time</div>
         <div class="ic-mini-punch">Creative informs media. Media informs creative. Momentum compounds.</div>
       </div>
     </div>`;

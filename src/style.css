@@ -286,9 +286,29 @@ html, body {
 .st-ln { stroke: rgba(28, 79, 196, 0.17); stroke-width: 1; }
 .st-corr {
   fill: none; stroke: #14b8a8; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
-  stroke-dasharray: 100; animation: ic-draw 1.6s ease-out 1.1s both;
+  stroke-dasharray: 100 100; stroke-dashoffset: 100; opacity: 0;
+  animation: st-discover 10.5s ease-in-out infinite;
 }
-.st-blip { fill: none; stroke: #14b8a8; stroke-width: 1.6; opacity: 0; animation: ic-blip 2.4s ease-in-out infinite; }
+@keyframes st-discover {
+  0% { stroke-dashoffset: 100; opacity: 0; }
+  3% { opacity: 1; }
+  20% { stroke-dashoffset: 0; }
+  32% { stroke-dashoffset: 0; opacity: 1; }
+  52% { stroke-dashoffset: -100; opacity: 1; }
+  53% { stroke-dashoffset: -100; opacity: 0; }
+  100% { stroke-dashoffset: -100; opacity: 0; }
+}
+.st-blip {
+  fill: none; stroke: #14b8a8; stroke-width: 1.6; opacity: 0;
+  transform-box: fill-box; transform-origin: center;
+  animation: st-blipc 10.5s ease-in-out infinite;
+}
+@keyframes st-blipc {
+  0% { opacity: 0; transform: scale(0.5); }
+  4% { opacity: 0.95; transform: scale(1); }
+  10% { opacity: 0; transform: scale(1.7); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
 .st-core { fill: var(--puro-blue-dark); filter: drop-shadow(0 2px 6px rgba(16, 48, 124, 0.35)); }
 .st-brand { fill: var(--puro-blue-dark); font: 900 9px Inter, sans-serif; letter-spacing: 0.1em; text-anchor: middle; }
 .st-n1 { fill: var(--puro-blue); stroke: #fff; stroke-width: 1.4; }
@@ -303,17 +323,23 @@ html, body {
 .st-d-n2 { background: #fff; border: 1.5px solid var(--puro-blue); }
 .st-d-t { background: #14b8a8; }
 
-/* ch6 · infinity loop */
+/* ch6 · 3D infinity loop */
 @keyframes inf-travel { to { offset-distance: 100%; } }
-.inf-base { fill: none; stroke: rgba(28, 79, 196, 0.22); stroke-width: 2.6; }
-.inf-flow {
-  fill: none; stroke: var(--puro-blue); stroke-width: 2.6; stroke-linecap: round;
-  stroke-dasharray: 4 6; animation: ic-orbit 3.2s linear infinite;
+.inf-shadow { fill: none; stroke: rgba(16, 48, 124, 0.22); stroke-width: 12; filter: blur(4px); transform: translateY(6px); }
+.inf-t1 { fill: none; stroke: #12357f; stroke-width: 13; stroke-linecap: round; }
+.inf-t2 { fill: none; stroke: var(--puro-blue); stroke-width: 8.5; stroke-linecap: round; }
+.inf-t3 { fill: none; stroke: #7fa7f5; stroke-width: 3.5; stroke-linecap: round; }
+.inf-gap { fill: none; stroke: #f2f6fe; stroke-width: 19; stroke-linecap: round; }
+.inf-vein {
+  fill: none; stroke: #3f7dff; stroke-width: 1.6; stroke-linecap: round;
+  stroke-dasharray: 5 5; animation: ic-orbit 2.8s linear infinite;
+  filter: drop-shadow(0 0 3px rgba(63, 125, 255, 0.65));
 }
-.inf-arr { fill: none; stroke: var(--puro-blue); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.inf-vein2 { stroke-width: 1.3; opacity: 0.65; animation-duration: 3.8s; animation-direction: reverse; }
+.inf-vdot { fill: #7db2ff; offset-rotate: 0deg; animation: inf-travel 5.5s linear infinite; filter: drop-shadow(0 0 5px rgba(63, 125, 255, 0.9)); }
 .inf-dot { fill: var(--puro-red); offset-rotate: 0deg; animation: inf-travel 7s linear infinite; filter: drop-shadow(0 0 4px rgba(228, 30, 47, 0.5)); }
-.inf-name { fill: var(--puro-blue-dark); font: 800 14px Inter, sans-serif; text-anchor: middle; }
-.inf-curve textPath { fill: var(--puro-blue); font: 800 8.5px Inter, sans-serif; letter-spacing: 0.22em; }
+.inf-name { fill: var(--puro-blue-dark); font: 800 13px Inter, sans-serif; text-anchor: middle; letter-spacing: 0.04em; }
+.inf-curve textPath { fill: #3f7dff; font: 800 8.5px Inter, sans-serif; letter-spacing: 0.22em; }
 .inf-zw textPath { fill: var(--puro-red); font: 800 8.5px Inter, sans-serif; letter-spacing: 0.1em; }
 
 /* ch6 pt2 · the wrap checklist */
