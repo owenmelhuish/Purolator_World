@@ -339,12 +339,15 @@ export function createWorldApp({
     });
   }
 
-  // drifting cumulus layer
+  // drifting cumulus layer — bows out while a chapter shot is on screen so a
+  // drifting cloud can never park in front of a locked story camera
+  let chapterCloudFade = false;
   function addClouds(spots, color = 0xffffff) {
     const cloudsGroup = new THREE.Group();
     cloudsGroup.userData.noWalk = true;
     world.add(cloudsGroup);
     const cm = mat(color, { roughness: 0.45 });
+    cm.transparent = true;
     for (const [lat, lon, alt] of spots) {
       const cloud = new THREE.Group();
       for (let j = 0; j < 3; j++) {
@@ -357,7 +360,14 @@ export function createWorldApp({
       surfacePlace(cloud, dirFromLatLon(lat, lon), Math.random() * Math.PI, alt);
       cloudsGroup.add(cloud);
     }
-    animators.push({ update(dt) { cloudsGroup.rotation.y += dt * 0.012; } });
+    animators.push({
+      update(dt) {
+        cloudsGroup.rotation.y += dt * 0.012;
+        const target = chapterCloudFade ? 0 : 1;
+        cm.opacity += (target - cm.opacity) * Math.min(1, dt * 2.5);
+        cloudsGroup.visible = cm.opacity > 0.02;
+      },
+    });
   }
 
   // --- build the world content -------------------------------------------------
@@ -487,10 +497,12 @@ export function createWorldApp({
       return false; // no deck intro on case worlds — straight to chapter 1
     },
     onSelect(poi) {
+      chapterCloudFade = true;
       flyPoi(poi);
       poi.onArrive?.(ctx);
     },
     onOverview() {
+      chapterCloudFade = false;
       rig.flyHome();
     },
   });

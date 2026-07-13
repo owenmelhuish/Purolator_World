@@ -1198,8 +1198,10 @@ addTrain(railS, 2, 5.5, 0.65);
 const cloudsGroup = new THREE.Group();
 cloudsGroup.userData.noWalk = true;
 world.add(cloudsGroup);
+let chapterCloudFade = false; // fade ambient clouds while a story shot is framed
 {
   const cm = mat(0xffffff, { roughness: 0.45 });
+  cm.transparent = true;
   const spots = [
     [55, -120, 11], [40, 170, 14], [10, -150, 12], [65, 90, 9],
     [22, -40, 15], [-8, 60, 13], [35, -8, 16], [-18, -100, 11],
@@ -1217,7 +1219,16 @@ world.add(cloudsGroup);
     surfacePlace(cloud, dirFromLatLon(lat, lon), Math.random() * Math.PI, alt);
     cloudsGroup.add(cloud);
   }
-  animators.push({ update(dt) { cloudsGroup.rotation.y += dt * 0.012; } });
+  animators.push({
+    update(dt) {
+      cloudsGroup.rotation.y += dt * 0.012;
+      // drifting clouds can park inside a locked story camera, so they bow out
+      // while a chapter is on screen and drift back on overview
+      const target = chapterCloudFade ? 0 : 1;
+      cm.opacity += (target - cm.opacity) * Math.min(1, dt * 2.5);
+      cloudsGroup.visible = cm.opacity > 0.02;
+    },
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -1496,11 +1507,13 @@ const ui = setupUI({
     return true; // handled — the tour begins after the reveal
   },
   onSelect(poi) {
+    chapterCloudFade = true;
     flyPoi(poi);
     // story moment: the silo walls come down
     if (poi.id === 'stratis') siloRing.trigger();
   },
   onOverview() {
+    chapterCloudFade = false;
     rig.flyHome();
   },
 });
