@@ -456,6 +456,55 @@ export function makeShrub(scale = 1, color = 0x7a8f5a) {
   return g;
 }
 
+/** Small sailboat — white hull, twin sails, drifts on the water. */
+export function makeSailboat(scale = 1, sailColor = 0xf8f4ea, hullColor = 0xf2f2ee) {
+  const g = new THREE.Group();
+  const hull = new THREE.Mesh(new THREE.CapsuleGeometry(0.28, 1.5, 4, 8), mat(hullColor, { roughness: 0.5 }));
+  hull.rotation.z = Math.PI / 2;
+  hull.scale.y = 0.5;
+  hull.position.y = 0.16;
+  hull.castShadow = true;
+  g.add(hull);
+  g.add(box(1.5, 0.1, 0.42, mat(0xb98a63, { roughness: 0.8 }), 0, 0.3, 0)); // deck
+  g.add(cyl(0.03, 0.04, 1.9, mat(0x8a6f55, { roughness: 0.7 }), 0.1, 1.25, 0, 6)); // mast
+  const mainSail = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.04, 3, 1), mat(sailColor, { roughness: 0.8 }));
+  mainSail.rotation.x = Math.PI / 2;
+  mainSail.scale.set(1, 1, 2.2);
+  mainSail.position.set(-0.32, 1.35, 0);
+  mainSail.castShadow = true;
+  g.add(mainSail);
+  const jib = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.38, 0.03, 3, 1), mat(0xf5c98a, { roughness: 0.8 }));
+  jib.rotation.x = Math.PI / 2;
+  jib.rotation.y = Math.PI;
+  jib.scale.set(1, 1, 1.9);
+  jib.position.set(0.5, 1.15, 0);
+  jib.castShadow = true;
+  g.add(jib);
+  g.scale.setScalar(scale);
+  return g;
+}
+
+/** Little open canoe with paddler-less charm. */
+export function makeCanoe(color = 0xc0392b, scale = 1) {
+  const g = new THREE.Group();
+  const hull = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 1.6, 4, 10), mat(color, { roughness: 0.55 }));
+  hull.rotation.z = Math.PI / 2;
+  hull.scale.y = 0.45;
+  hull.position.y = 0.14;
+  hull.castShadow = true;
+  g.add(hull);
+  const inner = new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 1.45, 4, 8), mat(0xe8d9b8, { roughness: 0.8 }));
+  inner.rotation.z = Math.PI / 2;
+  inner.scale.y = 0.3;
+  inner.position.y = 0.22;
+  g.add(inner);
+  for (const bx of [-0.5, 0.2, 0.75]) {
+    g.add(box(0.09, 0.03, 0.46, mat(0xb98a63, { roughness: 0.8 }), bx, 0.26, 0));
+  }
+  g.scale.setScalar(scale);
+  return g;
+}
+
 /** Low-poly boulder for shorelines and cliff edges. */
 export function makeRock(scale = 1, color = 0xc3b8a4) {
   const r = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55 * scale, 0), mat(color, { roughness: 0.95 }));

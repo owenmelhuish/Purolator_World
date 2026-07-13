@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { C, mat, box, cyl } from '../materials.js';
 import { makePerson } from '../hero.js';
+import { makeLamppost } from '../factories.js';
 import { rbox, canvasMat, makePool, makeFlag, makeConifer, makeShrub, makeRock } from './props.js';
 
 // ---------------------------------------------------------------------------
@@ -406,74 +407,440 @@ export function makeChoiceResort() {
   return g;
 }
 
-// --- sub-brand hotels ----------------------------------------------------------
+// --- sub-brand hotels — built to the four property model sheets ---------------
+// Comfort (navy/gold, glass canopy), Quality Inn (green/gold awnings, arched
+// entry, parking lot), Clarion (navy/teal, grand porte-cochere) and MainStay
+// Suites (teal-navy, balconies, seafoam wave). Econo Lodge and Sleep Inn keep
+// their roadside forms. All get stone bases, lit facades, roof signs and
+// street monument signs.
 
 export const SUB_BRANDS = [
-  { key: 'comfort', name: 'COMFORT', tag: 'INN & SUITES', color: CH.comfort, accent: CH.comfortSun, floors: 4, style: 'tower' },
-  { key: 'quality', name: 'QUALITY', tag: 'INN', color: CH.quality, accent: 0xdfe9df, floors: 3, style: 'tower' },
+  { key: 'comfort', name: 'COMFORT', tag: 'INN & SUITES', color: CH.comfort, accent: CH.comfortSun, style: 'comfort' },
+  { key: 'quality', name: 'QUALITY', tag: 'INN', color: CH.quality, accent: 0xe8b64c, style: 'quality' },
   { key: 'econo', name: 'ECONO LODGE', tag: '', color: CH.econo, accent: 0x1c4a9c, floors: 2, style: 'motel' },
-  { key: 'sleep', name: 'SLEEP INN', tag: '', color: CH.sleep, accent: 0xbcd0ea, floors: 3, style: 'tower' },
-  { key: 'clarion', name: 'CLARION', tag: '', color: CH.clarion, accent: 0xe8d9a8, floors: 5, style: 'tower' },
-  { key: 'mainstay', name: 'MAINSTAY', tag: 'SUITES', color: CH.mainstay, accent: 0xd9e4ee, floors: 4, style: 'suites' },
+  { key: 'sleep', name: 'SLEEP INN', tag: '', color: CH.sleep, accent: 0xfcb53b, floors: 3, style: 'tower' },
+  { key: 'clarion', name: 'CLARION', tag: '', color: CH.clarion, accent: 0x0096a7, style: 'clarion' },
+  { key: 'mainstay', name: 'MAINSTAY', tag: 'SUITES', color: 0x2e4757, accent: 0x94d4c6, style: 'mainstay' },
 ];
+
+/** Facade material: wall colour with a lit punched-window grid. */
+function facadeMat(wallHex, floors, cols, { litRatio = 0.75, frameHex = null } = {}) {
+  const W = cols * 56, H = floors * 56;
+  return canvasMat(W, H, (ctx, Wc, Hc) => {
+    ctx.fillStyle = '#' + wallHex.toString(16).padStart(6, '0');
+    ctx.fillRect(0, 0, Wc, Hc);
+    for (let f = 0; f < floors; f++) {
+      for (let c = 0; c < cols; c++) {
+        const x = c * 56 + 12, y = f * 56 + 12;
+        // window frame
+        ctx.fillStyle = frameHex ? '#' + frameHex.toString(16).padStart(6, '0') : 'rgba(255,255,255,0.85)';
+        ctx.fillRect(x - 3, y - 3, 38, 38);
+        const lit = Math.random() < litRatio;
+        const grad = ctx.createLinearGradient(0, y, 0, y + 32);
+        if (lit) {
+          grad.addColorStop(0, '#ffd897');
+          grad.addColorStop(1, '#f2a75c');
+        } else {
+          grad.addColorStop(0, '#8fa0b5');
+          grad.addColorStop(1, '#5f7089');
+        }
+        ctx.fillStyle = grad;
+        ctx.fillRect(x, y, 32, 32);
+        ctx.fillStyle = 'rgba(30,35,50,0.4)';
+        ctx.fillRect(x + 14.5, y, 3, 32);
+      }
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.42 });
+}
+
+/** Stone-clad ground floor material. */
+function stoneMat() {
+  return canvasMat(256, 96, (ctx, W, H) => {
+    ctx.fillStyle = '#cfc4ad';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(120,105,80,0.4)';
+    ctx.lineWidth = 3;
+    for (let y = 0; y < H; y += 24) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      for (let x = (y / 24) % 2 ? 22 : 0; x < W; x += 44) {
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + 24); ctx.stroke();
+      }
+    }
+  }, { roughness: 0.9 });
+}
+
+/** Rooftop sign panel with the brand wordmark. */
+function roofSign(b, w) {
+  const white = mat(0xf6f2e8, { roughness: 0.55 });
+  const face = canvasMat(768, 180, (ctx, W, H) => {
+    ctx.fillStyle = '#faf7f0';
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#' + b.color.toString(16).padStart(6, '0');
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '900 78px Inter, Arial, sans-serif';
+    ctx.fillText(b.name, W / 2, b.tag ? H / 2 - 24 : H / 2);
+    if (b.tag) {
+      ctx.font = '700 40px Inter, Arial, sans-serif';
+      ctx.fillText(b.tag, W / 2, H / 2 + 52);
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.3 });
+  const s = new THREE.Mesh(new THREE.BoxGeometry(w, w * 0.24, 0.22), [white, white, white, white, face, face]);
+  s.castShadow = true;
+  return s;
+}
+
+/** Street monument sign on a small base. */
+function monumentSign(b) {
+  const g = new THREE.Group();
+  const bodyM = mat(b.color, { roughness: 0.5 });
+  const face = canvasMat(256, 300, (ctx, W, H) => {
+    ctx.fillStyle = '#' + b.color.toString(16).padStart(6, '0');
+    ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#' + b.accent.toString(16).padStart(6, '0');
+    ctx.beginPath();
+    ctx.arc(W / 2, 92, 52, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 64px Inter, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(b.name[0], W / 2, 96);
+    ctx.font = '800 30px Inter, Arial, sans-serif';
+    ctx.fillText(b.name, W / 2, 200);
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.font = '600 20px Inter, Arial, sans-serif';
+    ctx.fillText(b.tag || 'BY CHOICE HOTELS', W / 2, 244);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.3 });
+  g.add(rbox(0.5, 0.3, 0.4, mat(0xcfc4ad, { roughness: 0.9 }), 0, 0.15, 0, 0.04));
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.3, 0.22), [bodyM, bodyM, bodyM, bodyM, face, face]);
+  panel.position.y = 0.95;
+  panel.castShadow = true;
+  g.add(panel);
+  return g;
+}
+
+/** Landscaped kerb pad the hotel sits on, with driveway strip. */
+function hotelPad(w, d) {
+  const g = new THREE.Group();
+  g.add(rbox(w, 0.3, d, mat(0xd9d0bc, { roughness: 0.9 }), 0, 0.15, 0, 0.14));
+  const drive = new THREE.Mesh(
+    new THREE.BoxGeometry(w * 0.9, 0.06, 2.4),
+    canvasMat(512, 128, (ctx, W, H) => {
+      ctx.fillStyle = '#8d8a80';
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.lineWidth = 4;
+      ctx.setLineDash([26, 20]);
+      ctx.beginPath(); ctx.moveTo(0, H / 2); ctx.lineTo(W, H / 2); ctx.stroke();
+    }, { roughness: 0.95 })
+  );
+  drive.position.set(0, 0.33, d / 2 - 1.5);
+  drive.receiveShadow = true;
+  g.add(drive);
+  return g;
+}
 
 export function makeSubBrandHotel(b) {
   const g = new THREE.Group();
-  const body = mat(CH.white, { roughness: 0.75 });
-  const brandM = mat(b.color, { roughness: 0.55 });
+  const stone = stoneMat();
+  const bodyM = mat(b.color, { roughness: 0.62 });
+  const PADW = b.style === 'motel' ? 14 : 12, PADD = 10;
+  g.add(hotelPad(PADW, PADD));
+  const BASE = 0.3;
 
-  const signFace = canvasMat(768, 192, (ctx, W, H) => {
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = `#${b.color.toString(16).padStart(6, '0')}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = '900 74px Inter, Arial, sans-serif';
-    ctx.fillText(b.name, W / 2, b.tag ? H / 2 - 26 : H / 2);
-    if (b.tag) {
-      ctx.font = '700 40px Inter, Arial, sans-serif';
-      ctx.fillText(b.tag, W / 2, H / 2 + 48);
+  const shrubs = (spots) => {
+    for (const [sx, sz, s] of spots) {
+      const sh = makeShrub(s, Math.random() < 0.5 ? 0x7a8f5a : 0x5d7a4a);
+      sh.position.set(sx, BASE, sz);
+      g.add(sh);
     }
-  }, { emissive: 0xffffff, emissiveIntensity: 0.3 });
+  };
+  const pine = (x, z, s) => {
+    const t = makeConifer(s, 0x4a6e50);
+    t.position.set(x, BASE, z);
+    g.add(t);
+  };
 
-  if (b.style === 'motel') {
-    // two-storey roadside motel with outdoor walkway
-    const w = 9.5, d = 3.4;
-    g.add(rbox(w, 2 * 1.5, d, body, 0, 0.4 + 1.5, 0, 0.12));
-    g.add(box(w, 0.3, d + 0.6, brandM, 0, 0.4 + 3.15, 0)); // roof band
-    for (let f = 0; f < 2; f++) {
-      const y = 0.4 + 0.75 + f * 1.5;
-      g.add(box(w, 0.1, 0.8, mat(CH.warmGrey, { roughness: 0.85 }), 0, y + 0.68, d / 2 + 0.4));
-      for (let i = 0; i < 6; i++) {
-        const x = -w / 2 + 1.0 + i * 1.5;
-        g.add(box(0.8, 1.15, 0.06, mat(b.accent, { roughness: 0.6 }), x, y, d / 2 + 0.03)); // doors
+  if (b.style === 'comfort') {
+    // navy tower, gold band, stone ground floor, glass entry canopy
+    const W = 7.2, D = 5.4, FL = 5, fh = 1.15, bodyH = FL * fh;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W, 1.2, D),
+      [stone, stone, stone, stone, stone, stone])).children.at(-1).position.set(0, BASE + 0.6, 0);
+    const front = facadeMat(b.color, FL, 6);
+    const side = facadeMat(b.color, FL, 4);
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, bodyH, D), [side, side, bodyM, bodyM, front, front]);
+    body.position.set(0, BASE + 1.2 + bodyH / 2, 0);
+    body.castShadow = true;
+    g.add(body);
+    // gold band near the top + white parapet
+    g.add(box(W + 0.14, 0.34, D + 0.14, mat(b.accent, { roughness: 0.45 }), 0, BASE + 1.2 + bodyH - 0.55, 0));
+    g.add(rbox(W + 0.3, 0.3, D + 0.3, mat(0xf6f2e8, { roughness: 0.6 }), 0, BASE + 1.2 + bodyH + 0.15, 0, 0.06));
+    // rooftop: sign + AC units
+    const rs = roofSign(b, 4.6);
+    rs.position.set(0, BASE + 1.2 + bodyH + 1.0, 0.3);
+    g.add(rs);
+    g.add(box(0.9, 0.4, 0.7, mat(0xc9c4b8, { roughness: 0.7 }), -2.2, BASE + 1.2 + bodyH + 0.5, -1.2));
+    g.add(box(0.7, 0.35, 0.6, mat(0xc9c4b8, { roughness: 0.7 }), 2.0, BASE + 1.2 + bodyH + 0.48, -1.5));
+    // brand panel with the Comfort C on the front-centre
+    const logo = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.6), canvasMat(160, 160, (ctx, Wc, Hc) => {
+      ctx.fillStyle = '#011460';
+      ctx.fillRect(0, 0, Wc, Hc);
+      ctx.fillStyle = '#ffb901';
+      ctx.beginPath();
+      ctx.arc(Wc / 2, Hc / 2, 44, Math.PI * 0.3, Math.PI * 1.7);
+      ctx.arc(Wc / 2, Hc / 2, 20, Math.PI * 1.7, Math.PI * 0.3, true);
+      ctx.closePath();
+      ctx.fill();
+    }, { emissive: 0xffffff, emissiveIntensity: 0.35 }));
+    logo.position.set(0, BASE + 1.2 + bodyH - 1.2, D / 2 + 0.02);
+    g.add(logo);
+    // glass entry canopy on navy posts
+    const canopy = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.1, 2.2), new THREE.MeshStandardMaterial({
+      color: 0xbcd4e8, roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.65,
+    }));
+    canopy.position.set(0, BASE + 2.5, D / 2 + 1.1);
+    canopy.rotation.x = 0.12;
+    g.add(canopy);
+    for (const px of [-1.4, 1.4]) g.add(box(0.18, 2.2, 0.18, bodyM, px, BASE + 1.1, D / 2 + 1.9));
+    const ms = monumentSign(b);
+    ms.position.set(-PADW / 2 + 1.4, BASE, PADD / 2 - 1.2);
+    g.add(ms);
+    shrubs([[-2.8, D / 2 + 0.6, 1.0], [2.8, D / 2 + 0.6, 0.9]]);
+    pine(-W / 2 - 1.2, -1.5, 1.0);
+    pine(W / 2 + 1.2, -1.0, 0.85);
+  } else if (b.style === 'quality') {
+    // green inn: cream pilasters, gold awnings, arched entry, parking lot
+    const W = 7.6, D = 5.4, FL = 2, fh = 1.2;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W, 1.15, D),
+      [stone, stone, stone, stone, stone, stone])).children.at(-1).position.set(0, BASE + 0.58, 0);
+    const bodyH = FL * fh;
+    const front = facadeMat(b.color, FL, 6, { frameHex: 0xf1e9d2 });
+    const side = facadeMat(b.color, FL, 4, { frameHex: 0xf1e9d2 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, bodyH, D), [side, side, bodyM, bodyM, front, front]);
+    body.position.set(0, BASE + 1.15 + bodyH / 2, 0);
+    body.castShadow = true;
+    g.add(body);
+    const cream = mat(0xf1e9d2, { roughness: 0.65 });
+    for (const px of [-W / 2 + 0.25, 0, W / 2 - 0.25]) {
+      g.add(box(0.5, bodyH + 1.15, 0.18, cream, px, BASE + (bodyH + 1.15) / 2, D / 2 + 0.05));
+    }
+    g.add(box(W + 0.4, 0.4, D + 0.4, cream, 0, BASE + 1.15 + bodyH + 0.2, 0)); // cornice
+    // gold awnings across the front windows
+    for (let f = 0; f < FL; f++) {
+      for (const ax of [-2.6, -1.3, 1.3, 2.6]) {
+        const awn = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, 0.9, 3, 1), mat(b.accent, { roughness: 0.55 }));
+        awn.rotation.z = Math.PI / 2;
+        awn.rotation.y = Math.PI / 2;
+        awn.scale.y = 0.5;
+        awn.position.set(ax, BASE + 1.15 + f * fh + 0.98, D / 2 + 0.18);
+        g.add(awn);
       }
     }
-    // pole sign
-    g.add(cyl(0.14, 0.18, 4.6, mat(C.steel), w / 2 + 1.6, 2.3, 1.2, 8));
-    const ps = new THREE.Mesh(new THREE.BoxGeometry(3.6, 1.5, 0.22), [body, body, body, body, signFace, body]);
-    ps.position.set(w / 2 + 1.6, 5.0, 1.2);
-    ps.castShadow = true;
-    g.add(ps);
-  } else {
-    const w = b.style === 'suites' ? 7.2 : 6.4, d = 5.4;
-    const h = 0.4 + b.floors * 1.42;
-    g.add(rbox(w, h, d, body, 0, 0.4 + h / 2, 0, 0.14));
-    for (let f = 0; f < b.floors; f++) {
-      const y = 0.4 + 1.1 + f * 1.42;
-      g.add(box(w * 0.88, 0.8, 0.06, glassM(), 0, y, d / 2 + 0.03));
-      g.add(box(0.06, 0.8, d * 0.82, glassM(), w / 2 + 0.03, y, 0));
+    // arched entry + gold half-dome canopy + lanterns
+    g.add(box(1.9, 2.2, 0.3, cream, 0, BASE + 1.1, D / 2 + 0.12));
+    const arch = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.32, 20, 1, false, 0, Math.PI), cream);
+    arch.rotation.x = Math.PI / 2;
+    arch.rotation.z = Math.PI / 2;
+    arch.position.set(0, BASE + 2.2, D / 2 + 0.12);
+    g.add(arch);
+    const dome = new THREE.Mesh(new THREE.CylinderGeometry(0.85, 0.85, 1.5, 16, 1, false, 0, Math.PI), mat(b.accent, { roughness: 0.5 }));
+    dome.rotation.z = Math.PI / 2;
+    dome.position.set(0, BASE + 2.1, D / 2 + 0.9);
+    g.add(dome);
+    for (const lx of [-1.3, 1.3]) {
+      const lamp = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.26, 0.18), new THREE.MeshStandardMaterial({
+        color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 1.0,
+      }));
+      lamp.position.set(lx, BASE + 1.9, D / 2 + 0.16);
+      g.add(lamp);
     }
-    g.add(box(w + 0.4, 0.35, d + 0.4, brandM, 0, 0.4 + h + 0.17, 0));
-    // entrance canopy
-    g.add(box(3.2, 0.22, 1.7, brandM, 0, 1.7, d / 2 + 0.9));
-    g.add(cyl(0.08, 0.08, 1.3, mat(C.steel), -1.3, 1.0, d / 2 + 1.5, 8));
-    g.add(cyl(0.08, 0.08, 1.3, mat(C.steel), 1.3, 1.0, d / 2 + 1.5, 8));
-    // rooftop sign
-    const rs = new THREE.Mesh(new THREE.BoxGeometry(w * 0.9, 1.3, 0.24), [body, body, body, body, signFace, body]);
-    rs.position.set(0, 0.4 + h + 1.0, 0.2);
-    rs.castShadow = true;
+    // parking lot with stalls
+    const lot = new THREE.Mesh(
+      new THREE.BoxGeometry(7.5, 0.06, 3.0),
+      canvasMat(512, 220, (ctx, Wc, Hc) => {
+        ctx.fillStyle = '#77746c';
+        ctx.fillRect(0, 0, Wc, Hc);
+        ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+        ctx.lineWidth = 5;
+        for (let x = 40; x < Wc; x += 78) {
+          ctx.beginPath(); ctx.moveTo(x, 10); ctx.lineTo(x, 100); ctx.stroke();
+        }
+      }, { roughness: 0.95 })
+    );
+    lot.position.set(0.6, 0.34, PADD / 2 - 1.6);
+    lot.receiveShadow = true;
+    g.add(lot);
+    const ms = monumentSign(b);
+    ms.position.set(-PADW / 2 + 1.3, BASE, PADD / 2 - 1.3);
+    g.add(ms);
+    pine(-W / 2 - 1.1, -0.8, 1.05);
+    pine(W / 2 + 1.1, -1.2, 0.9);
+    shrubs([[-3.2, D / 2 + 0.5, 0.8], [3.2, D / 2 + 0.5, 0.8]]);
+  } else if (b.style === 'clarion') {
+    // navy slab with teal trims + grand porte-cochere
+    const W = 8.0, D = 5.4, FL = 5, fh = 1.12, bodyH = FL * fh;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W, 1.15, D),
+      [stone, stone, stone, stone, stone, stone])).children.at(-1).position.set(0, BASE + 0.58, 0);
+    const front = facadeMat(b.color, FL, 7, { litRatio: 0.8 });
+    const side = facadeMat(b.color, FL, 4, { litRatio: 0.8 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, bodyH, D), [side, side, bodyM, bodyM, front, front]);
+    body.position.set(0, BASE + 1.15 + bodyH / 2, 0);
+    body.castShadow = true;
+    g.add(body);
+    const teal = mat(b.accent, { roughness: 0.45 });
+    for (let f = 1; f < FL; f++) {
+      g.add(box(W + 0.1, 0.09, D + 0.1, teal, 0, BASE + 1.15 + f * fh, 0));
+    }
+    g.add(box(W + 0.24, 0.3, D + 0.24, teal, 0, BASE + 1.15 + bodyH + 0.15, 0));
+    // white mullion strips
+    for (const mx of [-2.0, 0, 2.0]) {
+      g.add(box(0.14, bodyH, 0.06, mat(0xf6f6f2, { roughness: 0.6 }), mx, BASE + 1.15 + bodyH / 2, D / 2 + 0.03));
+    }
+    const rs = roofSign(b, 4.2);
+    rs.position.set(0, BASE + 1.15 + bodyH + 0.95, 0.2);
     g.add(rs);
+    // grand porte-cochere
+    const pc = new THREE.Group();
+    pc.add(rbox(4.4, 0.32, 3.2, bodyM, 0, 2.6, 0, 0.08));
+    pc.add(box(4.5, 0.1, 3.3, teal, 0, 2.42, 0));
+    const ped = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.5, 3), bodyM);
+    ped.rotation.x = Math.PI / 2;
+    ped.rotation.y = Math.PI;
+    ped.scale.set(1, 0.6, 1);
+    ped.position.set(0, 2.95, 1.5);
+    pc.add(ped);
+    for (const px of [-1.7, 1.7]) {
+      pc.add(box(0.5, 2.4, 0.5, bodyM, px, 1.2, 1.1));
+      pc.add(box(0.7, 0.5, 0.7, mat(0xcfc4ad, { roughness: 0.85 }), px, 0.25, 1.1));
+    }
+    pc.position.set(0, BASE, D / 2 + 1.3);
+    g.add(pc);
+    const ms = monumentSign(b);
+    ms.position.set(PADW / 2 - 1.3, BASE, PADD / 2 - 1.2);
+    g.add(ms);
+    for (const [lx, lz] of [[-3.4, 3.4], [3.4, 4.2]]) {
+      const lp = makeLamppost();
+      lp.scale.setScalar(0.7);
+      lp.position.set(lx, BASE, lz);
+      g.add(lp);
+    }
+    pine(-W / 2 - 1.2, -1.2, 1.0);
+    shrubs([[-2.6, D / 2 + 0.5, 0.9], [2.6, D / 2 + 0.5, 0.9], [W / 2 + 1.2, 0.5, 1.0]]);
+  } else if (b.style === 'mainstay') {
+    // teal-navy with balconies + seafoam wave band and canopy
+    const W = 7.0, D = 5.4, FL = 4, fh = 1.2, bodyH = FL * fh;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W, 1.05, D),
+      [stone, stone, stone, stone, stone, stone])).children.at(-1).position.set(0, BASE + 0.52, 0);
+    const front = facadeMat(b.color, FL, 5, { litRatio: 0.8 });
+    const side = facadeMat(b.color, FL, 4, { litRatio: 0.8 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, bodyH, D), [side, side, bodyM, bodyM, front, front]);
+    body.position.set(0, BASE + 1.05 + bodyH / 2, 0);
+    body.castShadow = true;
+    g.add(body);
+    // balconies on the front columns
+    const railM = mat(0x3a4a58, { roughness: 0.6 });
+    for (let f = 0; f < FL; f++) {
+      for (const bx of [-2.45, -0.85, 0.85, 2.45]) {
+        g.add(box(1.15, 0.08, 0.5, mat(0xd9d2c2, { roughness: 0.7 }), bx, BASE + 1.05 + f * fh + 0.16, D / 2 + 0.26));
+        for (const rx of [-0.5, -0.17, 0.17, 0.5]) {
+          g.add(box(0.04, 0.4, 0.04, railM, bx + rx, BASE + 1.05 + f * fh + 0.4, D / 2 + 0.48));
+        }
+        g.add(box(1.15, 0.05, 0.05, railM, bx, BASE + 1.05 + f * fh + 0.62, D / 2 + 0.48));
+      }
+    }
+    // seafoam wave band across the facade
+    const wave = new THREE.Mesh(new THREE.PlaneGeometry(W, 1.0), canvasMat(512, 80, (ctx, Wc, Hc) => {
+      ctx.clearRect(0, 0, Wc, Hc);
+      ctx.fillStyle = '#94d4c6';
+      ctx.beginPath();
+      ctx.moveTo(0, Hc);
+      for (let x = 0; x <= Wc; x += 8) {
+        ctx.lineTo(x, Hc / 2 + Math.sin(x * 0.028) * 16);
+      }
+      ctx.lineTo(Wc, Hc);
+      ctx.closePath();
+      ctx.fill();
+    }, { roughness: 0.6 }));
+    wave.material.transparent = true;
+    wave.position.set(0, BASE + 1.05 + bodyH * 0.45, D / 2 + 0.015);
+    g.add(wave);
+    // seafoam canopy
+    g.add(rbox(3.0, 0.22, 2.0, mat(b.accent, { roughness: 0.5 }), 0, BASE + 2.35, D / 2 + 1.0, 0.06));
+    for (const px of [-1.2, 1.2]) g.add(box(0.16, 2.1, 0.16, mat(0xe8e2d2, { roughness: 0.6 }), px, BASE + 1.05, D / 2 + 1.7));
+    g.add(rbox(W + 0.3, 0.28, D + 0.3, mat(0xd9d2c2, { roughness: 0.7 }), 0, BASE + 1.05 + bodyH + 0.14, 0, 0.06));
+    const rs = roofSign(b, 4.0);
+    rs.position.set(0, BASE + 1.05 + bodyH + 0.9, 0.2);
+    g.add(rs);
+    const ms = monumentSign(b);
+    ms.position.set(-PADW / 2 + 1.3, BASE, PADD / 2 - 1.2);
+    g.add(ms);
+    shrubs([[-2.4, D / 2 + 0.5, 1.0], [2.4, D / 2 + 0.5, 1.0], [-3.4, D / 2 + 0.7, 0.7], [3.4, D / 2 + 0.7, 0.7]]);
+    pine(-W / 2 - 1.15, -1.0, 0.95);
+    pine(W / 2 + 1.15, -1.4, 1.05);
+  } else if (b.style === 'motel') {
+    // two-storey roadside motel with outdoor walkway (Econo Lodge)
+    const W = 9.5, D = 3.4, FL = 2, fh = 1.5;
+    g.add(rbox(W, FL * fh, D, bodyM, 0, BASE + FL * fh / 2, 0, 0.12));
+    g.add(box(W, 0.3, D + 0.6, mat(b.accent, { roughness: 0.55 }), 0, BASE + FL * fh + 0.15, 0));
+    for (let f = 0; f < FL; f++) {
+      const y = BASE + 0.75 + f * fh;
+      g.add(box(W, 0.1, 0.8, mat(0xe4dcc8, { roughness: 0.85 }), 0, y + 0.68, D / 2 + 0.4));
+      for (let i = 0; i < 6; i++) {
+        const x = -W / 2 + 1.0 + i * 1.5;
+        g.add(box(0.8, 1.15, 0.06, mat(0xf1e9d2, { roughness: 0.6 }), x, y, D / 2 + 0.03));
+        const glow = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.5), new THREE.MeshStandardMaterial({
+          color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.7,
+        }));
+        glow.position.set(x + 0.5, y + 0.1, D / 2 + 0.04);
+        g.add(glow);
+      }
+    }
+    g.add(cyl(0.14, 0.18, 4.6, mat(C.steel), W / 2 + 1.6, BASE + 2.3, 1.2, 8));
+    const ps = roofSign(b, 3.4);
+    ps.position.set(W / 2 + 1.6, BASE + 5.0, 1.2);
+    g.add(ps);
+    const ms = monumentSign(b);
+    ms.position.set(-PADW / 2 + 1.4, BASE, PADD / 2 - 1.3);
+    g.add(ms);
+    pine(-W / 2 - 0.9, -0.9, 0.9);
+  } else {
+    // compact tower (Sleep Inn) — purple with crescent-gold accents
+    const W = 6.4, D = 5.4, FL = b.floors ?? 3, fh = 1.3, bodyH = FL * fh;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W, 1.0, D),
+      [stone, stone, stone, stone, stone, stone])).children.at(-1).position.set(0, BASE + 0.5, 0);
+    const front = facadeMat(b.color, FL, 5, { litRatio: 0.55 });
+    const side = facadeMat(b.color, FL, 4, { litRatio: 0.55 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, bodyH, D), [side, side, bodyM, bodyM, front, front]);
+    body.position.set(0, BASE + 1.0 + bodyH / 2, 0);
+    body.castShadow = true;
+    g.add(body);
+    g.add(box(W + 0.3, 0.32, D + 0.3, mat(b.accent, { roughness: 0.5 }), 0, BASE + 1.0 + bodyH + 0.16, 0));
+    // crescent moon on the facade
+    const moon = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), canvasMat(128, 128, (ctx, Wc, Hc) => {
+      ctx.clearRect(0, 0, Wc, Hc);
+      ctx.fillStyle = '#fcb53b';
+      ctx.beginPath();
+      ctx.arc(Wc / 2, Hc / 2, 44, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(Wc / 2 + 22, Hc / 2 - 8, 38, 0, Math.PI * 2);
+      ctx.fill();
+    }, { emissive: 0xffffff, emissiveIntensity: 0.5 }));
+    moon.material.transparent = true;
+    moon.position.set(-1.8, BASE + 1.0 + bodyH - 0.9, D / 2 + 0.02);
+    g.add(moon);
+    // entrance canopy
+    g.add(box(3.0, 0.22, 1.6, mat(b.accent, { roughness: 0.55 }), 0, BASE + 2.2, D / 2 + 0.8));
+    for (const px of [-1.2, 1.2]) g.add(cyl(0.08, 0.08, 2.0, mat(C.steel), px, BASE + 1.0, D / 2 + 1.4, 8));
+    const rs = roofSign(b, 3.6);
+    rs.position.set(0, BASE + 1.0 + bodyH + 0.9, 0.2);
+    g.add(rs);
+    const ms = monumentSign(b);
+    ms.position.set(-PADW / 2 + 1.3, BASE, PADD / 2 - 1.2);
+    g.add(ms);
+    shrubs([[-2.2, D / 2 + 0.5, 0.9], [2.2, D / 2 + 0.5, 0.9]]);
   }
   return g;
 }

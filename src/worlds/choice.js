@@ -6,7 +6,7 @@ import { makeTree, makeLamppost, makeBench, makeHouse, makeStore } from '../fact
 import { pathPlace } from '../globe.js';
 import {
   makeArtBillboard, makeMountain, makeConifer, makeLighthouse,
-  makeCar, makeCamper, makeBus, makeFlag, makeShrub, makeRock,
+  makeCar, makeCamper, makeBus, makeFlag, makeShrub, makeRock, makeSailboat, makeCanoe,
 } from './props.js';
 import {
   CH, ads, makeChoiceResort, makeSubBrandHotel, SUB_BRANDS,
@@ -243,10 +243,11 @@ function build(ctx) {
   {
     SUB_BRANDS.forEach((b, i) => {
       const hotel = makeSubBrandHotel(b);
-      hotel.scale.setScalar(0.85);
-      const lon = 70 + i * 13;
-      plate(null, -42, lon, 0.11, 0.26, 0xf1ebdc);
-      placeM(`hotel-${b.key}`, hotel, -42, lon, 0, 0.28, 'brandrow');
+      hotel.scale.setScalar(0.72);
+      const lon = 62 + i * 17;
+      const lat = -42 + (i % 2 ? 1.6 : -1.6);
+      plate(null, lat, lon, 0.12, 0.26, 0xf1ebdc);
+      placeM(`hotel-${b.key}`, hotel, lat, lon, 0, 0.28, 'brandrow');
       registerPoi(hotel, 'brandrow');
     });
     const lamp1 = makeLamppost();
@@ -272,11 +273,16 @@ function build(ctx) {
   road(ringS, { width: 5.0 });
   const connA = new CirclePath(dir(40, 40), THREE.MathUtils.degToRad(90), 0.52);
   road(connA, { width: 4.4 });
+  const ring1 = new CirclePath(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(52), 0.52);
+  road(ring1, { width: 4.4 });
+  const connB = new CirclePath(dir(-50, 80), THREE.MathUtils.degToRad(90), 0.52);
+  road(connB, { width: 4.4 });
+  const allRings = [ring0, ring1, ringEq, ringS, connA, connB];
 
   // --- traffic: the great Canadian road trip ---------------------------------------------------
   const carColors = [0xe3573a, 0x2479ba, 0x676f3f, 0xd9a13b, 0x8a5a83];
-  [ring0, ringEq, ringS, connA].forEach((path, pi) => {
-    for (let i = 0; i < 3 + (pi % 2); i++) {
+  allRings.forEach((path, pi) => {
+    for (let i = 0; i < 2 + (pi % 2); i++) {
       const kind = (i + pi) % 3;
       const v = kind === 0 ? makeCamper(0xf57f29) : makeCar(carColors[(pi * 3 + i) % carColors.length]);
       addVehicle(v, path, 4.5 + Math.random() * 2.5, (i + pi * 0.3) / 4);
@@ -344,8 +350,8 @@ function build(ctx) {
 
   // --- street lamps along the rings ---------------------------------------------------------------
   {
-    const lampRings = [[ring0, 4.4], [ringEq, 5.0], [ringS, 5.0], [connA, 4.4]];
-    const crossings = [ring0, ringEq, ringS, connA];
+    const lampRings = [[ring0, 4.4], [ring1, 4.4], [ringEq, 5.0], [ringS, 5.0], [connA, 4.4], [connB, 4.4]];
+    const crossings = allRings;
     const _ld = new THREE.Vector3();
     let flip = 1, lampN = 0;
     for (const [path, w] of lampRings) {
@@ -373,9 +379,9 @@ function build(ctx) {
     const timberM = new THREE.MeshStandardMaterial({ color: 0xa98c62, roughness: 0.85 });
     const postGeo = new THREE.BoxGeometry(0.14, 0.62, 0.14);
     const railGeo = new THREE.BoxGeometry(2.6, 0.12, 0.1);
-    const crossings = [ring0, ringEq, ringS, connA];
+    const crossings = allRings;
     const _gd = new THREE.Vector3();
-    for (const [path, w] of [[ring0, 4.4], [ringEq, 5.0], [ringS, 5.0], [connA, 4.4]]) {
+    for (const [path, w] of [[ring0, 4.4], [ring1, 4.4], [ringEq, 5.0], [ringS, 5.0], [connA, 4.4], [connB, 4.4]]) {
       const count = Math.floor(path.length / 3.1);
       for (let i = 0; i < count; i++) {
         const t = i / count;
@@ -404,7 +410,7 @@ function build(ctx) {
       t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
-    const rings = [ring0, ringEq, ringS, connA];
+    const rings = allRings;
     let placed = 0, guard = 0;
     while (placed < 40 && guard < 500) {
       guard++;
@@ -419,7 +425,7 @@ function build(ctx) {
     // boulders scattered along the coastline ring
     let rocks = 0;
     guard = 0;
-    while (rocks < 22 && guard < 400) {
+    while (rocks < 34 && guard < 600) {
       guard++;
       const lat = -80 + rand() * 160;
       const lon = -180 + rand() * 360;
@@ -430,6 +436,51 @@ function build(ctx) {
       rocks++;
       placeSmall(`rock-${rocks}`, makeRock(0.9 + rand() * 1.4, 0xc9bda6), lat, lon, rand() * 3, 0.06);
     }
+  }
+
+  // --- big mountain country: ranges filling the open bands ------------------------
+  {
+    const RANGES = [
+      [2.1, 12, 70, 0.5, 4], [1.8, -12, 168, -0.4, 4], [1.6, -62, 118, 0.3, 3],
+      [1.6, 52, -168, 0.8, 4], [1.5, -58, -78, -0.5, 3], [1.4, 36, 140, 0.2, 3],
+      [1.3, -35, 62, 0.6, 3],
+    ];
+    RANGES.forEach(([s, la, lo, h, peaks], i) => {
+      const range = makeMountain(s, { rock: 0xc6bcaa, snow: 0xfaf7f0, peaks });
+      placeM(`range-${i + 1}`, range, la, lo, h, 0.18);
+      // foothill pines around each range
+      for (let t = 0; t < 3; t++) {
+        placeSmall(`range-${i + 1}-pine-${t}`,
+          makeConifer(0.9 + (t % 2) * 0.4, t % 2 ? 0x2f6a49 : 0x4a6e50),
+          la - 4 + t * 3.5, lo + 6 - t * 5, t, 0.15);
+      }
+    });
+  }
+
+  // --- boats on the water ------------------------------------------------------------
+  {
+    const sailA = new CirclePath(ctx.OCEAN_DIR, THREE.MathUtils.degToRad(15), ctx.OCEAN.level - 0.1);
+    addVehicle(makeSailboat(1.3), sailA, 1.3, 0.1);
+    const sailB = new CirclePath(ctx.OCEAN_DIR, THREE.MathUtils.degToRad(24), ctx.OCEAN.level - 0.1);
+    addVehicle(makeSailboat(1.0, 0xf5dfa8), sailB, 1.0, 0.6);
+    const paddle = new CirclePath(ctx.OCEAN_DIR, THREE.MathUtils.degToRad(30), ctx.OCEAN.level - 0.06);
+    addVehicle(makeCanoe(0xc0392b, 1.1), paddle, 0.55, 0.35);
+    // moored canoe by the muskoka pond
+    placeSmall('pond-canoe', makeCanoe(0xd96a15, 0.9), 44, 35, 1.2, 0.16);
+  }
+
+  // --- more Choice properties out in the country --------------------------------------
+  {
+    plate(null, 26, -122, 0.13, 0.26, 0xf1ebdc);
+    const beachfront = makeSubBrandHotel(SUB_BRANDS[0]);
+    beachfront.scale.setScalar(0.7);
+    placeM('hotel-beachfront', beachfront, 26, -122, 2.4, 0.28, 'brandrow');
+    registerPoi(beachfront, 'brandrow');
+    plate(null, 28, 158, 0.13, 0.26, 0xf1ebdc);
+    const lakeside = makeSubBrandHotel(SUB_BRANDS[5]);
+    lakeside.scale.setScalar(0.7);
+    placeM('hotel-lakeside', lakeside, 28, 158, -0.4, 0.28, 'brandrow');
+    registerPoi(lakeside, 'brandrow');
   }
 
   // --- flags + dressing --------------------------------------------------------------------------
@@ -456,7 +507,7 @@ function build(ctx) {
       { lat: 8, lon: -44, ang: 0.2 }, { lat: 30, lon: -78, ang: 0.18 },
       { lat: -42, lon: 100, ang: 0.5 }, { lat: 33, lon: -18, ang: 0.15 },
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
-    const rings = [ring0, ringEq, ringS, connA];
+    const rings = allRings;
     let placed = 0, guard = 0;
     while (placed < 70 && guard < 800) {
       guard++;
