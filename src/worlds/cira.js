@@ -211,7 +211,8 @@ function build(ctx) {
     nodeDirs.push(dir(lat, lon));
   }
   // arcs: registry hub → each IXP, plus a coast-to-coast pair
-  const hubDir = dir(40, 90);
+  // (anchor dirs below match the locked layout-cira.json positions)
+  const hubDir = dir(-22.27, 75.82);
   for (let i = 0; i < nodeDirs.length; i++) {
     const arc = makeBeaconArc(hubDir, 4.5, nodeDirs[i].clone().multiplyScalar(42 + 2.7), {
       color: 0xd94a63, peak: 13 + i * 2, opacity: 0.28, pulses: 2, speed: 0.16,
@@ -237,7 +238,7 @@ function build(ctx) {
   animators.push({ update: (dt, time) => aurora.userData.update(dt, time) });
   // link arc: registry → northern mast (the grant at work)
   {
-    const arc = makeBeaconArc(dir(40, 90), 4.5, dir(55, 115).multiplyScalar(42 + 5.0), {
+    const arc = makeBeaconArc(dir(-22.27, 75.82), 4.5, dir(39.21, 89.66).multiplyScalar(42 + 5.0), {
       color: 0xd9a04a, peak: 11, opacity: 0.26, pulses: 1, speed: 0.2,
     });
     world.add(arc.group);
@@ -247,23 +248,25 @@ function build(ctx) {
   // --- the internet itself: a pipe web across the globe, pulses flowing home ------------------------
   {
     const NODES = {
-      hub: dir(83, -12), // junction at the HQ podium edge
-      goose: dir(54, -50), infra: dir(54, 58), media: dir(33, -18),
-      recall: dir(20, -15), north: dir(55, 115), registry: dir(40, 90),
+      hub: dir(76, -98), // junction at the HQ podium edge (HQ locked at 83.3,-98)
+      goose: dir(-52, 173.95), infra: dir(-19.92, -96.7), media: dir(8, -12),
+      recall: dir(-16.14, 166.52), north: dir(39.21, 89.66), registry: dir(-22.27, 75.82),
       tor: dir(28, -60), mtl: dir(10, -40), van: dir(44, 150), wpg: dir(-8, 60),
       t1: dir(32, 34), t2: dir(-20, 10), t3: dir(-20, -60), t4: dir(14, 128),
       t5: dir(-18, 155), t6: dir(-56, -20), t7: dir(12, -125), t8: dir(-54, -155),
-      glyph: dir(11, -164), station: dir(59, -120), farm: dir(18, 74),
+      glyph: dir(21.37, -159.43), station: dir(49.56, -84.72), farm: dir(18, 74),
       w1: dir(35, 52), w2: dir(11, -148), w3: dir(-25, 40), w4: dir(-13, 172), w5: dir(62, -76),
     };
     const LINKS = [
-      // trunk lines home to the HQ
-      ['hub', 'goose'], ['hub', 'infra'], ['hub', 'registry'], ['hub', 'media'], ['hub', 'north'],
+      // trunk lines home to the HQ (the south-pole plaza ties in via the
+      // southern towns — a direct HQ run would be near-antipodal)
+      ['hub', 'infra'], ['hub', 'registry'], ['hub', 'media'], ['hub', 'north'],
       // the web between districts, exchanges and main-street towns
-      ['goose', 'media'], ['media', 'recall'], ['recall', 'mtl'], ['mtl', 'tor'], ['tor', 'goose'],
+      ['goose', 't5'], ['media', 'recall'], ['recall', 'mtl'], ['mtl', 'tor'], ['goose', 't6'],
       ['infra', 'registry'], ['registry', 'north'], ['registry', 'van'], ['registry', 'wpg'],
       ['van', 't5'], ['wpg', 't2'], ['t2', 't3'], ['t3', 't7'], ['t7', 't8'], ['t4', 'van'],
       ['t1', 'infra'], ['t6', 't3'], ['recall', 't2'], ['north', 't4'], ['t1', 'registry'],
+      ['goose', 't8'],
       // the wifi grid ties into the web
       ['hub', 'glyph'], ['glyph', 'w5'], ['w5', 'station'], ['station', 'hub'],
       ['farm', 'registry'], ['w1', 'infra'], ['w1', 'farm'], ['w2', 't7'], ['w3', 't2'], ['w4', 't5'],

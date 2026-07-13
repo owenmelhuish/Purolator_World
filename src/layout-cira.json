@@ -1,1 +1,104 @@
-{}
+{
+  "goose": {
+    "lat": -52,
+    "lon": 173.95,
+    "heading": 0
+  },
+  "registry": {
+    "lat": -22.27,
+    "lon": 75.82,
+    "heading": 79
+  },
+  "north": {
+    "lat": 39.21,
+    "lon": 89.66,
+    "heading": 0
+  },
+  "infra": {
+    "lat": -19.92,
+    "lon": -96.7,
+    "heading": 0,
+    "scale": 0.75
+  },
+  "town5-0-3": {
+    "lat": -27.89,
+    "lon": 134.12,
+    "heading": 11.5,
+    "removed": true
+  },
+  "town5--22--12": {
+    "lat": -19.64,
+    "lon": 151.84,
+    "heading": 22.9,
+    "removed": true
+  },
+  "recall": {
+    "lat": -16.14,
+    "lon": 166.52,
+    "heading": 165
+  },
+  "glyph": {
+    "lat": 21.37,
+    "lon": -159.43,
+    "heading": 8
+  },
+  "town7-0-3": {
+    "lat": 31.1,
+    "lon": -100.47,
+    "heading": 43,
+    "scale": 1.45
+  },
+  "station": {
+    "lat": 49.56,
+    "lon": -84.72,
+    "heading": -122
+  },
+  "hq": {
+    "lat": 83.33,
+    "lon": -98.03,
+    "heading": 0,
+    "scale": 1.2
+  },
+  "ca": {
+    "lat": 56.86,
+    "lon": 35.02,
+    "heading": 5.7
+  },
+  "bb-85": {
+    "lat": -46.07,
+    "lon": -86.86,
+    "heading": -86
+  },
+  "rink": {
+    "lat": 26.5,
+    "lon": 5.47,
+    "heading": 17.2
+  },
+  "bb-honk": {
+    "lat": 7.87,
+    "lon": -12.2,
+    "heading": -14
+  },
+  "bb-choose": {
+    "lat": -56.09,
+    "lon": 11.81,
+    "heading": -17.2
+  },
+  "bb-choose-s": {
+    "lat": -9.16,
+    "lon": -147.19,
+    "heading": -147
+  },
+  "bb-dragons": {
+    "lat": -0.02,
+    "lon": -61.05,
+    "heading": 28.6
+  },
+  "__cameras": {
+    "ca": { "pos": [-120.95, 95.43, -17], "look": [-6.88, 39.39, -0.97] },
+    "goose": { "pos": [3.4, -94.55, -32.38], "look": [2.77, -33.88, -26.33] },
+    "infra": { "pos": [-61.11, -78.8, -7.5], "look": [-40.62, -13.29, -4.77] },
+    "recall": { "pos": [14.89, -63.91, -64.48], "look": [9.65, -11.85, -40.19] },
+    "registry": { "pos": [65.49, -80.43, 16.33], "look": [38.58, -16.3, 9.75] }
+  }
+}
