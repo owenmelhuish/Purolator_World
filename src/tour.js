@@ -353,7 +353,7 @@ export const POIS = [
     id: 'stratis',
     title: 'STRATIS',
     step: 'Chapter 5 · The End of Marketing Silos',
-    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems, forcing teams to interpret performance through fragmented, delayed views. STRATIS breaks down those walls: a connected data infrastructure that reads every stream surrounding your business as one network, and surfaces the correlations that would otherwise stay hidden. You act on the relationships between signals, not on any one of them in isolation. For Purolator: one live view of the whole marketing system, informing every decision while the budget is still in flight. See it for real:',
+    body: 'The beacon above the tower never sleeps. STRATIS is the live marketing terminal: proprietary technology developed by PUSH with the University of Toronto. Marketing channels were built as closed ecosystems, forcing teams to interpret performance through fragmented, delayed views. STRATIS breaks down those walls, reading every stream surrounding your business as one connected network and surfacing the correlations that would otherwise stay hidden. You act on the relationships between signals, not on any one of them in isolation. For Purolator: one live view of the whole marketing system, informing every decision while the budget is still in flight. See it for real:',
     stats: [['Silos', 'Broken down'], ['Signals', 'One connected network']],
     html: stratisDiagram() + `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
     lat: 90, lon: 0, dist: 64, pinAlt: 0, pin: false, side: 1.35, lookR: 72,
