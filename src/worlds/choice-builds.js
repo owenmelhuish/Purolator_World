@@ -423,6 +423,15 @@ export const SUB_BRANDS = [
   { key: 'mainstay', name: 'MAINSTAY', tag: 'SUITES', color: 0x2e4757, accent: 0x94d4c6, style: 'mainstay' },
 ];
 
+// The rest of the family Choice owns — placed individually out in the country.
+export const EXPANSION_BRANDS = [
+  { key: 'cambria', name: 'CAMBRIA', tag: 'HOTELS', color: 0x363b44, accent: 0xa6192e, style: 'cambria' },
+  { key: 'radisson', name: 'RADISSON', tag: '', color: 0x00205b, accent: 0xc8ccd2, style: 'comfort' },
+  { key: 'country', name: 'COUNTRY INN', tag: '& SUITES', color: 0x123f6d, accent: 0xffc72c, style: 'quality' },
+  { key: 'rodeway', name: 'RODEWAY INN', tag: '', color: 0xd4552a, accent: 0x123f8c, floors: 2, style: 'motel' },
+  { key: 'woodspring', name: 'WOODSPRING', tag: 'SUITES', color: 0x1f4d3a, accent: 0xd8c9a3, style: 'mainstay' },
+];
+
 /** Facade material: wall colour with a lit punched-window grid. */
 function facadeMat(wallHex, floors, cols, { litRatio = 0.75, frameHex = null } = {}) {
   const W = cols * 56, H = floors * 56;
@@ -778,6 +787,75 @@ export function makeSubBrandHotel(b) {
     shrubs([[-2.4, D / 2 + 0.5, 1.0], [2.4, D / 2 + 0.5, 1.0], [-3.4, D / 2 + 0.7, 0.7], [3.4, D / 2 + 0.7, 0.7]]);
     pine(-W / 2 - 1.15, -1.0, 0.95);
     pine(W / 2 + 1.15, -1.4, 1.05);
+  } else if (b.style === 'cambria') {
+    // upscale flagship: charcoal glass tower, red blade sign, corner glass
+    // lobby, rooftop terrace with pergola
+    const W = 7.0, D = 5.2, FL = 6, fh = 1.12, bodyH = FL * fh;
+    g.add(new THREE.Mesh(new THREE.BoxGeometry(W, 1.0, D),
+      [stone, stone, stone, stone, stone, stone])).children.at(-1).position.set(0, BASE + 0.5, 0);
+    const front = facadeMat(b.color, FL, 6, { litRatio: 0.6 });
+    const side = facadeMat(b.color, FL, 4, { litRatio: 0.6 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(W, bodyH, D), [side, side, bodyM, bodyM, front, front]);
+    body.position.set(0, BASE + 1.0 + bodyH / 2, 0);
+    body.castShadow = true;
+    g.add(body);
+    const red = mat(b.accent, { roughness: 0.45 });
+    // red blade sign with vertical wordmark on the street corner
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.36, bodyH * 0.9, 1.15), red);
+    blade.position.set(-W / 2 - 0.18, BASE + 1.0 + bodyH * 0.5, D / 2 - 0.4);
+    blade.castShadow = true;
+    g.add(blade);
+    const bladeFace = new THREE.Mesh(new THREE.PlaneGeometry(1.0, bodyH * 0.82),
+      canvasMat(120, 640, (ctx, Wc, Hc) => {
+        ctx.fillStyle = '#a6192e';
+        ctx.fillRect(0, 0, Wc, Hc);
+        ctx.save();
+        ctx.translate(Wc / 2 + 22, 30);
+        ctx.rotate(Math.PI / 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 62px Inter, Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('CAMBRIA', 0, 0);
+        ctx.restore();
+      }, { emissive: 0xffffff, emissiveIntensity: 0.35 }));
+    bladeFace.rotation.y = -Math.PI / 2;
+    bladeFace.position.set(-W / 2 - 0.38, BASE + 1.0 + bodyH * 0.5, D / 2 - 0.4);
+    g.add(bladeFace);
+    // corner glass lobby with red canopy slab
+    const lobby = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.0, 2.6), new THREE.MeshPhysicalMaterial({
+      color: 0xbcd4e8, roughness: 0.12, metalness: 0.15, transparent: true, opacity: 0.55,
+    }));
+    lobby.position.set(W / 2 - 1.5, BASE + 1.0, D / 2 + 1.1);
+    g.add(lobby);
+    g.add(rbox(3.8, 0.16, 3.0, red, W / 2 - 1.5, BASE + 2.12, D / 2 + 1.15, 0.04));
+    const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 1.2), new THREE.MeshStandardMaterial({
+      color: 0xffe6bd, emissive: 0xffc987, emissiveIntensity: 0.6,
+    }));
+    glow.position.set(W / 2 - 1.5, BASE + 1.0, D / 2 + 2.42);
+    g.add(glow);
+    // rooftop terrace: deck, pergola, planters + sign
+    g.add(rbox(W + 0.3, 0.28, D + 0.3, mat(0xe9e2d2, { roughness: 0.6 }), 0, BASE + 1.0 + bodyH + 0.14, 0, 0.05));
+    const deckT = mat(0xb9a184, { roughness: 0.8 });
+    g.add(box(3.0, 0.08, 2.6, deckT, -1.6, BASE + 1.0 + bodyH + 0.32, 0.6));
+    for (const [cx, cz] of [[-2.8, -0.4], [-0.4, -0.4], [-2.8, 1.6], [-0.4, 1.6]]) {
+      g.add(box(0.1, 0.9, 0.1, deckT, cx, BASE + 1.0 + bodyH + 0.75, cz));
+    }
+    for (let i = 0; i < 4; i++) {
+      g.add(box(2.7, 0.05, 0.12, deckT, -1.6, BASE + 1.0 + bodyH + 1.2, -0.3 + i * 0.55));
+    }
+    const sh1 = makeShrub(0.6, 0x5d7a4a);
+    sh1.position.set(1.6, BASE + 1.0 + bodyH + 0.3, -1.2);
+    g.add(sh1);
+    g.add(box(0.8, 0.4, 0.6, mat(0xc9c4b8, { roughness: 0.7 }), 2.2, BASE + 1.0 + bodyH + 0.48, 1.2));
+    const rs = roofSign(b, 4.2);
+    rs.position.set(0.6, BASE + 1.0 + bodyH + 1.15, -0.2);
+    g.add(rs);
+    const ms = monumentSign(b);
+    ms.position.set(-PADW / 2 + 1.4, BASE, PADD / 2 - 1.2);
+    g.add(ms);
+    shrubs([[-2.6, D / 2 + 0.7, 0.9], [1.0, D / 2 + 0.8, 0.8]]);
+    pine(-W / 2 - 1.6, -1.4, 1.15);
+    pine(W / 2 + 1.4, -1.6, 0.95);
   } else if (b.style === 'motel') {
     // two-storey roadside motel with outdoor walkway (Econo Lodge)
     const W = 9.5, D = 3.4, FL = 2, fh = 1.5;

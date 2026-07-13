@@ -9,7 +9,7 @@ import {
   makeCar, makeCamper, makeBus, makeFlag, makeShrub, makeRock, makeSailboat, makeCanoe,
 } from './props.js';
 import {
-  CH, ads, makeChoiceResort, makeSubBrandHotel, SUB_BRANDS,
+  CH, ads, makeChoiceResort, makeSubBrandHotel, SUB_BRANDS, EXPANSION_BRANDS,
   makeSkiLodge, makeCottageDock, makeRewardsPavilion, makeRoasMonument,
   makePersonaPlaza, makeRestStop,
 } from './choice-builds.js';
@@ -488,6 +488,47 @@ function build(ctx) {
     registerPoi(lakeside, 'brandrow');
   }
 
+  // --- the rest of the family: Cambria, Radisson, Country Inn, Rodeway, WoodSpring ------------
+  {
+    const SPOTS = {
+      cambria: [50, -98, 0.3], radisson: [-13, 36, 0], country: [-23, 52, -0.3],
+      rodeway: [-13, 68, 0.4], woodspring: [18, -164, 0.2],
+    };
+    for (const b of EXPANSION_BRANDS) {
+      const [la, lo, h] = SPOTS[b.key];
+      plate(null, la, lo, 0.14, 0.26, 0xf1ebdc);
+      const hotel = makeSubBrandHotel(b);
+      hotel.scale.setScalar(0.85);
+      placeM(`hotel-${b.key}`, hotel, la, lo, h, 0.28, 'brandrow');
+      registerPoi(hotel, 'brandrow');
+    }
+  }
+
+  // --- evergreen country: stands of great Canadian pines --------------------------------------
+  {
+    const GROVES = [
+      [58, -112, 7], [-32, 44, 6], [-12, -146, 6], [24, -168, 5], [48, -134, 5], [-38, 108, 6],
+    ];
+    let gn = 0;
+    const greens = [0x27543c, 0x2f6a49, 0x3e7a52];
+    for (const [gla, glo, n] of GROVES) {
+      for (let i = 0; i < n; i++) {
+        const la = gla + Math.sin(i * 2.4 + gn) * 3.2;
+        const lo = glo + Math.cos(i * 1.7 + gn * 2) * 4.2;
+        const scale = 1.5 + ((i * 7 + gn * 3) % 10) / 10 * 1.1;
+        placeSmall(`grove-${gn}-${i}`, makeConifer(scale, greens[(i + gn) % 3]), la, lo, i * 1.3, 0.15);
+      }
+      // a boulder or two among the trunks
+      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55), new THREE.MeshStandardMaterial({ color: 0xbfb49c, roughness: 0.9 }));
+      rock.rotation.set(gn, gn * 2, 0.4);
+      rock.position.y = 0.3;
+      const wrap = new THREE.Group();
+      wrap.add(rock);
+      placeSmall(`grove-${gn}-rock`, wrap, gla + 1.2, glo + 1.6, 0, 0.12);
+      gn++;
+    }
+  }
+
   // --- flags + dressing --------------------------------------------------------------------------
   placeSmall('flag-canada-1', makeFlag(), 80, -60, 0.4, 0.32);
   placeSmall('flag-canada-2', makeFlag(), 12, 58, -0.8, 0.24);
@@ -514,7 +555,7 @@ function build(ctx) {
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
     const rings = allRings;
     let placed = 0, guard = 0;
-    while (placed < 70 && guard < 800) {
+    while (placed < 110 && guard < 1400) {
       guard++;
       const lat = -80 + rand() * 160;
       const lon = -180 + rand() * 360;
@@ -523,9 +564,12 @@ function build(ctx) {
       if (exclude.some((e) => d.angleTo(e.dir) < e.ang)) continue;
       if (rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.08)) continue;
       placed++;
-      const t = rand() < 0.55
-        ? makeConifer(0.8 + rand() * 0.8, rand() < 0.5 ? 0x2f6a49 : 0x3e7a52)
-        : makeTree(Math.floor(rand() * 3), 0.85 + rand());
+      const roll = rand();
+      const t = roll < 0.22
+        ? makeConifer(1.6 + rand() * 1.1, [0x27543c, 0x2f6a49, 0x3e7a52][Math.floor(rand() * 3)])
+        : roll < 0.62
+          ? makeConifer(0.8 + rand() * 0.8, rand() < 0.5 ? 0x2f6a49 : 0x3e7a52)
+          : makeTree(Math.floor(rand() * 3), 0.85 + rand());
       placeSmall(`tree-${String(placed).padStart(2, '0')}`, t, lat, lon, rand() * Math.PI * 2, 0.12);
     }
   }
