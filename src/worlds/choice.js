@@ -252,7 +252,7 @@ function build(ctx) {
       const lon = 62 + i * 18.5;
       const lat = -42 + (i % 2 ? 1.8 : -1.8);
       plate(null, lat, lon, 0.13, 0.26, 0xf1ebdc);
-      placeM(`hotel-${b.key}`, hotel, lat, lon, 0, 0.28, 'brandrow');
+      placeM(`hotel-${b.key}`, hotel, lat, lon, 0, 0.28);
       registerPoi(hotel, 'brandrow');
     });
     const lamp1 = makeLamppost();
@@ -479,7 +479,7 @@ function build(ctx) {
     plate(null, 26, -122, 0.14, 0.26, 0xf1ebdc);
     const beachfront = makeSubBrandHotel(SUB_BRANDS[0]);
     beachfront.scale.setScalar(0.8);
-    placeM('hotel-beachfront', beachfront, 26, -122, 2.4, 0.28, 'brandrow');
+    placeM('hotel-beachfront', beachfront, 26, -122, 2.4, 0.28);
     registerPoi(beachfront, 'brandrow');
     plate(null, 22, 176, 0.14, 0.26, 0xf1ebdc);
     const lakeside = makeSubBrandHotel(SUB_BRANDS[5]);
@@ -499,7 +499,7 @@ function build(ctx) {
       plate(null, la, lo, 0.14, 0.26, 0xf1ebdc);
       const hotel = makeSubBrandHotel(b);
       hotel.scale.setScalar(0.85);
-      placeM(`hotel-${b.key}`, hotel, la, lo, h, 0.28, 'brandrow');
+      placeM(`hotel-${b.key}`, hotel, la, lo, h, 0.28);
       registerPoi(hotel, 'brandrow');
     }
   }

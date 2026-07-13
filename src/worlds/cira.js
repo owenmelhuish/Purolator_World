@@ -144,7 +144,7 @@ function build(ctx) {
   // --- pole: the Parliament-style CIRA HQ, .CA monument on the front slope ----------
   const hq = makeCiraHQ();
   hq.scale.setScalar(1.6);
-  placeM('hq', hq, 90, 0, -0.95, 0.32, 'ca');
+  placeM('hq', hq, 90, 0, -0.95, 0.32);
   registerPoi(hq, 'ca');
   const monument = makeDotCaMonument();
   monument.scale.setScalar(1.35);
@@ -206,7 +206,7 @@ function build(ctx) {
   for (const [city, lat, lon] of IXPS) {
     const node = makeIxpNode(city);
     node.scale.setScalar(1.5);
-    placeM(`ixp-${city.toLowerCase()}`, node, lat, lon, 0.3, 0.3, 'ixp');
+    placeM(`ixp-${city.toLowerCase()}`, node, lat, lon, 0.3, 0.3, city === 'TOR' ? 'ixp' : null);
     registerPoi(node, 'ixp');
     nodeDirs.push(dir(lat, lon));
   }
@@ -326,20 +326,20 @@ function build(ctx) {
   {
     const glyph = makeConnectedMonument();
     glyph.scale.setScalar(1.3);
-    placeM('glyph', glyph, 11, -164, 0.4, 0.32, 'infra');
+    placeM('glyph', glyph, 11, -164, 0.4, 0.32);
     registerPoi(glyph, 'infra');
     animators.push({ update: (dt, time) => glyph.userData.update(dt, time) });
 
     const station = makeGroundStation();
     station.scale.setScalar(1.4);
     plate(null, 59, -120, 0.22, 0.24, 0xecebe2);
-    placeM('station', station, 59, -120, 0.5, 0.26, 'north');
+    placeM('station', station, 59, -120, 0.5, 0.26);
     registerPoi(station, 'north');
 
     const farm = makeServerFarm();
     farm.scale.setScalar(1.4);
     plate(null, 18, 74, 0.21, 0.24, 0xf0ead9);
-    placeM('farm', farm, 18, 74, -0.4, 0.26, 'registry');
+    placeM('farm', farm, 18, 74, -0.4, 0.26);
     registerPoi(farm, 'registry');
 
     const rink = makeRink();
@@ -350,7 +350,7 @@ function build(ctx) {
     const WIFI = [[35, 52], [11, -148], [-25, 40], [-13, 172], [62, -76]];
     WIFI.forEach(([la, lo], i) => {
       const tower = makeWifiTower(1.35 + (i % 3) * 0.15);
-      placeM(`wifi-${i + 1}`, tower, la, lo, i * 0.7, 0.28, 'infra');
+      placeM(`wifi-${i + 1}`, tower, la, lo, i * 0.7, 0.28);
       registerPoi(tower, 'infra');
       animators.push({ update: (dt, time) => tower.userData.update(dt, time + i * 1.3) });
     });
@@ -362,7 +362,7 @@ function build(ctx) {
     TOTEMS.forEach(([la, lo, ad], i) => {
       const totem = makeDigitalTotem(ad);
       totem.scale.setScalar(1.3);
-      placeM(`totem-${i + 1}`, totem, la, lo, 0.3 + i, 0.28, 'media');
+      placeM(`totem-${i + 1}`, totem, la, lo, 0.3 + i, 0.28);
       registerPoi(totem, 'media');
     });
 

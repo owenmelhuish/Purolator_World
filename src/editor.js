@@ -210,6 +210,8 @@ export function initEditor({
     <div class="ed-hint">Pick a stop, frame the shot (drag to spin ·
       wheel to zoom · right-drag to pan), then <b>Lock camera</b> —
       the tour uses that exact shot from then on.<br>
+      While a stop is selected, objects can't be clicked or dragged —
+      pick "— select a story stop —" to resume moving things.<br>
       Re-lock if you later move that stop's landmark.</div>` : '';
 
   const panel = document.createElement('div');
@@ -257,6 +259,7 @@ export function initEditor({
 
   let selected = null;
   let refreshCamPanel = null;
+  let camActive = false; // a story stop is selected — object editing paused
 
   function refreshRemoved() {
     const names = items.filter((m) => m.removed).map((m) => m.name);
@@ -327,6 +330,13 @@ export function initEditor({
   }
 
   function select(m) {
+    if (m && camActive) {
+      // picking an element from the dropdown is deliberate — exit framing mode
+      camActive = false;
+      const cs = panel.querySelector('#ed-cam-poi');
+      if (cs) cs.value = '';
+      refreshCamPanel?.();
+    }
     selected = m;
     if (m && !m.base) {
       // fixed (remove-only) items: derive a ring position from the mesh itself
@@ -467,6 +477,7 @@ export function initEditor({
 
   window.addEventListener('pointerdown', (e) => {
     if (e.target !== dom) return; // panel clicks etc.
+    if (camActive) return; // framing a story camera — never pick/drag objects
     setPointer(e);
     // removed items are hidden via a parent group, so ignore any hit whose
     // movable is removed or whose ancestor chain is invisible
@@ -524,13 +535,20 @@ export function initEditor({
     refreshCamPanel = () => {
       const poi = activePoi();
       if (!poi) { camStatus.textContent = 'no stop selected'; return; }
-      camStatus.innerHTML = cameraOverrides[poi.id]
+      camStatus.innerHTML = (cameraOverrides[poi.id]
         ? '<b style="color:#0f7c3f">● custom shot locked</b>'
-        : 'default shot (not locked)';
+        : 'default shot (not locked)')
+        + ' <span style="color:#7c8aa5">· objects locked while framing</span>';
     };
 
     camSel.addEventListener('change', () => {
       const poi = activePoi();
+      camActive = !!poi;
+      if (camActive) {
+        // framing mode: drop any element selection so nothing can be nudged
+        selected = null;
+        refreshPanel();
+      }
       if (poi) flyPoi?.(poi);
       refreshCamPanel();
     });

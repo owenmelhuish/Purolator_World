@@ -132,11 +132,11 @@ function build(ctx) {
   registerPoi(hq, 'campus');
   const barrett = makeBarrettCTI();
   barrett.scale.setScalar(1.35);
-  placeM('barrett', barrett, 76, -95, 0.4, 0.33, 'campus');
+  placeM('barrett', barrett, 76, -95, 0.4, 0.33);
   registerPoi(barrett, 'campus');
   const quad = makeQuad();
   quad.scale.setScalar(1.45);
-  placeM('quad', quad, 78, 95, 0, 0.32, 'campus');
+  placeM('quad', quad, 78, 95, 0, 0.32);
   registerPoi(quad, 'campus');
   placeSmall('campus-flag', makeFlag(), 57, -35, 0.5, 0.32);
 
@@ -205,30 +205,30 @@ function build(ctx) {
   {
     plate(null, -28, -38, 0.19, 0.24, 0xe6eaf3);
     const toronto = makeTorontoCluster();
-    placeM('toronto', toronto, -28, -38, 0.4, 0.26, 'city');
+    placeM('toronto', toronto, -28, -38, 0.4, 0.26);
     registerPoi(toronto, 'city');
 
     plate(null, 32, 28, 0.18, 0.24, 0xe9edf5);
     const studio = makeBroadcastStudio();
-    placeM('studio', studio, 32, 28, -0.5, 0.26, 'city');
+    placeM('studio', studio, 32, 28, -0.5, 0.26);
     registerPoi(studio, 'city');
 
     plate(null, 30, 64, 0.19, 0.24, 0xe6eaf3);
     const drivein = makeDriveIn();
-    placeM('drivein', drivein, 30, 64, 0.3, 0.26, 'stage');
+    placeM('drivein', drivein, 30, 64, 0.3, 0.26);
     registerPoi(drivein, 'stage');
 
     const pylon = makeSocialPylon();
-    placeM('pylon', pylon, -44, 96, 0.5, 0.28, 'city');
+    placeM('pylon', pylon, -44, 96, 0.5, 0.28);
     registerPoi(pylon, 'city');
 
     plate(null, -64, -45, 0.17, 0.24, 0xe9edf5);
     const residence = makeResidenceHall();
-    placeM('residence', residence, -64, -45, 0.4, 0.26, 'campus');
+    placeM('residence', residence, -64, -45, 0.4, 0.26);
     registerPoi(residence, 'campus');
 
     const arboretum = makeArboretum();
-    placeM('arboretum', arboretum, 56, 31, -0.6, 0.24, 'campus');
+    placeM('arboretum', arboretum, 56, 31, -0.6, 0.24);
     registerPoi(arboretum, 'campus');
 
     const platform = makeTransitPlatform();
