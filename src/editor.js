@@ -86,8 +86,15 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
   const items = movables.filter((m) => m.base || m.removableOnly);
   items.sort((a, b) => a.name.localeCompare(b.name));
   const listed = items.filter((m) => m.listed !== false);
-  // sync whatever this browser already holds into the layout file right away
-  if (Object.keys(overrides).length) persist(overrides, worldKey);
+  // seed from the layout FILE before syncing: the file is the source of truth
+  // (it may hold fixes made outside this browser), then local-only edits on top
+  fetch(layoutEndpoint(worldKey))
+    .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('json') ? r.json() : null))
+    .then((server) => {
+      if (server) Object.assign(overrides, server);
+      if (Object.keys(overrides).length) persist(overrides, worldKey);
+    })
+    .catch(() => { if (Object.keys(overrides).length) persist(overrides, worldKey); });
 
   // --- selection ring ------------------------------------------------------
   const ring = new THREE.Mesh(
