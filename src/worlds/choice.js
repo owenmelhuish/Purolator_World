@@ -504,27 +504,35 @@ function build(ctx) {
     }
   }
 
-  // --- evergreen country: stands of great Canadian pines --------------------------------------
+  // --- evergreen country: larger-than-life pine forest, coast to coast ------------------------
   {
     const GROVES = [
       [58, -112, 7], [-32, 44, 6], [-12, -146, 6], [24, -168, 5], [48, -134, 5], [-38, 108, 6],
+      [-72, -64, 5], [-72, 40, 6], [-72, 140, 5], [-63, -172, 6], [-60, -128, 5], [-60, 52, 7],
+      [-54, 4, 6], [-48, 120, 6], [-27, -4, 5], [-27, 76, 6], [-15, 132, 6], [-12, -160, 5],
+      [-12, 84, 5], [-9, 48, 6], [9, -180, 6], [9, -28, 5], [9, 84, 6], [21, 44, 5],
+      [21, 116, 6], [24, -152, 5], [48, -76, 6], [48, -32, 5], [48, 0, 6], [48, 132, 5], [51, 172, 6],
     ];
     let gn = 0;
     const greens = [0x27543c, 0x2f6a49, 0x3e7a52];
     for (const [gla, glo, n] of GROVES) {
       for (let i = 0; i < n; i++) {
-        const la = gla + Math.sin(i * 2.4 + gn) * 3.2;
-        const lo = glo + Math.cos(i * 1.7 + gn * 2) * 4.2;
-        const scale = 1.5 + ((i * 7 + gn * 3) % 10) / 10 * 1.1;
+        const la = gla + Math.sin(i * 2.4 + gn) * 4.4;
+        const lo = glo + Math.cos(i * 1.7 + gn * 2) * 5.8;
+        // larger than life — just shy of the mountain ranges
+        const scale = 2.6 + ((i * 7 + gn * 3) % 10) / 10 * 1.8;
         placeSmall(`grove-${gn}-${i}`, makeConifer(scale, greens[(i + gn) % 3]), la, lo, i * 1.3, 0.15);
       }
-      // a boulder or two among the trunks
-      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55), new THREE.MeshStandardMaterial({ color: 0xbfb49c, roughness: 0.9 }));
+      // a monarch pine at the heart of every other grove
+      if (gn % 2 === 0) {
+        placeSmall(`grove-${gn}-monarch`, makeConifer(4.6, greens[gn % 3]), gla, glo, gn * 0.7, 0.15);
+      }
+      const rock = new THREE.Mesh(new THREE.DodecahedronGeometry(0.85), new THREE.MeshStandardMaterial({ color: 0xbfb49c, roughness: 0.9 }));
       rock.rotation.set(gn, gn * 2, 0.4);
-      rock.position.y = 0.3;
+      rock.position.y = 0.45;
       const wrap = new THREE.Group();
       wrap.add(rock);
-      placeSmall(`grove-${gn}-rock`, wrap, gla + 1.2, glo + 1.6, 0, 0.12);
+      placeSmall(`grove-${gn}-rock`, wrap, gla + 1.6, glo + 2.2, 0, 0.12);
       gn++;
     }
   }
@@ -555,7 +563,7 @@ function build(ctx) {
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
     const rings = allRings;
     let placed = 0, guard = 0;
-    while (placed < 110 && guard < 1400) {
+    while (placed < 150 && guard < 2200) {
       guard++;
       const lat = -80 + rand() * 160;
       const lon = -180 + rand() * 360;
@@ -565,10 +573,10 @@ function build(ctx) {
       if (rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.08)) continue;
       placed++;
       const roll = rand();
-      const t = roll < 0.22
-        ? makeConifer(1.6 + rand() * 1.1, [0x27543c, 0x2f6a49, 0x3e7a52][Math.floor(rand() * 3)])
-        : roll < 0.62
-          ? makeConifer(0.8 + rand() * 0.8, rand() < 0.5 ? 0x2f6a49 : 0x3e7a52)
+      const t = roll < 0.34
+        ? makeConifer(2.2 + rand() * 1.6, [0x27543c, 0x2f6a49, 0x3e7a52][Math.floor(rand() * 3)])
+        : roll < 0.68
+          ? makeConifer(1.0 + rand() * 1.0, rand() < 0.5 ? 0x2f6a49 : 0x3e7a52)
           : makeTree(Math.floor(rand() * 3), 0.85 + rand());
       placeSmall(`tree-${String(placed).padStart(2, '0')}`, t, lat, lon, rand() * Math.PI * 2, 0.12);
     }
