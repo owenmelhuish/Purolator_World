@@ -54,7 +54,7 @@ function zerowasteDiagram() {
   `).join('');
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">The old way leaks — the loop doesn't</div>
+      <div class="ic-diagram-title">The old way leaks. The loop doesn't</div>
       <div class="zw-lane"><span class="zw-lane-tag">THE OLD LINE</span>${oldWay}<span class="zw-loss rise" style="animation-delay:0.6s">− budget</span></div>
       <svg class="zw-loopsvg" viewBox="0 0 320 104">
         <circle cx="160" cy="52" r="38" fill="none" stroke="#1c4fc4" stroke-width="2.5" class="zw-loopring"/>
@@ -115,7 +115,7 @@ function studioDiagram() {
         <span class="sp-brand rise" style="animation-delay:0.3s">WILLIAMS</span>
       </div>
       <div class="sp-merge rise" style="animation-delay:0.38s">↓</div>
-      <div class="sp-bar rise" style="animation-delay:0.45s">ONE NARRATIVE — PROMISES, DELIVERED</div>
+      <div class="sp-bar rise" style="animation-delay:0.45s">ONE NARRATIVE: PROMISES, DELIVERED</div>
       <div class="sp-auds">${audiences}</div>
       <div class="sp-chans">${channels}</div>
     </div>`;
@@ -155,7 +155,7 @@ export const POIS = [
     id: 'hq',
     title: 'Meet PUSH',
     step: 'Chapter 1 · A Senior Team Around Yours',
-    body: 'A modern media agency: human brilliance plus an agentic operating system, four offices across North America, ~75 functional experts and $300M in annual billings. Leadership doesn\'t hand you off — it surrounds you, and every floor of this tower is a PUSH discipline working as one team. A leaner roster means partners have to plug in clean: your brand, digital, demand-gen and events leads each get a senior counterpart, strategy through execution. For Purolator: an extension of your team from day one — fresh eyes, zero onboarding tax.',
+    body: 'A modern media agency: human brilliance plus an agentic operating system, four offices across North America, ~75 functional experts and $300M in annual billings. Leadership doesn\'t hand you off. It surrounds you, and every floor of this tower is a PUSH discipline working as one team. A leaner roster means partners have to plug in clean: your brand, digital, demand-gen and events leads each get a senior counterpart, strategy through execution. For Purolator: an extension of your team from day one: fresh eyes, zero onboarding tax.',
     stats: [['Offices', 'LA · ATL · OTT · TOR'], ['Experts', '~75, senior-led'], ['Model', 'Embedded, no handoffs']],
     html: leadershipDiagram(),
     lat: 90, lon: 0, dist: 116, pinAlt: 32, side: 0.85, lookR: 42,
@@ -164,7 +164,7 @@ export const POIS = [
     id: 'zerowaste',
     title: 'ZeroWaste™',
     step: 'Chapter 2 · Every Dollar Working',
-    body: 'You know what waste looks like: last-minute pivots, duplicated effort, assets built once and used once. The old way is a straight line — brief, then tech, then media, then creative — with budget falling off the end. PUSH runs it as a loop: media and creative conceived together, fuelled by 20+ integrated tools, content built modular so it\'s reused across every channel and audience. For Purolator: spend that stops funding rework and starts funding results — with the receipts to show it.',
+    body: 'You know what waste looks like: last-minute pivots, duplicated effort, assets built once and used once. The old way is a straight line: brief, then tech, then media, then creative, with budget falling off the end. PUSH runs it as a loop: media and creative conceived together, fuelled by 20+ integrated tools, content built modular so it\'s reused across every channel and audience. For Purolator: spend that stops funding rework and starts funding results, with the receipts to show it.',
     stats: [['Rework', 'Designed out'], ['Every dollar', 'Accounted for']],
     html: zerowasteDiagram(),
     lat: 53, lon: 8, dist: 64, pinAlt: 9, side: -0.5, lookR: 43.5,
@@ -173,7 +173,7 @@ export const POIS = [
     id: 'lab',
     title: 'The Innovation Centre',
     step: 'Chapter 3 · Decide With Data',
-    body: '"Leverage AI to scale" only matters if it changes decisions. Signals from the whole network flow into this lab — performance, market, customer, competition — and come out as the next move: which vertical gets the next dollar, which message gets the next flight, what gets cut without sentiment. AI-accelerated market intelligence, message testing and scenario modelling — marketing decisions with logistics-grade precision. For Purolator: performance tracking that doesn\'t just report the quarter — it steers it.',
+    body: '"Leverage AI to scale" only matters if it changes decisions. Signals from the whole network flow into this lab: performance, market, customer, competition. Out comes the next move: which vertical gets the next dollar, which message gets the next flight, what gets cut without sentiment. AI-accelerated market intelligence, message testing and scenario modelling: marketing decisions with logistics-grade precision. For Purolator: performance tracking that doesn\'t just report the quarter. It steers it.',
     stats: [['Trade-offs', 'Data-informed'], ['Cadence', 'Weekly, not quarterly']],
     html: insightDiagram(),
     lat: 54, lon: 58, dist: 80, pinAlt: 9, side: -0.8, lookR: 44,
@@ -182,7 +182,7 @@ export const POIS = [
     id: 'studio',
     title: 'Studio P',
     step: 'Chapter 4 · One Story, Every Audience',
-    body: 'PUSH\'s high-velocity creative studio, embedded inside the system. Purolator, Livingston and Williams have to sound like one company — to the enterprise account, the healthcare buyer, and the SMB owner who is, after all, a person too. Live media signals decide what gets made, refined and scaled: one message hierarchy, modular assets, reusable from national campaign to event booth to sales deck. For Purolator: message consistency by design — one narrative everywhere, including the markets where you\'re still introducing yourselves.',
+    body: 'PUSH\'s high-velocity creative studio, embedded inside the system. Purolator, Livingston and Williams have to sound like one company: to the enterprise account, the healthcare buyer, and the SMB owner who is, after all, a person too. Live media signals decide what gets made, refined and scaled: one message hierarchy, modular assets, reusable from national campaign to event booth to sales deck. For Purolator: message consistency by design. One narrative everywhere, including the markets where you\'re still introducing yourselves.',
     stats: [['Three brands', 'One voice'], ['Assets', 'Built once, used everywhere']],
     html: studioDiagram(),
     lat: 54, lon: -50, dist: 66, pinAlt: 9, side: -0.85, lookR: 44.5,
@@ -191,7 +191,7 @@ export const POIS = [
     id: 'stratis',
     title: 'STRATIS',
     step: 'Chapter 5 · Spend → Pipeline',
-    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems — and the gap between spend and pipeline is where budgets go to be questioned. STRATIS connects every data stream around the business and reads them as one system, surfacing what no dashboard shows while the budget is still live. On $14.4M of live media: 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to. For Purolator: a straight line from spend to pipeline — MQLs that convert, leads that stop leaking. See it for real:',
+    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems, and the gap between spend and pipeline is where budgets go to be questioned. STRATIS connects every data stream around the business and reads them as one system, surfacing what no dashboard shows while the budget is still live. On $14.4M of live media: 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to. For Purolator: a straight line from spend to pipeline, with MQLs that convert and leads that stop leaking. See it for real:',
     stats: [['Spend → pipeline', 'One view'], ['To decision', '10× faster']],
     html: `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
     lat: 90, lon: 0, dist: 64, pinAlt: 0, pin: false, side: 1.35, lookR: 72,
@@ -200,7 +200,7 @@ export const POIS = [
     id: 'summary',
     title: 'When We PUSH, You Succeed',
     step: 'Chapter 6 · One Bigger Purolator',
-    body: 'Creative, media and intelligence operating as one system — not three disciplines, and not three brands. Purolator, Livingston and Williams, one story told consistently from the national campaign to the booth to the deck your sales team carries. This whole world runs on that loop — and it\'s how it feels to work inside it. The conversation we\'d love to have next: your 2027 mandates, and where fresh eyes would help most.',
+    body: 'Creative, media and intelligence operating as one system, not three disciplines and not three brands. Purolator, Livingston and Williams, one story told consistently from the national campaign to the booth to the deck your sales team carries. This whole world runs on that loop, and it\'s how it feels to work inside it. The conversation we\'d love to have next: your 2027 mandates, and where fresh eyes would help most.',
     stats: [['The system', 'Yours to use'], ['Next', 'Let\'s talk 2027']],
     html: loopDiagram(),
     lat: 90, lon: 0, dist: 150, pinAlt: 0, pin: false, side: 0.8, lookR: 40,
@@ -214,7 +214,7 @@ export const EXTRAS = [
     id: 'border',
     title: 'Certainty at the Border',
     step: 'The Network · Cross-Border',
-    body: 'Customs now touches almost every shipment. With Livingston in the family, clearance happens before the wheels arrive — Purolator freight rolls through the FAST lane without stopping while the rest of the market queues.',
+    body: 'Customs now touches almost every shipment. With Livingston in the family, clearance happens before the wheels arrive: Purolator freight rolls through the FAST lane without stopping while the rest of the market queues.',
     stats: [['Clearance', 'Pre-arrival'], ['FAST lane', 'Always green']],
     lat: 2, lon: -28, dist: 92, pinAlt: 10, side: -0.6, lookR: 43,
   },
@@ -222,7 +222,7 @@ export const EXTRAS = [
     id: 'coldchain',
     title: 'Cold Chain, Claimed',
     step: 'The Network · Cold Chain',
-    body: 'Pharma and fresh move in an unbroken, monitored cold chain — coast to coast at −20°C. The category is still being defined, and the brand that claims it first will own it.',
+    body: 'Pharma and fresh move in an unbroken, monitored cold chain, coast to coast at −20°C. The category is still being defined, and the brand that claims it first will own it.',
     stats: [['Temperature', '−20°C, held'], ['Category', 'Yours to define']],
     lat: -47, lon: -20, dist: 86, pinAlt: 10, side: -1.0, lookR: 43.5,
   },
@@ -238,7 +238,7 @@ export const EXTRAS = [
     id: 'proof',
     title: 'In-Market Proof',
     step: 'The System · The Results',
-    body: 'Real insights no dashboard surfaced — found while the budget was still live. $14.4M of media observed, 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to be.',
+    body: 'Real insights no dashboard surfaced, found while the budget was still live. $14.4M of media observed, 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to be.',
     stats: [['Insights', '189 in 90 days'], ['To decision', '10× faster']],
     lat: 33, lon: -18, dist: 90, pinAlt: 10, side: -0.6, lookR: 43,
   },
@@ -254,7 +254,7 @@ export const EXTRAS = [
     id: 'rail',
     title: 'Intermodal Rail',
     step: 'The Network · The Long Haul',
-    body: 'Freight trains circle the planet on schedule, moving volume between hubs at scale. Everything scanned, everything visible — the physical backbone of the promise.',
+    body: 'Freight trains circle the planet on schedule, moving volume between hubs at scale. Everything scanned, everything visible: the physical backbone of the promise.',
     stats: [['Cars per train', '4'], ['On time', 'Like clockwork']],
     lat: 20, lon: 46, dist: 92, pinAlt: 9,
   },
@@ -262,7 +262,7 @@ export const EXTRAS = [
     id: 'depot',
     title: 'Fleet & Depot',
     step: 'The Network · The Fleet',
-    body: 'Trucks and vans stream out of the depot around the clock. Every route sequenced, every parcel placed — the delivery promise made physical.',
+    body: 'Trucks and vans stream out of the depot around the clock. Every route sequenced, every parcel placed: the delivery promise made physical.',
     stats: [['Vehicles rolling', '24/7'], ['Routes', 'Optimized live']],
     lat: 55, lon: 115, dist: 95, pinAlt: 10,
   },
@@ -270,7 +270,7 @@ export const EXTRAS = [
     id: 'pavilion',
     title: 'Experiential Activation',
     step: 'The System · The Moment',
-    body: 'Where the brand meets people face to face — launches, pop-ups, events. The crowd gathers, the story lands, and every activation feeds the flywheel.',
+    body: 'Where the brand meets people face to face: launches, pop-ups, events. The crowd gathers, the story lands, and every activation feeds the flywheel.',
     stats: [['Crowd', 'Growing'], ['Impressions', 'Earned']],
     lat: 28, lon: 20, dist: 96, pinAlt: 10, side: -0.85, lookR: 43.5,
   },

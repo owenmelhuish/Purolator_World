@@ -82,12 +82,12 @@ const SLIDES = [
         <path class="chartline draw-slow" pathLength="100" d="M14 100 C 70 88, 96 62, 150 70 S 240 44, 326 14" />
         <circle class="chartdot" cx="326" cy="14" r="6" />
       </svg>
-      <div class="in-chart-cap">Share is moving — and the moves made now hold.</div>
+      <div class="in-chart-cap">Share is moving, and the moves made now hold.</div>
     </div>
     <div class="in-facts">
-      <div class="in-fact rv">Shippers are <b>choosing again</b> — today's choices hold for years</div>
-      <div class="in-fact rv">The border is harder — customs touches <b>almost every shipment</b></div>
-      <div class="in-fact rv">Purolator has <b>more to offer than ever</b> — cross-border and cold chain</div>
+      <div class="in-fact rv">Shippers are <b>choosing again</b>: today's choices hold for years</div>
+      <div class="in-fact rv">The border is harder: customs touches <b>almost every shipment</b></div>
+      <div class="in-fact rv">Purolator has <b>more to offer than ever</b>: cross-border and cold chain</div>
       <div class="in-fact rv">Advantage goes to whoever serves more, and moves fastest, <b>as one</b></div>
     </div>
   `,
@@ -164,7 +164,7 @@ const SLIDES = [
   () => `
     <div class="in-kicker rv">PUROLATOR × PUSH</div>
     <h1 class="in-h1 in-h1-xl">${words('WELCOME TO ONE CONNECTED WORLD')}</h1>
-    <p class="in-punch rv">Everything you just heard — <span class="uline">built, and moving.</span><br>Let us show you around.</p>
+    <p class="in-punch rv">Everything you just heard is <span class="uline">built, and moving.</span><br>Let us show you around.</p>
     <div class="in-globe rv">
       <svg viewBox="0 0 200 200" fill="none">
         <circle class="draw-slow" pathLength="100" cx="100" cy="100" r="78" />
