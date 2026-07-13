@@ -8,8 +8,8 @@ import {
 } from './props.js';
 import {
   HU, adsHU, makeCampaignStage, makeLRC, makeBarrettCTI, makeQuad,
-  makeLakeshoreCottage, makeHawksField, makeDataPavilion, makeEnrollmentMonument,
-  streetcarWrap, busWrap,
+  makeHeritageHall, makeHawksField, makeDataPavilion, makeEnrollmentMonument,
+  makeFrostTree, makeFrostShrub, streetcarWrap, busWrap,
 } from './humber-builds.js';
 import BAKED_LAYOUT from '../layout-humber.json';
 
@@ -85,7 +85,7 @@ const EXTRAS = [
     step: 'The Campus · By the Water',
     body: 'Victorian red-brick cottages on the waterfront — a heritage campus where the 1880s buildings hold 2020s programs. The other half of Humber\'s postcard.',
     stats: [['Buildings', 'Heritage 1880s'], ['Setting', 'Waterfront']],
-    lat: 26, lon: -72, dist: 88, pinAlt: 10, side: 0.6, lookR: 43,
+    lat: 34, lon: -108, dist: 88, pinAlt: 10, side: 0.6, lookR: 43,
   },
   {
     id: 'hawks',
@@ -136,7 +136,7 @@ function build(ctx) {
   foundation(33, -18, 0, 18, 12, 0.36, { dz: 1, name: 'city' });
   foundation(20, -15, 0, 13, 9, 0.35, { name: 'impact' });
   foundation(55, 115, 0, 14, 10, 0.32, { name: 'hawks' });
-  foundation(26, -72, 0.4, 14, 7, 0.3, { name: 'lakeshore' });
+  foundation(34, -108, 0.4, 14, 7, 0.3, { name: 'lakeshore' });
 
   // --- North Campus at the pole -----------------------------------------------
   const lrc = makeLRC();
@@ -194,37 +194,44 @@ function build(ctx) {
   placeM('impact', monument, 20, -15, 0.2, 0.35, 'impact');
   registerPoi(monument, 'impact');
 
-  // --- Lakeshore waterfront campus ---------------------------------------------------------
+  // --- Lakeshore waterfront campus: the grand heritage hall ---------------------------------
   {
-    const lakeshore = new THREE.Group();
-    const c1 = makeLakeshoreCottage(0);
-    c1.position.set(-3.4, 0, 0);
-    c1.rotation.y = 0.15;
-    lakeshore.add(c1);
-    const c2 = makeLakeshoreCottage(1);
-    c2.position.set(2.4, 0, -1.4);
-    c2.rotation.y = -0.2;
-    lakeshore.add(c2);
-    // boardwalk toward the water
-    const bw = new THREE.Mesh(new THREE.BoxGeometry(9, 0.14, 1.6),
-      new THREE.MeshStandardMaterial({ color: 0xb98a63, roughness: 0.85 }));
-    bw.position.set(-0.4, 0.3, 2.6);
-    bw.receiveShadow = true;
-    lakeshore.add(bw);
-    for (const [px, ry] of [[-1.4, 0.4], [0.8, -0.7]]) {
-      const p = makePerson({});
-      p.position.set(px, 0.36, 2.6);
-      p.rotation.y = ry;
-      lakeshore.add(p);
-    }
-    placeM('lakeshore', lakeshore, 26, -72, 0.5, 0.32, 'lakeshore');
-    registerPoi(lakeshore, 'lakeshore');
+    const hall = makeHeritageHall();
+    placeM('lakeshore', hall, 34, -108, 0.5 + Math.PI, 0.32, 'lakeshore');
+    registerPoi(hall, 'lakeshore');
   }
 
   // --- Hawks field ----------------------------------------------------------------------------
   const field = makeHawksField();
   placeM('hawks', field, 55, 115, 0.3, 0.32, 'hawks');
   registerPoi(field, 'hawks');
+
+  // --- student crowds — the campus is alive ----------------------------------------------
+  {
+    let cn = 0;
+    const CROWD = [
+      // around the quad
+      [76, 78, 5], [80, 108, 4], [74, 100, 3],
+      // pole campus paths
+      [80, -20, 4], [78, 40, 3], [82, -60, 3],
+      // screen corner plaza
+      [30, -14, 5], [35, -22, 4],
+      // stage surroundings
+      [50, -46, 3], [57, -55, 3],
+      // monument + pavilion
+      [22, -12, 3], [51, 54, 3],
+    ];
+    for (const [la, lo, n] of CROWD) {
+      for (let i = 0; i < n; i++) {
+        const p = makePerson({});
+        placeSmall(`crowd-${++cn}`,
+          p,
+          la + (Math.sin(cn * 3.7) * 1.6),
+          lo + (Math.cos(cn * 2.3) * 2.2),
+          (cn * 1.7) % (Math.PI * 2), 0.3);
+      }
+    }
+  }
 
   // --- billboards around the world ----------------------------------------------------------------
   const bills = [
@@ -267,9 +274,12 @@ function build(ctx) {
       }
       put(makeBench(), -0.4, 2.2, Math.PI);
       put(makeLamppost(), 2.6, -1.7, 1.1);
-      if (bi % 2 === 1) {
-        const p = makePerson({});
-        put(p, 0.6, 1.6, bi * 1.3);
+      put(makeFrostTree(0.9 + (bi % 3) * 0.2), -2.5, 1.6, 0);
+      const p = makePerson({});
+      put(p, 0.6, 1.6, bi * 1.3);
+      if (bi % 2 === 0) {
+        const p2 = makePerson({});
+        put(p2, -1.1, 2.0, bi * 0.9 + 1);
       }
     }
   }
@@ -289,7 +299,7 @@ function build(ctx) {
   // --- transit with the wrap ----------------------------------------------------------------------------
   const streetcar = makeStreetcar({ base: 0xd8dee9, accent: 0xc8102e, drawWrap: streetcarWrap });
   addVehicle(streetcar, railLoop, 5.5, 0.2);
-  const streetcar2 = makeStreetcar({ base: 0xd8dee9, accent: 0xc8102e, drawWrap: streetcarWrap });
+  const streetcar2 = makeStreetcar({ base: 0xf2f1ec, accent: 0xc8102e });
   addVehicle(streetcar2, railLoop, 5.5, 0.7);
   registerPoi(streetcar, 'transit');
   registerPoi(streetcar2, 'transit');
@@ -346,7 +356,7 @@ function build(ctx) {
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
     const rings = [ring0, ringEq, ringS, connA, railLoop];
     let placed = 0, guard = 0;
-    while (placed < 65 && guard < 800) {
+    while (placed < 95 && guard < 1100) {
       guard++;
       const lat = -80 + rand() * 160;
       const lon = -180 + rand() * 360;
@@ -355,9 +365,7 @@ function build(ctx) {
       if (exclude.some((e) => d.angleTo(e.dir) < e.ang)) continue;
       if (rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.08)) continue;
       placed++;
-      const t = rand() < 0.3
-        ? makeConifer(0.8 + rand() * 0.7, 0x3a6e57)
-        : makeTree(Math.floor(rand() * 3), 0.85 + rand());
+      const t = rand() < 0.7 ? makeFrostTree(0.9 + rand() * 0.9) : makeFrostShrub(1.0 + rand() * 0.8);
       placeSmall(`tree-${String(placed).padStart(2, '0')}`, t, lat, lon, rand() * Math.PI * 2, 0.12);
     }
   }
@@ -366,6 +374,7 @@ function build(ctx) {
     [55, -120, 11], [40, 170, 14], [10, -150, 12], [65, 90, 9],
     [22, -40, 15], [-8, 60, 13], [35, -8, 16], [-18, -100, 11],
     [5, 130, 10], [-40, 10, 12], [-55, -120, 10], [-30, 150, 13],
+    [48, -95, 8], [-35, 75, 9], [12, 22, 8], [-60, -170, 9],
   ]);
 }
 

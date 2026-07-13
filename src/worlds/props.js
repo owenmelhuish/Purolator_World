@@ -45,17 +45,24 @@ export function makeArtBillboard(drawFn, {
 } = {}) {
   const g = new THREE.Group();
   const texH = Math.round(texW * (h / w));
-  // box faces display the canvas unmirrored from every side, so the same
-  // material serves front and back
   const face = canvasMat(texW, texH, drawFn, { emissive: emissive ? 0xffffff : null, emissiveIntensity: 0.35 });
   const frame = mat(frameColor, { roughness: 0.55 });
   const steel = mat(0x3b4046, { roughness: 0.55, metalness: 0.3 });
   // rounded-rectangle frame shell with soft premium bevels
   g.add(rbox(w + 0.9, h + 0.9, 0.34, frame, 0, h / 2 + 2.4, 0, 0.34));
-  const panel = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.48), [frame, frame, frame, frame, face, face]);
+  const panel = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.48), frame);
   panel.position.set(0, h / 2 + 2.4, 0);
   panel.castShadow = true;
   g.add(panel);
+  // the box's -z face shows the canvas mirrored, so overlay a plane per side —
+  // the back plane rotated so the artwork reads correctly from behind
+  const front = new THREE.Mesh(new THREE.PlaneGeometry(w, h), face);
+  front.position.set(0, h / 2 + 2.4, 0.245);
+  g.add(front);
+  const back = new THREE.Mesh(new THREE.PlaneGeometry(w, h), face);
+  back.rotation.y = Math.PI;
+  back.position.set(0, h / 2 + 2.4, -0.245);
+  g.add(back);
   // top-mounted spotlight bar with lamp heads
   g.add(cyl(0.05, 0.05, w * 0.86, steel, 0, h + 2.85, 0.3, 8).rotateZ(Math.PI / 2));
   for (let lx = -w * 0.36; lx <= w * 0.36; lx += w * 0.18) {

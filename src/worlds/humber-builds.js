@@ -27,6 +27,50 @@ export const HU = {
 
 const glassM = () => mat(HU.glass, { roughness: 0.2, metalness: 0.4 });
 
+
+// --- frost-white campus vegetation (the whole world reads winter-white) --------
+export function makeFrostTree(scale = 1) {
+  const g = new THREE.Group();
+  g.add(cyl(0.09 * scale, 0.13 * scale, 0.7 * scale, mat(0xd9dde6, { roughness: 0.85 }), 0, 0.35 * scale, 0, 8));
+  const puffM = mat(0xf4f6fa, { roughness: 0.9 });
+  const n = 2 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < n; i++) {
+    const puff = new THREE.Mesh(new THREE.IcosahedronGeometry((0.55 - i * 0.12) * scale, 1), puffM);
+    puff.position.set((Math.random() - 0.5) * 0.3 * scale, (0.95 + i * 0.42) * scale, (Math.random() - 0.5) * 0.3 * scale);
+    puff.scale.y = 0.85;
+    puff.castShadow = true;
+    g.add(puff);
+  }
+  return g;
+}
+
+export function makeFrostShrub(scale = 1) {
+  const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.34 * scale, 1), mat(0xf1f3f8, { roughness: 0.9 }));
+  b.position.y = 0.24 * scale;
+  b.scale.y = 0.75;
+  b.castShadow = true;
+  return b;
+}
+
+/** Black lattice lighting/floodlight truss tower. */
+export function makeTruss(h = 6, w = 0.55, color = 0x1c1f26) {
+  const g = new THREE.Group();
+  const m = mat(color, { roughness: 0.6 });
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    g.add(box(0.09, h, 0.09, m, sx * w / 2, h / 2, sz * w / 2));
+  }
+  for (let y = 0.8; y < h; y += 1.1) {
+    g.add(box(w + 0.06, 0.07, 0.07, m, 0, y, -w / 2));
+    g.add(box(w + 0.06, 0.07, 0.07, m, 0, y, w / 2));
+    g.add(box(0.07, 0.07, w + 0.06, m, -w / 2, y, 0));
+    g.add(box(0.07, 0.07, w + 0.06, m, w / 2, y, 0));
+    const brace = box(w * 1.35, 0.06, 0.06, m, 0, y - 0.45, -w / 2);
+    brace.rotation.z = 0.62;
+    g.add(brace);
+  }
+  return g;
+}
+
 // --- canvas helpers -----------------------------------------------------------
 
 /** Humber Polytechnic lockup: circle-H mark with the degree dot + wordmark. */
@@ -261,8 +305,8 @@ function makeTypeSculpture() {
       side: THREE.DoubleSide,
       alphaTest: 0.05,
     });
-    const w = 7.6 - i * 0.4;
-    const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.25), texM);
+    const w = 8.6 - i * 0.4;
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(w, w * 0.3), texM);
     plane.position.set((i % 2 === 0 ? -0.3 : 0.35), 4.6 - i * 1.5, -0.25 * i);
     plane.rotation.z = (i % 2 === 0 ? 1 : -1) * 0.045;
     plane.castShadow = false;
@@ -280,16 +324,18 @@ export function makeCampaignStage() {
   const type = makeTypeSculpture();
   type.position.set(0, 0.55, -3.4);
   g.add(type);
-  // twin spotlight rigs on masts, beams sweeping over the stage
-  for (const sx of [-4.6, 4.6]) {
-    const mast = new THREE.Group();
-    mast.add(cyl(0.09, 0.12, 6.4, mat(0x2a2e3a, { roughness: 0.5 }), 0, 3.2, 0, 8));
+  // twin black lattice truss towers with spotlight rigs sweeping the stage
+  for (const sx of [-5.2, 5.2]) {
+    const tower = new THREE.Group();
+    tower.add(makeTruss(6.6, 0.6));
+    const platform = box(1.0, 0.12, 1.0, mat(0x1c1f26, { roughness: 0.6 }), 0, 6.7, 0);
+    tower.add(platform);
     const rig = makeSpotlightPair({ len: 7.5 });
-    rig.position.set(0, 6.3, 0);
+    rig.position.set(0, 6.9, 0);
     rig.rotation.z = sx > 0 ? 2.4 : -2.4; // aim down-inward
-    mast.add(rig);
-    mast.position.set(sx, 0.4, -1.2);
-    g.add(mast);
+    tower.add(rig);
+    tower.position.set(sx, 0.4, -1.0);
+    g.add(tower);
     g.userData['rig' + (sx > 0 ? 'R' : 'L')] = rig;
   }
   // hero tableau: the pianist under the lights
@@ -338,13 +384,37 @@ export function makeLRC() {
     g.add(box(0.22, H, 0.16, frameM, fx, 0.5 + H / 2, D / 2 + 0.02));
   }
   g.add(box(W + 0.6, 0.5, D + 0.6, frameM, 0, 0.5 + H + 0.25, 0)); // roof cap
-  // angled entrance atrium
-  const atrium = rbox(5.2, 4.2, 3.4, glassM(), W / 2 - 1.2, 0.5 + 2.1, D / 2 + 1.4, 0.12);
-  atrium.rotation.y = 0.25;
-  g.add(atrium);
-  const canopy = box(5.8, 0.3, 4.0, mat(HU.navy, { roughness: 0.5 }), W / 2 - 1.2, 0.5 + 4.4, D / 2 + 1.5);
-  canopy.rotation.y = 0.25;
-  g.add(canopy);
+  // signature angled glass atrium with gold frame (the LRC entrance wedge)
+  {
+    const wedge = new THREE.Group();
+    const atriumGlass = new THREE.MeshStandardMaterial({
+      color: 0xbcd4e8, roughness: 0.12, metalness: 0.25, transparent: true, opacity: 0.75,
+      emissive: 0x3a5a80, emissiveIntensity: 0.12,
+    });
+    const slab = rbox(6.4, 5.2, 3.8, atriumGlass, 0, 2.6, 0, 0.1);
+    slab.rotation.x = 0.2; // leans back into the building
+    wedge.add(slab);
+    // gold fascia beams up the leaning edges
+    const gold = mat(HU.gold, { roughness: 0.4, metalness: 0.35 });
+    for (const sx of [-3.2, 3.2]) {
+      const beam = box(0.4, 5.6, 0.34, gold, sx, 2.7, 1.75);
+      beam.rotation.x = 0.2;
+      wedge.add(beam);
+    }
+    const header = box(6.8, 0.45, 0.36, gold, 0, 5.25, 1.15);
+    header.rotation.x = 0.2;
+    wedge.add(header);
+    // glowing entry
+    const doors = new THREE.Mesh(new THREE.PlaneGeometry(3.0, 1.8), new THREE.MeshStandardMaterial({
+      color: 0xffe4b8, emissive: 0xffc87e, emissiveIntensity: 0.7,
+    }));
+    doors.position.set(0, 0.95, 1.95);
+    doors.rotation.x = 0.06;
+    wedge.add(doors);
+    wedge.position.set(W / 2 - 2.0, 0.5, D / 2 + 1.6);
+    wedge.rotation.y = 0.25;
+    g.add(wedge);
+  }
   // rooftop sign
   const sign = new THREE.Mesh(
     new THREE.BoxGeometry(9.5, 1.5, 0.3),
@@ -449,35 +519,152 @@ export function makeQuad() {
   return g;
 }
 
-/** Lakeshore heritage cottage — Victorian red brick with white trim. */
-export function makeLakeshoreCottage(variant = 0) {
+/** Lakeshore heritage hall — grand Victorian collegiate building on a lawn. */
+export function makeHeritageHall() {
   const g = new THREE.Group();
-  const brick = mat(variant ? HU.brickDark : HU.brick, { roughness: 0.85 });
+  const brick = mat(HU.brick, { roughness: 0.85 });
   const trim = mat(0xf3efe6, { roughness: 0.7 });
-  g.add(rbox(4.4, 2.6, 3.2, brick, 0, 1.3, 0, 0.06));
-  // gabled roof
-  const roof = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 4.8, 3, 1), mat(0x4a5361, { roughness: 0.8 }));
-  roof.rotation.z = Math.PI / 2;
-  roof.rotation.x = Math.PI / 2;
-  roof.scale.y = 0.72;
-  roof.position.y = 3.3;
-  roof.castShadow = true;
-  g.add(roof);
-  // central tower
-  g.add(rbox(1.3, 3.6, 1.3, brick, 0, 1.8, 1.4, 0.05));
-  const towerRoof = new THREE.Mesh(new THREE.ConeGeometry(1.05, 1.1, 4), mat(0x4a5361, { roughness: 0.8 }));
-  towerRoof.position.set(0, 4.15, 1.4);
-  towerRoof.rotation.y = Math.PI / 4;
-  towerRoof.castShadow = true;
-  g.add(towerRoof);
-  // white windows
-  for (const wx of [-1.5, 1.5]) {
-    for (const wy of [1.1, 2.0]) {
-      g.add(box(0.72, 0.62, 0.06, trim, wx, wy, 1.63));
+  const slate = mat(0x3e4d66, { roughness: 0.75 });
+  const glow = new THREE.MeshStandardMaterial({
+    color: 0xffe0b0, emissive: 0xffc27a, emissiveIntensity: 0.65, roughness: 0.4,
+  });
+
+  // lawn pad
+  g.add(rbox(15, 0.3, 10, mat(0x9dbb8e, { roughness: 0.95 }), 0, 0.15, 0, 0.14));
+
+  /** brick facade with arched cream-trimmed windows */
+  const facade = (w, floors) => canvasMat(Math.round(w * 60), floors * 84, (ctx, W, H) => {
+    ctx.fillStyle = '#9e4b3c';
+    ctx.fillRect(0, 0, W, H);
+    // brick coursing
+    ctx.strokeStyle = 'rgba(120,50,38,0.35)';
+    ctx.lineWidth = 2;
+    for (let y = 0; y < H; y += 12) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    for (let f = 0; f < floors; f++) {
+      const yy = f * 84;
+      // cream stringcourse between floors
+      ctx.fillStyle = '#e8e0cc';
+      ctx.fillRect(0, yy + 76, W, 6);
+      for (let x = 22; x + 40 < W; x += 62) {
+        // arched window: cream surround + glowing arch
+        ctx.fillStyle = '#e8e0cc';
+        ctx.beginPath();
+        ctx.moveTo(x - 4, yy + 70);
+        ctx.lineTo(x - 4, yy + 26);
+        ctx.arc(x + 16, yy + 26, 20, Math.PI, 0);
+        ctx.lineTo(x + 36, yy + 70);
+        ctx.closePath();
+        ctx.fill();
+        const lit = Math.random() < 0.7;
+        ctx.fillStyle = lit ? '#f4b968' : '#5d6d84';
+        ctx.beginPath();
+        ctx.moveTo(x, yy + 68);
+        ctx.lineTo(x, yy + 28);
+        ctx.arc(x + 16, yy + 28, 16, Math.PI, 0);
+        ctx.lineTo(x + 32, yy + 68);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = 'rgba(70,40,30,0.55)';
+        ctx.fillRect(x + 14, yy + 12, 3, 56);
+      }
     }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.35 });
+
+  const wing = (w, floors, d) => {
+    const fh = 1.3;
+    const h = floors * fh;
+    const f = facade(w, floors);
+    const s = facade(d, floors);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), [s, s, brick, brick, f, f]);
+    m.position.y = 0.3 + h / 2;
+    m.castShadow = true;
+    const grp = new THREE.Group();
+    grp.add(m);
+    // steep gabled slate roof — extruded triangle, ridge along the wing width
+    const hw = d / 2 + 0.3;
+    const rise = 1.55;
+    const roofShape = new THREE.Shape();
+    roofShape.moveTo(-hw, 0);
+    roofShape.lineTo(hw, 0);
+    roofShape.lineTo(0, rise);
+    roofShape.closePath();
+    const roofGeo = new THREE.ExtrudeGeometry(roofShape, { depth: w + 0.5, bevelEnabled: false });
+    roofGeo.translate(0, 0, -(w + 0.5) / 2);
+    const roof = new THREE.Mesh(roofGeo, slate);
+    roof.rotation.y = Math.PI / 2;
+    roof.position.y = 0.3 + h;
+    roof.castShadow = true;
+    grp.add(roof);
+    // dormers
+    for (const dx of [-w / 4, w / 4]) {
+      const dorm = new THREE.Group();
+      dorm.add(box(0.7, 0.7, 0.5, brick, 0, 0, 0));
+      const droof = new THREE.Mesh(new THREE.ConeGeometry(0.55, 0.55, 4), slate);
+      droof.rotation.y = Math.PI / 4;
+      droof.position.y = 0.62;
+      dorm.add(droof);
+      const dwin = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.4), glow);
+      dwin.position.set(0, 0, 0.26);
+      dorm.add(dwin);
+      dorm.position.set(dx, 0.3 + h + 0.55, d / 2 - 0.35);
+      grp.add(dorm);
+    }
+    // cream corner quoins + cornice
+    for (const sx of [-w / 2 + 0.18, w / 2 - 0.18]) {
+      grp.add(box(0.4, h, 0.4, trim, sx, 0.3 + h / 2, d / 2 - 0.18));
+    }
+    grp.add(box(w + 0.24, 0.25, d + 0.24, trim, 0, 0.3 + h + 0.06, 0));
+    return grp;
+  };
+
+  // central tower (3 storeys + steep pyramidal spire)
+  const tower = new THREE.Group();
+  const tf = facade(3.4, 3);
+  const tm = new THREE.Mesh(new THREE.BoxGeometry(3.4, 3.9, 3.2), [tf, tf, brick, brick, tf, tf]);
+  tm.position.y = 0.3 + 1.95;
+  tm.castShadow = true;
+  tower.add(tm);
+  for (const sx of [-1.55, 1.55]) tower.add(box(0.36, 3.9, 0.36, trim, sx, 0.3 + 1.95, 1.45));
+  tower.add(box(3.8, 0.28, 3.6, trim, 0, 0.3 + 3.95, 0));
+  const spire = new THREE.Mesh(new THREE.ConeGeometry(2.15, 2.6, 4), slate);
+  spire.rotation.y = Math.PI / 4;
+  spire.position.y = 0.3 + 4.1 + 1.3;
+  spire.castShadow = true;
+  tower.add(spire);
+  tower.add(cyl(0.05, 0.05, 0.9, mat(0xd9b64c, { roughness: 0.4 }), 0, 0.3 + 5.4 + 0.75, 0, 6));
+  const finial = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), mat(0xd9b64c, { roughness: 0.4 }));
+  finial.position.y = 0.3 + 6.35;
+  tower.add(finial);
+  // arched entrance + stone stairs
+  tower.add(box(1.7, 1.6, 0.3, trim, 0, 0.3 + 0.8, 1.62));
+  const entry = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.25), glow);
+  entry.position.set(0, 0.3 + 0.75, 1.79);
+  tower.add(entry);
+  for (let s = 0; s < 3; s++) {
+    tower.add(box(2.4 + s * 0.5, 0.16, 0.5, trim, 0, 0.42 - s * 0.14, 1.95 + s * 0.4));
   }
-  g.add(box(0.6, 1.1, 0.08, trim, 0, 0.85, 2.08)); // door
-  g.add(box(4.6, 0.18, 3.4, trim, 0, 2.68, 0));    // cornice
+  g.add(tower);
+
+  // flanking wings
+  const wingL = wing(4.6, 2, 3.0);
+  wingL.position.set(-4.0, 0, -0.2);
+  g.add(wingL);
+  const wingR = wing(4.6, 2, 3.0);
+  wingR.position.set(4.0, 0, -0.2);
+  g.add(wingR);
+
+  // frost trees + students on the lawn
+  for (const [tx, tz, s] of [[-6.4, 2.6, 1.1], [6.4, 2.8, 1.0], [-6.8, -2.4, 0.85], [6.9, -2.2, 0.9]]) {
+    const t = makeFrostTree(s);
+    t.position.set(tx, 0.3, tz);
+    g.add(t);
+  }
+  for (const [px, pz, ry] of [[-2.2, 3.4, 0.4], [2.5, 3.6, -0.5], [0.4, 4.2, 2.9]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.32, pz);
+    p.rotation.y = ry;
+    g.add(p);
+  }
   return g;
 }
 
@@ -524,15 +711,22 @@ export function makeHawksField() {
     if (sz > 0) stand.rotation.y = Math.PI;
     g.add(stand);
   }
-  // floodlights
+  // lattice floodlight towers with lamp banks
   for (const [fx, fz] of [[-5.8, -3.6], [5.8, -3.6], [-5.8, 3.6], [5.8, 3.6]]) {
-    g.add(cyl(0.09, 0.12, 4.6, mat(C.steel), fx, 2.3, fz, 8));
-    const head = box(0.9, 0.5, 0.2, new THREE.MeshStandardMaterial({
-      color: 0xf2f5fb, emissive: 0xdfe9ff, emissiveIntensity: 0.7, roughness: 0.4,
-    }), fx, 4.7, fz);
-    head.lookAt(new THREE.Vector3(0, 0.5, 0).add(new THREE.Vector3(fx, 4.7, fz).multiplyScalar(0.01)));
-    head.rotation.set(fz > 0 ? 0.5 : -0.5, 0, 0);
-    g.add(head);
+    const truss = makeTruss(4.8, 0.42);
+    truss.position.set(fx, 0, fz);
+    g.add(truss);
+    const bank = new THREE.Mesh(
+      new THREE.BoxGeometry(1.3, 0.8, 0.14),
+      new THREE.MeshStandardMaterial({
+        color: 0xf2f5fb, emissive: 0xe6efff, emissiveIntensity: 0.9, roughness: 0.35,
+      })
+    );
+    bank.position.set(fx, 5.1, fz);
+    bank.rotation.x = fz > 0 ? 0.5 : -0.5;
+    bank.rotation.y = fx > 0 ? 0.35 : -0.35;
+    bank.castShadow = true;
+    g.add(bank);
   }
   // scoreboard
   const sb = new THREE.Mesh(
