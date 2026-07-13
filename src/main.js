@@ -1382,7 +1382,7 @@ dom.addEventListener('wheel', (e) => {
   e.preventDefault();
   if (walk.active) return;
   const dir = camera.position.clone().sub(camFocus);
-  const dist = THREE.MathUtils.clamp(dir.length() * Math.exp(e.deltaY * 0.0011), 52, 320);
+  const dist = THREE.MathUtils.clamp(dir.length() * Math.exp(e.deltaY * 0.0011), 46, 320);
   camera.position.copy(camFocus).addScaledVector(dir.normalize(), dist);
 }, { passive: false });
 
