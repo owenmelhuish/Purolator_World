@@ -524,11 +524,14 @@ export function makeCiraHQ() {
     }
   }, { emissive: 0xffffff, emissiveIntensity: 0.32 });
 
-  /** 4-sided mansard frustum sized to a rectangular footprint. */
+  /** 4-sided mansard frustum sized to a rectangular footprint.
+   *  Rotate THEN scale at the geometry level — mesh transforms apply scale
+   *  first, which shears the frustum into a skewed diamond. */
   const mansard = (w, d, h, material) => {
-    const m = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 4.42, h, 4), material);
-    m.rotation.y = Math.PI / 4;
-    m.scale.set(w / 6.25, 1, d / 6.25);
+    const geo = new THREE.CylinderGeometry(3.1, 4.42, h, 4);
+    geo.rotateY(Math.PI / 4);
+    geo.scale(w / 6.25, 1, d / 6.25);
+    const m = new THREE.Mesh(geo, material);
     m.castShadow = true;
     return m;
   };

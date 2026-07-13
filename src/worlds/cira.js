@@ -242,6 +242,76 @@ function build(ctx) {
     animators.push(arc);
   }
 
+  // --- the internet itself: a pipe web across the globe, pulses flowing home ------------------------
+  {
+    const NODES = {
+      hub: dir(83, -12), // junction at the HQ podium edge
+      goose: dir(54, -50), infra: dir(54, 58), media: dir(33, -18),
+      recall: dir(20, -15), north: dir(55, 115), registry: dir(40, 90),
+      tor: dir(28, -60), mtl: dir(10, -40), van: dir(44, 150), wpg: dir(-8, 60),
+      t1: dir(32, 34), t2: dir(-20, 10), t3: dir(-20, -60), t4: dir(14, 128),
+      t5: dir(-18, 155), t6: dir(-56, -20), t7: dir(12, -125), t8: dir(-54, -155),
+    };
+    const LINKS = [
+      // trunk lines home to the HQ
+      ['hub', 'goose'], ['hub', 'infra'], ['hub', 'registry'], ['hub', 'media'], ['hub', 'north'],
+      // the web between districts, exchanges and main-street towns
+      ['goose', 'media'], ['media', 'recall'], ['recall', 'mtl'], ['mtl', 'tor'], ['tor', 'goose'],
+      ['infra', 'registry'], ['registry', 'north'], ['registry', 'van'], ['registry', 'wpg'],
+      ['van', 't5'], ['wpg', 't2'], ['t2', 't3'], ['t3', 't7'], ['t7', 't8'], ['t4', 'van'],
+      ['t1', 'infra'], ['t6', 't3'], ['recall', 't2'], ['north', 't4'], ['t1', 'registry'],
+    ];
+    const pipeM = new THREE.MeshStandardMaterial({
+      color: 0x7e0e27, roughness: 0.45, metalness: 0.15,
+      emissive: 0xba2241, emissiveIntensity: 0.22,
+    });
+    const capM = new THREE.MeshStandardMaterial({
+      color: 0xaa1e3a, roughness: 0.4, emissive: 0xba2241, emissiveIntensity: 0.5,
+    });
+    const bulbGeo = new THREE.SphereGeometry(0.24, 10, 8);
+    const bulbM = new THREE.MeshStandardMaterial({
+      color: 0xffd9de, emissive: 0xff4560, emissiveIntensity: 1.9, roughness: 0.3,
+    });
+    const capGeo = new THREE.SphereGeometry(0.3, 12, 10);
+    const pulses = [];
+    LINKS.forEach(([ka, kb], li) => {
+      const a = NODES[ka], b = NODES[kb];
+      const pts = [];
+      const N = 30;
+      for (let i = 0; i <= N; i++) {
+        const p = a.clone().lerp(b, i / N).normalize().multiplyScalar(42 + 0.42);
+        pts.push(p);
+      }
+      const curve = new THREE.CatmullRomCurve3(pts);
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.13, 6), pipeM);
+      world.add(tube);
+      for (const e of [pts[0], pts[pts.length - 1]]) {
+        const cap = new THREE.Mesh(capGeo, capM);
+        cap.position.copy(e);
+        world.add(cap);
+      }
+      const nb = 2 + (li % 2);
+      for (let bi = 0; bi < nb; bi++) {
+        const bulb = new THREE.Mesh(bulbGeo, bulbM);
+        world.add(bulb);
+        pulses.push({
+          bulb, curve,
+          off: bi / nb + li * 0.137,
+          dirn: ka === 'hub' ? -1 : 1, // trunk pulses flow home to the HQ
+          speed: 0.045 + (li % 3) * 0.018,
+        });
+      }
+    });
+    animators.push({
+      update(dt, time) {
+        for (const p of pulses) {
+          const t = (((time * p.speed * p.dirn + p.off) % 1) + 1) % 1;
+          p.curve.getPointAt(t, p.bulb.position);
+        }
+      },
+    });
+  }
+
   // --- +66% monument ---------------------------------------------------------------------------------
   const recall = makeRecallMonument();
   recall.scale.setScalar(1.25);
