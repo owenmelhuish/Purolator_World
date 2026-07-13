@@ -149,18 +149,7 @@ const SLIDES = [
     `;
   },
 
-  // 6 · Introducing PUSH
-  () => `
-    <div class="in-pill rv">Introducing</div>
-    <div class="in-push rv">PUSH<span class="in-flash"></span></div>
-    <p class="in-pushline rv">
-      a <b>modern</b> media agency that combines <em>human brilliance</em><br>
-      with an agentic <em>operating system</em> that makes every dollar<br>
-      faster, smarter, and with <b>ZeroWaste™</b>
-    </p>
-  `,
-
-  // 7 · Transition — into the world
+  // 6 · One connected world
   () => `
     <div class="in-kicker rv">PUROLATOR × PUSH</div>
     <h1 class="in-h1 in-h1-xl">${words('WELCOME TO ONE CONNECTED WORLD')}</h1>
@@ -173,6 +162,17 @@ const SLIDES = [
         <circle class="chartdot" cx="100" cy="22" r="5" />
       </svg>
     </div>
+  `,
+
+  // 7 · Introducing PUSH — the last beat before the dive
+  () => `
+    <div class="in-pill rv">Introducing</div>
+    <div class="in-push rv">PUSH<span class="in-flash"></span></div>
+    <p class="in-pushline rv">
+      a <b>modern</b> media agency that combines <em>human brilliance</em><br>
+      with an agentic <em>operating system</em> that makes every dollar<br>
+      faster, smarter, and with <b>ZeroWaste™</b>
+    </p>
   `,
 ];
 
