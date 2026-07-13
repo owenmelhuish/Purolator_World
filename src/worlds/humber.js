@@ -42,7 +42,7 @@ const POIS = [
     step: 'Case Study · Chapter 1 · The Relaunch',
     body: 'In August 2024, Humber College became Humber Polytechnic — a once-in-a-generation brand relaunch for 86,000+ learners. PUSH ran awareness and presence for the launch: a full-funnel media strategy with planning and oversight across every traditional and digital platform. This is the campus the country got reintroduced to.',
     stats: [['Learners', '86,000+'], ['Relaunched', 'August 2024']],
-    lat: 90, lon: 0, dist: 112, pinAlt: 18, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 124, pinAlt: 20, side: 0.85, lookR: 42,
   },
   {
     id: 'stage',
@@ -50,7 +50,7 @@ const POIS = [
     step: 'Case Study · Chapter 2 · The Campaign',
     body: 'Twin spotlights, a black stage, and students seeing their future selves — the pianist, the nurse, the welder who were in there all along. The anthem film is a full musical number performed entirely by Humber students and alumni. Not becoming someone else; uncovering who you\'ve always been.',
     stats: [['Launched', 'March 2025'], ['Anthem', 'Sung by students']],
-    lat: 54, lon: -50, dist: 68, pinAlt: 10, side: -0.6, lookR: 43.5,
+    lat: 54, lon: -50, dist: 80, pinAlt: 12, side: -0.6, lookR: 43.5,
   },
   {
     id: 'city',
@@ -58,7 +58,7 @@ const POIS = [
     step: 'Case Study · Chapter 3 · The Media',
     body: 'Full-funnel media, planned and paced by PUSH: digital platforms, television, out-of-home, campus environments and social — with benchmarking, trafficking, pacing and optimization behind every placement. The streetcar wears it. The screen corner plays it. The city can\'t miss it.',
     stats: [['Strategy', 'Full-funnel'], ['Channels', 'OOH · TV · Digital · Transit']],
-    lat: 33, lon: -18, dist: 78, pinAlt: 12, side: -0.6, lookR: 43,
+    lat: 33, lon: -18, dist: 92, pinAlt: 14, side: -0.6, lookR: 43,
   },
   {
     id: 'signals',
@@ -66,7 +66,7 @@ const POIS = [
     step: 'Case Study · Chapter 4 · The System',
     body: 'Multiple consumer targets and entry points, one live view: real-time reporting dashboards and competitive tracking watched the category move while the campaign was in flight — and let every dollar chase what was working.',
     stats: [['Dashboards', 'Real-time'], ['Tracking', 'Competitive']],
-    lat: 54, lon: 58, dist: 60, pinAlt: 10, side: -0.7, lookR: 43.5,
+    lat: 54, lon: 58, dist: 70, pinAlt: 11, side: -0.7, lookR: 43.5,
   },
   {
     id: 'impact',
@@ -74,7 +74,7 @@ const POIS = [
     step: 'Case Study · Chapter 5 · The Impact',
     body: 'Impact that created action: enrollment up 3% and ahead of the competition, in a category down 10%. When the market shrank, Humber grew — that\'s what the relaunch bought.',
     stats: [['Enrollment', '+3%'], ['Category', '−10%']],
-    lat: 20, lon: -15, dist: 88, pinAlt: 10, side: -0.5, lookR: 42.5,
+    lat: 20, lon: -15, dist: 94, pinAlt: 11, side: -0.5, lookR: 42.5,
   },
 ];
 
@@ -85,7 +85,7 @@ const EXTRAS = [
     step: 'The Campus · By the Water',
     body: 'Victorian red-brick cottages on the waterfront — a heritage campus where the 1880s buildings hold 2020s programs. The other half of Humber\'s postcard.',
     stats: [['Buildings', 'Heritage 1880s'], ['Setting', 'Waterfront']],
-    lat: 34, lon: -108, dist: 88, pinAlt: 10, side: 0.6, lookR: 43,
+    lat: 34, lon: -108, dist: 94, pinAlt: 11, side: 0.6, lookR: 43,
   },
   {
     id: 'hawks',
@@ -93,7 +93,7 @@ const EXTRAS = [
     step: 'The Campus · Athletics',
     body: 'Blue and gold, ~20 varsity teams, and a home crowd that shows up. The Hawks are the heartbeat of campus pride.',
     stats: [['Teams', '~20 varsity'], ['Colours', 'Blue & gold']],
-    lat: 55, lon: 115, dist: 92, pinAlt: 10, side: -0.6, lookR: 43.5,
+    lat: 55, lon: 115, dist: 100, pinAlt: 11, side: -0.6, lookR: 43.5,
   },
   {
     id: 'transit',
@@ -101,7 +101,7 @@ const EXTRAS = [
     step: 'The Media · Transit',
     body: 'A full streetcar wrap moving through the city — the campaign\'s black-and-ice type rolling past a million commuters a week.',
     stats: [['Format', 'Full wrap'], ['Route', 'Crosstown loop']],
-    lat: 40, lon: 150, dist: 100, pinAlt: 9, side: 0.5, lookR: 42.5,
+    lat: 52, lon: 150, dist: 100, pinAlt: 9, side: 0.5, lookR: 42.5,
   },
 ];
 
@@ -121,37 +121,41 @@ function build(ctx) {
   ];
   for (const t of TERRACES) terrace(t.lat, t.lon, t.r, t.alt, t.c);
 
-  plate(null, 90, 0, 0.32, 0.3, 0xebeef6);
-  plate('stage', 54, -50, 0.22, 0.34, 0xe8ebf4);
-  plate('signals', 54, 58, 0.19, 0.31, 0xebeef6);
-  plate('city', 33, -18, 0.2, 0.34, 0xe8ebf4);
-  plate('impact', 20, -15, 0.17, 0.33, 0xebeef6);
-  plate('hawks', 55, 115, 0.24, 0.3, 0xe4ecdf);
+  plate(null, 90, 0, 0.4, 0.3, 0xebeef6);
+  plate('stage', 54, -50, 0.28, 0.34, 0xe8ebf4);
+  plate('signals', 54, 58, 0.25, 0.31, 0xebeef6);
+  plate('city', 33, -18, 0.25, 0.34, 0xe8ebf4);
+  plate('impact', 20, -15, 0.21, 0.33, 0xebeef6);
+  plate('hawks', 55, 115, 0.29, 0.3, 0xe4ecdf);
 
-  foundation(90, 0, 0, 16, 12, 0.35, { dz: 0, name: 'lrc' });
-  foundation(76, -95, 0, 11, 11, 0.33, { round: true, name: 'barrett' });
-  foundation(78, 95, 0, 13, 13, 0.32, { round: true, name: 'quad' });
-  foundation(54, -50, 0, 18, 18, 0.36, { round: true, name: 'stage' });
-  foundation(54, 58, 0, 11.5, 11.5, 0.33, { round: true, name: 'signals' });
-  foundation(33, -18, 0, 18, 12, 0.36, { dz: 1, name: 'city' });
-  foundation(20, -15, 0, 13, 9, 0.35, { name: 'impact' });
-  foundation(55, 115, 0, 14, 10, 0.32, { name: 'hawks' });
-  foundation(34, -108, 0.4, 14, 7, 0.3, { name: 'lakeshore' });
+  foundation(90, 0, 0, 23, 17, 0.35, { dz: 0, name: 'lrc' });
+  foundation(76, -95, 0, 15, 15, 0.33, { round: true, name: 'barrett' });
+  foundation(78, 95, 0, 18.5, 18.5, 0.32, { round: true, name: 'quad' });
+  foundation(54, -50, 0, 24, 24, 0.36, { round: true, name: 'stage' });
+  foundation(54, 58, 0, 16, 16, 0.33, { round: true, name: 'signals' });
+  foundation(33, -18, 0, 25, 17, 0.36, { dz: 1, name: 'city' });
+  foundation(20, -15, 0, 17, 12, 0.35, { name: 'impact' });
+  foundation(55, 115, 0, 19, 13.5, 0.32, { name: 'hawks' });
+  foundation(34, -108, 0.4, 17.5, 9, 0.3, { name: 'lakeshore' });
 
   // --- North Campus at the pole -----------------------------------------------
   const lrc = makeLRC();
+  lrc.scale.setScalar(1.5);
   placeM('lrc', lrc, 90, 0, -1.1, 0.35, 'campus');
   registerPoi(lrc, 'campus');
   const barrett = makeBarrettCTI();
+  barrett.scale.setScalar(1.35);
   placeM('barrett', barrett, 76, -95, 0.4, 0.33, 'campus');
   registerPoi(barrett, 'campus');
   const quad = makeQuad();
+  quad.scale.setScalar(1.45);
   placeM('quad', quad, 78, 95, 0, 0.32, 'campus');
   registerPoi(quad, 'campus');
   placeSmall('campus-flag', makeFlag(), 80, -35, 0.5, 0.32);
 
   // --- the campaign stage --------------------------------------------------------
   const stage = makeCampaignStage();
+  stage.scale.setScalar(1.35);
   placeM('stage', stage, 54, -50, 0.3, 0.36, 'stage');
   registerPoi(stage, 'stage');
   animators.push({
@@ -179,30 +183,34 @@ function build(ctx) {
       p.rotation.y = ry + Math.PI;
       corner.add(p);
     }
+    corner.scale.setScalar(1.4);
     placeM('city', corner, 33, -18, 0.1, 0.36, 'city');
     registerPoi(corner, 'city');
   }
 
   // --- data pavilion -----------------------------------------------------------------
   const pavilion = makeDataPavilion();
-  pavilion.scale.setScalar(1.35);
+  pavilion.scale.setScalar(1.7);
   placeM('signals', pavilion, 54, 58, Math.PI, 0.33, 'signals');
   registerPoi(pavilion, 'signals');
 
   // --- +3% monument ---------------------------------------------------------------------
   const monument = makeEnrollmentMonument();
+  monument.scale.setScalar(1.3);
   placeM('impact', monument, 20, -15, 0.2, 0.35, 'impact');
   registerPoi(monument, 'impact');
 
   // --- Lakeshore waterfront campus: the grand heritage hall ---------------------------------
   {
     const hall = makeHeritageHall();
+    hall.scale.setScalar(1.25);
     placeM('lakeshore', hall, 34, -108, 0.5 + Math.PI, 0.32, 'lakeshore');
     registerPoi(hall, 'lakeshore');
   }
 
   // --- Hawks field ----------------------------------------------------------------------------
   const field = makeHawksField();
+  field.scale.setScalar(1.35);
   placeM('hawks', field, 55, 115, 0.3, 0.32, 'hawks');
   registerPoi(field, 'hawks');
 
@@ -235,12 +243,12 @@ function build(ctx) {
 
   // --- billboards around the world ----------------------------------------------------------------
   const bills = [
-    ['bb-campaign', adsHU.campaign, 60, -8, 0.1, { w: 12, h: 6.2 }, 'stage'],
-    ['bb-apply', adsHU.applyNow, 24, -34, -0.3, { w: 11, h: 5.8 }, 'city'],
-    ['bb-builders', adsHU.builders, 45, 74, 0.3, { w: 10.5, h: 5.6 }, 'campus'],
-    ['bb-campaign-s', adsHU.campaign, -46, 176, Math.PI, { w: 10.5, h: 5.6 }, 'stage'],
-    ['bb-enrollment', adsHU.enrollment, -30, -130, Math.PI * 0.9, { w: 10.5, h: 5.6 }, 'impact'],
-    ['bb-apply-e', adsHU.applyNow, 13, 100, -0.2, { w: 10, h: 5.4 }, 'city'],
+    ['bb-campaign', adsHU.campaign, 60, -8, 0.1, { w: 15.5, h: 8 }, 'stage'],
+    ['bb-apply', adsHU.applyNow, 24, -34, -0.3, { w: 14, h: 7.4 }, 'city'],
+    ['bb-builders', adsHU.builders, 45, 74, 0.3, { w: 13.5, h: 7.2 }, 'campus'],
+    ['bb-campaign-s', adsHU.campaign, -46, 176, Math.PI, { w: 13.5, h: 7.2 }, 'stage'],
+    ['bb-enrollment', adsHU.enrollment, -30, -130, Math.PI * 0.9, { w: 13.5, h: 7.2 }, 'impact'],
+    ['bb-apply-e', adsHU.applyNow, 13, 100, -0.2, { w: 13, h: 7 }, 'city'],
   ];
   for (const [name, art, lat, lon, heading, opts, poiId] of bills) {
     const bb = makeArtBillboard(art, { ...opts, frameColor: 0xe8ebf3 });
@@ -285,8 +293,7 @@ function build(ctx) {
   }
 
   // --- roads + rail loop ------------------------------------------------------------------------------
-  const ring0 = new CirclePath(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(26), 0.52);
-  road(ring0, { width: 4.4 });
+  // (the campus band is pedestrian — the rail loop is its transit spine)
   const ringEq = new CirclePath(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(90), 0.52);
   road(ringEq, { width: 5.0 });
   const ringS = new CirclePath(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(128), 0.52);
@@ -294,7 +301,7 @@ function build(ctx) {
   const connA = new CirclePath(dir(40, 40), THREE.MathUtils.degToRad(90), 0.52);
   road(connA, { width: 4.4 });
   // crosstown streetcar loop
-  const railLoop = buildRail(dir(63, 20), THREE.MathUtils.degToRad(55), { ballast: 0xc3cbdb, rail: 0x46536b, sleeper: 0x93a0b5 });
+  const railLoop = buildRail(dir(63, 20), THREE.MathUtils.degToRad(58), { ballast: 0xc3cbdb, rail: 0x46536b, sleeper: 0x93a0b5 });
 
   // --- transit with the wrap ----------------------------------------------------------------------------
   const streetcar = makeStreetcar({ base: 0xd8dee9, accent: 0xc8102e, drawWrap: streetcarWrap });
@@ -305,19 +312,23 @@ function build(ctx) {
   registerPoi(streetcar2, 'transit');
 
   const busColors = [0xf8fafd, 0xe8ebf1];
-  [ring0, ringEq, ringS, connA].forEach((path, pi) => {
+  [ringEq, ringS, connA].forEach((path, pi) => {
     const bus = makeBus({ base: busColors[pi % 2], drawWrap: busWrap });
     addVehicle(bus, path, 5 + (pi % 3) * 0.7, 0.15 + pi * 0.22);
-    for (let i = 0; i < 2 + (pi % 2); i++) {
+    if (pi === 0) {
+      const bus2 = makeBus({ base: busColors[1], drawWrap: busWrap });
+      addVehicle(bus2, path, 5.4, 0.65);
+    }
+    for (let i = 0; i < 3 + (pi % 2); i++) {
       const v = makeCar([0x35547e, 0x6e7d9e, 0x8a5a83, 0xbfc6d8, 0x494e58][(pi * 3 + i) % 5]);
-      addVehicle(v, path, 4.5 + Math.random() * 2, (i + 1) / 4 + pi * 0.1);
+      addVehicle(v, path, 4.5 + Math.random() * 2, (i + 1) / 5 + pi * 0.1);
     }
   });
 
   // --- street lamps -----------------------------------------------------------------------------------------
   {
-    const lampRings = [[ring0, 4.4], [ringEq, 5.0], [ringS, 5.0], [connA, 4.4]];
-    const crossings = [ring0, ringEq, ringS, connA, railLoop];
+    const lampRings = [[ringEq, 5.0], [ringS, 5.0], [connA, 4.4]];
+    const crossings = [ringEq, ringS, connA, railLoop];
     const _ld = new THREE.Vector3();
     let flip = 1, lampN = 0;
     for (const [path, w] of lampRings) {
@@ -350,11 +361,11 @@ function build(ctx) {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
     const exclude = [
-      { lat: 90, lon: 0, ang: 0.4 }, { lat: 76, lon: -95, ang: 0.24 }, { lat: 78, lon: 95, ang: 0.24 },
-      { lat: 54, lon: -50, ang: 0.28 }, { lat: 54, lon: 58, ang: 0.24 }, { lat: 33, lon: -18, ang: 0.26 },
-      { lat: 20, lon: -15, ang: 0.22 }, { lat: 55, lon: 115, ang: 0.28 }, { lat: 26, lon: -72, ang: 0.22 },
+      { lat: 90, lon: 0, ang: 0.48 }, { lat: 76, lon: -95, ang: 0.3 }, { lat: 78, lon: 95, ang: 0.32 },
+      { lat: 54, lon: -50, ang: 0.34 }, { lat: 54, lon: 58, ang: 0.3 }, { lat: 33, lon: -18, ang: 0.32 },
+      { lat: 20, lon: -15, ang: 0.26 }, { lat: 55, lon: 115, ang: 0.34 }, { lat: 34, lon: -108, ang: 0.28 },
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
-    const rings = [ring0, ringEq, ringS, connA, railLoop];
+    const rings = [ringEq, ringS, connA, railLoop];
     let placed = 0, guard = 0;
     while (placed < 95 && guard < 1100) {
       guard++;

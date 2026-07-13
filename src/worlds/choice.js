@@ -45,7 +45,7 @@ const POIS = [
     step: 'Case Study · Chapter 1 · The Partnership',
     body: 'Choice Hotels Canada: 350+ hotels and ~30,000 rooms, in nearly every town from coast to coast — each one locally owned. PUSH built "Experience More," the national platform that turned that footprint into demand, with STRATIS keeping every media dollar accountable. This is their world: one Canada, and always a place to stay in it.',
     stats: [['Hotels', '350+ across Canada'], ['Platform', 'Experience More']],
-    lat: 90, lon: 0, dist: 122, pinAlt: 18, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 136, pinAlt: 20, side: 0.85, lookR: 42,
   },
   {
     id: 'personas',
@@ -53,7 +53,7 @@ const POIS = [
     step: 'Case Study · Chapter 2 · The Strategy',
     body: 'Everyone has their own reason to travel — a vacation, a work trip, a family event. We tap into the data signals that matter and align creative accordingly: the poolside family, the road warrior, the winter getaway all meet a different Choice story, automatically.',
     stats: [['Personas', 'Vacation · Work · Family'], ['Signals', 'Live, always-on']],
-    lat: 54, lon: -50, dist: 72, pinAlt: 9, side: -0.6, lookR: 43.5,
+    lat: 54, lon: -50, dist: 80, pinAlt: 10, side: -0.6, lookR: 43.5,
   },
   {
     id: 'creative',
@@ -61,7 +61,7 @@ const POIS = [
     step: 'Case Study · Chapter 3 · The Creative',
     body: 'A mix of pre-produced assets and dynamic inclusions builds that extra layer of relevancy — in English and en français, from "Splurge on what matters" to "Nos salles de réunions scelleront l\'accord." The whole country is the media plan: every billboard on this globe is a real execution.',
     stats: [['Creative', 'Dynamic + pre-produced'], ['Languages', 'EN · FR']],
-    lat: 33, lon: -18, dist: 78, pinAlt: 10, side: -0.6, lookR: 43,
+    lat: 33, lon: -18, dist: 88, pinAlt: 12, side: -0.6, lookR: 43,
   },
   {
     id: 'privileges',
@@ -69,7 +69,7 @@ const POIS = [
     step: 'Case Study · Chapter 4 · The Loyalty Loop',
     body: 'Choice Privileges closes the loop: book direct, earn on every stay, milestone rewards every five nights — Gold to Platinum to Diamond to Titanium. Rewards are a download away, and every install feeds the demand engine for the next trip.',
     stats: [['Program', 'Choice Privileges'], ['Tiers', 'Gold → Titanium']],
-    lat: 54, lon: 58, dist: 72, pinAlt: 10, side: -0.8, lookR: 44,
+    lat: 54, lon: 58, dist: 80, pinAlt: 11, side: -0.8, lookR: 44,
   },
   {
     id: 'proof',
@@ -77,7 +77,7 @@ const POIS = [
     step: 'Case Study · Chapter 5 · The Proof',
     body: 'Creating demand through persona targeting delivered a return on ad spend above ten to one — sustained, measured, and compounding. That\'s what a PUSH + STRATIS world looks like when the numbers come back.',
     stats: [['Return', 'ROAS 10x+'], ['Wasted dollars', 'Zero']],
-    lat: 20, lon: -15, dist: 88, pinAlt: 10, side: -0.5, lookR: 42.5,
+    lat: 20, lon: -15, dist: 94, pinAlt: 11, side: -0.5, lookR: 42.5,
   },
 ];
 
@@ -88,7 +88,7 @@ const EXTRAS = [
     step: 'The Network · Travel & Relax',
     body: 'Ski-country Canada — Velora in Hinton, The Hue in Kamloops, and every mountain-town Comfort in between. The winter persona sees "Walking in a discount wonderland"; the summer one sees trailheads.',
     stats: [['Segment', 'Travel & Relax'], ['Season', 'All four']],
-    lat: 55, lon: 115, dist: 88, pinAlt: 10, side: -0.6, lookR: 43.5,
+    lat: 55, lon: 115, dist: 96, pinAlt: 11, side: -0.6, lookR: 43.5,
   },
   {
     id: 'muskoka',
@@ -96,7 +96,7 @@ const EXTRAS = [
     step: 'The Network · Experience More',
     body: 'True North Travel Tip: the best meetings happen on a dock. Cottage-country stays put the whole family two hours from home and a world away.',
     stats: [['Tip', 'True North № 07'], ['Persona', 'Family event']],
-    lat: 45, lon: 30, dist: 84, pinAlt: 9, side: 0.5, lookR: 43.5,
+    lat: 45, lon: 30, dist: 88, pinAlt: 10, side: 0.5, lookR: 43.5,
   },
   {
     id: 'maritimes',
@@ -104,7 +104,7 @@ const EXTRAS = [
     step: 'The Network · Explore By Day',
     body: 'From lighthouse country to the Rockies, the network covers the whole map — explore by day, rest comfortably by night.',
     stats: [['Coasts', 'Three'], ['Provinces', 'All of them']],
-    lat: 30, lon: -78, dist: 90, pinAlt: 10, side: 0.6, lookR: 43,
+    lat: 30, lon: -78, dist: 94, pinAlt: 11, side: 0.6, lookR: 43,
   },
   {
     id: 'brandrow',
@@ -112,7 +112,7 @@ const EXTRAS = [
     step: 'The Network · The Portfolio',
     body: 'Travel with More. Travel & Relax. Travel Longer. Travel Simply. Comfort, Quality, Sleep Inn, Econo Lodge, Clarion, MainStay — one road, every kind of stay.',
     stats: [['Brands in Canada', '8 → 22'], ['Rooms', '~30,000']],
-    lat: -42, lon: 100, dist: 96, pinAlt: 10, side: -0.7, lookR: 43,
+    lat: -42, lon: 100, dist: 104, pinAlt: 11, side: -0.7, lookR: 43,
   },
   {
     id: 'reststop',
@@ -142,34 +142,37 @@ function build(ctx) {
   for (const t of TERRACES) terrace(t.lat, t.lon, t.r, t.alt, t.c);
 
   // district plates + foundations
-  plate(null, 90, 0, 0.36, 0.3, 0xf3ecdc);                   // resort plaza
-  terrace(58, 118, 0.3, 0.22, 0xf3f6f9);                     // rockies snowfield
-  plate('personas', 54, -50, 0.2, 0.34, 0xf3ecdc);
-  plate('privileges', 54, 58, 0.2, 0.31, 0xf3ecdc);
-  plate('proof', 20, -15, 0.18, 0.34, 0xf3ecdc);
-  plate('rockies', 55, 115, 0.24, 0.33, 0xeceada);
-  plate('reststop', 8, -44, 0.14, 0.3, 0xf0e8d6);
+  plate(null, 90, 0, 0.44, 0.3, 0xf3ecdc);                   // resort plaza
+  terrace(58, 118, 0.34, 0.22, 0xf3f6f9);                    // rockies snowfield
+  plate('personas', 54, -50, 0.24, 0.34, 0xf3ecdc);
+  plate('privileges', 54, 58, 0.24, 0.31, 0xf3ecdc);
+  plate('proof', 20, -15, 0.22, 0.34, 0xf3ecdc);
+  plate('rockies', 55, 115, 0.28, 0.33, 0xeceada);
+  plate('reststop', 8, -44, 0.16, 0.3, 0xf0e8d6);
 
-  foundation(90, 0, 0, 32, 24, 0.35, { dz: 1, name: 'resort' });
-  foundation(54, -50, 0, 15, 15, 0.36, { round: true, name: 'personas' });
-  foundation(54, 58, 0, 14, 14, 0.33, { round: true, name: 'privileges' });
-  foundation(20, -15, 0, 14, 9.5, 0.36, { name: 'proof' });
-  foundation(55, 115, 0, 10, 9, 0.35, { dz: 1, name: 'rockies' });
-  foundation(8, -44, 0.3, 10, 7, 0.32, { name: 'reststop' });
-  foundation(45, 30, 0, 9, 9, 0.24, { dz: 2, name: 'muskoka' });
+  foundation(90, 0, 0, 40, 30, 0.35, { dz: 1, name: 'resort' });
+  foundation(54, -50, 0, 18, 18, 0.36, { round: true, name: 'personas' });
+  foundation(54, 58, 0, 17.5, 17.5, 0.33, { round: true, name: 'privileges' });
+  foundation(20, -15, 0, 18, 12.5, 0.36, { name: 'proof' });
+  foundation(55, 115, 0, 12, 11, 0.35, { dz: 1, name: 'rockies' });
+  foundation(8, -44, 0.3, 11.5, 8, 0.32, { name: 'reststop' });
+  foundation(45, 30, 0, 10, 10, 0.24, { dz: 2, name: 'muskoka' });
 
   // --- hero: the Choice resort at the pole ------------------------------------
   const resort = makeChoiceResort();
+  resort.scale.setScalar(1.25);
   placeM('resort', resort, 90, 0, -0.95, 0.35, 'resort');
   registerPoi(resort, 'resort');
 
   // --- persona plaza -----------------------------------------------------------
   const personas = makePersonaPlaza();
+  personas.scale.setScalar(1.2);
   placeM('personas', personas, 54, -50, 0, 0.36, 'personas');
   registerPoi(personas, 'personas');
 
   // --- rewards pavilion ----------------------------------------------------------
   const rewards = makeRewardsPavilion();
+  rewards.scale.setScalar(1.25);
   placeM('privileges', rewards, 54, 58, 0, 0.33, 'privileges');
   registerPoi(rewards, 'privileges');
   animators.push({
@@ -181,19 +184,20 @@ function build(ctx) {
 
   // --- ROAS proof monument --------------------------------------------------------
   const roas = makeRoasMonument();
+  roas.scale.setScalar(1.3);
   placeM('proof', roas, 20, -15, 0.2, 0.36, 'proof');
   registerPoi(roas, 'proof');
 
   // --- billboard mile (chapter 3 anchors on the big splurge board) ------------------
   const bills = [
-    ['bb-splurge', ads.splurge, 33, -18, 0.2, { w: 12, h: 6.5 }, 'creative'],
-    ['bb-privileges', ads.privileges, 60, -8, 0.1, { w: 11, h: 6 }, 'privileges'],
-    ['bb-french', ads.french, 24, -34, -0.3, { w: 11, h: 6 }, 'creative'],
-    ['bb-explore', ads.explore, 30, -62, 0.4, { w: 10, h: 5.6 }, 'maritimes'],
-    ['bb-wonderland', ads.wonderland, 48, 100, -0.4, { w: 10, h: 5.6 }, 'rockies'],
-    ['bb-download', ads.download, 45, 74, 0.3, { w: 10, h: 5.6 }, 'privileges'],
-    ['bb-splurge-s', ads.splurge, -46, 176, Math.PI, { w: 10, h: 5.6 }, 'creative'],
-    ['bb-explore-s', ads.explore, -30, -130, Math.PI * 0.9, { w: 10, h: 5.6 }, 'creative'],
+    ['bb-splurge', ads.splurge, 33, -18, 0.2, { w: 15, h: 8.2 }, 'creative'],
+    ['bb-privileges', ads.privileges, 60, -8, 0.1, { w: 14, h: 7.6 }, 'privileges'],
+    ['bb-french', ads.french, 24, -34, -0.3, { w: 14, h: 7.6 }, 'creative'],
+    ['bb-explore', ads.explore, 30, -62, 0.4, { w: 12.5, h: 7 }, 'maritimes'],
+    ['bb-wonderland', ads.wonderland, 48, 100, -0.4, { w: 12.5, h: 7 }, 'rockies'],
+    ['bb-download', ads.download, 45, 74, 0.3, { w: 12.5, h: 7 }, 'privileges'],
+    ['bb-splurge-s', ads.splurge, -46, 176, Math.PI, { w: 12.5, h: 7 }, 'creative'],
+    ['bb-explore-s', ads.explore, -30, -130, Math.PI * 0.9, { w: 12.5, h: 7 }, 'creative'],
   ];
   for (const [name, art, lat, lon, heading, opts, poiId] of bills) {
     const bb = makeArtBillboard(art, { ...opts, frameColor: 0xf6f1e6 });
@@ -203,12 +207,12 @@ function build(ctx) {
 
   // --- rockies: mountains + ski lodge ----------------------------------------------
   {
-    const range = makeMountain(1.5, { rock: 0xb9bfc9, snow: 0xf9fbfd, peaks: 4 });
+    const range = makeMountain(1.85, { rock: 0xb9bfc9, snow: 0xf9fbfd, peaks: 4 });
     placeM('rockies-range', range, 65, 133, 0.4, 0.2);
-    const range2 = makeMountain(1.1, { rock: 0xaeb6c2, snow: 0xf9fbfd, peaks: 3 });
-    placeM('rockies-range2', range2, 63, 86, -0.6, 0.2);
+    const range2 = makeMountain(1.25, { rock: 0xaeb6c2, snow: 0xf9fbfd, peaks: 3 });
+    placeM('rockies-range2', range2, 69, 97, -0.6, 0.2);
     const lodge = makeSkiLodge();
-    lodge.scale.setScalar(0.78);
+    lodge.scale.setScalar(0.95);
     placeM('rockies', lodge, 53, 114, 0.2, 0.35, 'rockies');
     registerPoi(lodge, 'rockies');
     let cf = 0;
@@ -220,6 +224,7 @@ function build(ctx) {
   // --- muskoka: lake + cottage dock ---------------------------------------------------
   {
     const dock = makeCottageDock();
+    dock.scale.setScalar(1.12);
     placeM('muskoka', dock, 45.5, 29, 2.95, 0.26, 'muskoka');
     registerPoi(dock, 'muskoka');
     placeSmall('conifer-m1', makeConifer(1.1, 0x3e7a52), 42, 22, 1, 0.22);
@@ -229,7 +234,7 @@ function build(ctx) {
   // --- maritimes lighthouse coast ------------------------------------------------------
   {
     const lh = makeLighthouse(0xe31b23);
-    lh.scale.setScalar(1.5);
+    lh.scale.setScalar(1.85);
     placeM('maritimes', lh, 24, -86, 0, 0.15, 'maritimes');
     registerPoi(lh, 'maritimes');
     animators.push({
@@ -243,10 +248,10 @@ function build(ctx) {
   {
     SUB_BRANDS.forEach((b, i) => {
       const hotel = makeSubBrandHotel(b);
-      hotel.scale.setScalar(0.72);
-      const lon = 62 + i * 17;
-      const lat = -42 + (i % 2 ? 1.6 : -1.6);
-      plate(null, lat, lon, 0.12, 0.26, 0xf1ebdc);
+      hotel.scale.setScalar(0.8);
+      const lon = 62 + i * 18.5;
+      const lat = -42 + (i % 2 ? 1.8 : -1.8);
+      plate(null, lat, lon, 0.13, 0.26, 0xf1ebdc);
       placeM(`hotel-${b.key}`, hotel, lat, lon, 0, 0.28, 'brandrow');
       registerPoi(hotel, 'brandrow');
     });
@@ -333,14 +338,14 @@ function build(ctx) {
         placeSmall(`town${tn}-${Math.round(du * 10)}-${Math.round(dv * 10)}`, obj, lat, lon, ry, 0.24);
       };
       const hotel = makeSubBrandHotel(t.hotel);
-      hotel.scale.setScalar(0.55);
+      hotel.scale.setScalar(0.62);
       put(hotel, 0, 1.4, tn % 2 ? 0.3 : -2.8);
-      const h1 = makeHouse(tn % 2); h1.scale.setScalar(0.5);
+      const h1 = makeHouse(tn % 2); h1.scale.setScalar(0.56);
       put(h1, -2.2, -1.2, 0.4);
-      const h2 = makeHouse((tn + 1) % 2); h2.scale.setScalar(0.5);
+      const h2 = makeHouse((tn + 1) % 2); h2.scale.setScalar(0.56);
       put(h2, 2.2, -1.4, -2.6);
       if (tn % 3 === 0) {
-        const s = makeStore(); s.scale.setScalar(0.32);
+        const s = makeStore(); s.scale.setScalar(0.36);
         put(s, 2.6, 1.2, 0.6);
       }
       put(makeConifer(0.9 + (tn % 3) * 0.2, 0x3e7a52), -2.6, 1.8);
@@ -441,9 +446,9 @@ function build(ctx) {
   // --- big mountain country: ranges filling the open bands ------------------------
   {
     const RANGES = [
-      [2.1, 12, 70, 0.5, 4], [1.8, -12, 168, -0.4, 4], [1.6, -62, 118, 0.3, 3],
-      [1.6, 52, -168, 0.8, 4], [1.5, -58, -78, -0.5, 3], [1.4, 36, 140, 0.2, 3],
-      [1.3, -35, 62, 0.6, 3],
+      [2.5, 12, 70, 0.5, 4], [2.2, -12, 168, -0.4, 4], [1.9, -62, 118, 0.3, 3],
+      [1.9, 52, -168, 0.8, 4], [1.8, -58, -78, -0.5, 3], [1.7, 36, 140, 0.2, 3],
+      [1.6, -35, 62, 0.6, 3],
     ];
     RANGES.forEach(([s, la, lo, h, peaks], i) => {
       const range = makeMountain(s, { rock: 0xc6bcaa, snow: 0xfaf7f0, peaks });
@@ -471,15 +476,15 @@ function build(ctx) {
 
   // --- more Choice properties out in the country --------------------------------------
   {
-    plate(null, 26, -122, 0.13, 0.26, 0xf1ebdc);
+    plate(null, 26, -122, 0.14, 0.26, 0xf1ebdc);
     const beachfront = makeSubBrandHotel(SUB_BRANDS[0]);
-    beachfront.scale.setScalar(0.7);
+    beachfront.scale.setScalar(0.8);
     placeM('hotel-beachfront', beachfront, 26, -122, 2.4, 0.28, 'brandrow');
     registerPoi(beachfront, 'brandrow');
-    plate(null, 28, 158, 0.13, 0.26, 0xf1ebdc);
+    plate(null, 22, 176, 0.14, 0.26, 0xf1ebdc);
     const lakeside = makeSubBrandHotel(SUB_BRANDS[5]);
-    lakeside.scale.setScalar(0.7);
-    placeM('hotel-lakeside', lakeside, 28, 158, -0.4, 0.28, 'brandrow');
+    lakeside.scale.setScalar(0.8);
+    placeM('hotel-lakeside', lakeside, 22, 176, -0.4, 0.28, 'brandrow');
     registerPoi(lakeside, 'brandrow');
   }
 
