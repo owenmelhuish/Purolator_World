@@ -158,7 +158,7 @@ export const POIS = [
     body: 'A modern media agency: human brilliance plus an agentic operating system, four offices across North America, ~75 functional experts and $300M in annual billings. Leadership doesn\'t hand you off. It surrounds you, and every floor of this tower is a PUSH discipline working as one team. A leaner roster means partners have to plug in clean: your brand, digital, demand-gen and events leads each get a senior counterpart, strategy through execution. For Purolator: an extension of your team from day one: fresh eyes, zero onboarding tax.',
     stats: [['Offices', 'LA · ATL · OTT · TOR'], ['Experts', '~75, senior-led'], ['Model', 'Embedded, no handoffs']],
     html: leadershipDiagram(),
-    lat: 90, lon: 0, dist: 116, pinAlt: 32, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 116, pinAlt: 32, pin: false, side: 0.85, lookR: 42,
   },
   {
     id: 'zerowaste',
