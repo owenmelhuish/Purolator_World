@@ -121,29 +121,6 @@ function studioDiagram() {
     </div>`;
 }
 
-// STRATIS proof — the return line, drawn live
-function proofDiagram() {
-  return `
-    <div class="ic-diagram">
-      <div class="ic-diagram-title">On $14.4M of live media</div>
-      <svg viewBox="0 0 320 118" class="pf-chart">
-        <path d="M14 96 L306 96" stroke="rgba(28,79,196,.14)" stroke-width="1" stroke-dasharray="2 6"/>
-        <path d="M14 58 L306 58" stroke="rgba(28,79,196,.14)" stroke-width="1" stroke-dasharray="2 6"/>
-        <path d="M14 20 L306 20" stroke="rgba(28,79,196,.14)" stroke-width="1" stroke-dasharray="2 6"/>
-        <path class="pf-base" d="M14 94 L306 94"/>
-        <text class="pf-lbl" x="16" y="86">1.1× — where it stood</text>
-        <path class="pf-line" pathLength="100" d="M14 92 C 80 88, 130 78, 180 58 S 262 24, 296 16"/>
-        <circle class="pf-dot" cx="296" cy="16" r="5.5"/>
-        <text class="pf-big" x="288" y="40">45.4×</text>
-      </svg>
-      <div class="pf-facts">
-        <div class="pf-fact rise" style="animation-delay:0.9s"><b>189</b><span>insights in 90 days</span></div>
-        <div class="pf-fact rise" style="animation-delay:1.05s"><b>10×</b><span>faster to decision</span></div>
-        <div class="pf-fact rise" style="animation-delay:1.2s"><b>45.4×</b><span>return, where 1.1× stood</span></div>
-      </div>
-    </div>`;
-}
-
 // PUSH + Studio P + STRATIS — the closed loop, around one bigger Purolator
 function loopDiagram() {
   return `
@@ -216,7 +193,7 @@ export const POIS = [
     step: 'Chapter 5 · Spend → Pipeline',
     body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems — and the gap between spend and pipeline is where budgets go to be questioned. STRATIS connects every data stream around the business and reads them as one system, surfacing what no dashboard shows while the budget is still live. On $14.4M of live media: 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to. For Purolator: a straight line from spend to pipeline — MQLs that convert, leads that stop leaking. See it for real:',
     stats: [['Spend → pipeline', 'One view'], ['To decision', '10× faster']],
-    html: proofDiagram() + `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
+    html: `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
     lat: 90, lon: 0, dist: 64, pinAlt: 0, pin: false, side: 1.35, lookR: 72,
   },
   {
