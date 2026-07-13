@@ -26,7 +26,7 @@ import {
   makeStudioConveyor,
 } from './system.js';
 import { POIS, EXTRAS, findPoi, makePin, CameraRig, setupUI, poiDir, poiPinPos } from './tour.js';
-import { initEditor, applyLayout, applyLayoutOverrides } from './editor.js';
+import { initEditor, applyLayout, applyLayoutOverrides, loadOverrides } from './editor.js';
 import { initIntro } from './intro.js';
 import BAKED_LAYOUT from './layout.json';
 import { initPeople, requestFigure } from './people.js';
@@ -1302,17 +1302,37 @@ const syncPoiToMovable = (m) => {
   const pin = pins.find((p) => p.userData.poi === poi);
   if (pin) pin.userData.dir = poiDir(poi);
 };
+// per-stop camera shots locked in the ?edit story-camera editor — stored in
+// the layout file under "__cameras": { poiId: { pos, look } }, world-local
+const cameraOverrides = {};
+Object.assign(cameraOverrides, BAKED_LAYOUT.__cameras ?? {}, loadOverrides('purolator').__cameras ?? {});
+function flyPoi(poi) {
+  const cam = cameraOverrides[poi.id];
+  if (cam?.pos && cam?.look) {
+    rig.flyToPose(new THREE.Vector3().fromArray(cam.pos), new THREE.Vector3().fromArray(cam.look));
+  } else {
+    rig.flyToDir(poiDir(poi), poi.dist, {
+      side: poi.side ?? 0.42,
+      look: poiDir(poi).multiplyScalar(poi.lookR ?? 32),
+    });
+  }
+}
 applyLayout(MOVABLES, BAKED_LAYOUT, syncPoiToMovable); // baked into the bundle
 applyLayoutOverrides(MOVABLES, syncPoiToMovable);      // this browser's newer tweaks
 // in dev the layout file on disk can be newer than the bundled import (the
 // watcher ignores it to avoid reload loops), so pull the live copy too
 fetch('/__layout')
   .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('json') ? r.json() : null))
-  .then((live) => { if (live) applyLayout(MOVABLES, live, syncPoiToMovable); })
+  .then((live) => {
+    if (!live) return;
+    applyLayout(MOVABLES, live, syncPoiToMovable);
+    Object.assign(cameraOverrides, live.__cameras ?? {});
+  })
   .catch(() => {});
 const editing = initEditor({
   dom: renderer.domElement, camera, world,
   movables: MOVABLES, animators, onMoved: syncPoiToMovable,
+  rig, camFocus, storyPois: [...POIS, ...EXTRAS], cameraOverrides, flyPoi,
 });
 window.__movables = MOVABLES; // debug/console access
 
@@ -1476,10 +1496,7 @@ const ui = setupUI({
     return true; // handled — the tour begins after the reveal
   },
   onSelect(poi) {
-    rig.flyToDir(poiDir(poi), poi.dist, {
-      side: poi.side ?? 0.42,
-      look: poiDir(poi).multiplyScalar(poi.lookR ?? 32),
-    });
+    flyPoi(poi);
     // story moment: the silo walls come down
     if (poi.id === 'stratis') siloRing.trigger();
   },

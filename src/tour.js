@@ -271,6 +271,12 @@ export class CameraRig {
     this._start(this.homePos.clone(), this.homeFocus.clone(), duration);
   }
 
+  /** Fly to an exact camera pose (position + look target) in world-local space —
+   *  used by story-camera overrides locked in the layout editor. */
+  flyToPose(pos, look, duration = 1.7) {
+    this._start(pos.clone(), look.clone(), duration);
+  }
+
   _start(toPos, toLook, duration) {
     this.anim = {
       t: 0,

@@ -8,7 +8,7 @@ import {
   OCEAN, isWater,
 } from './globe.js';
 import { CameraRig, makePin, poiDir, poiPinPos, setupUI } from './tour.js';
-import { initEditor, applyLayout, applyLayoutOverrides, layoutEndpoint } from './editor.js';
+import { initEditor, applyLayout, applyLayoutOverrides, layoutEndpoint, loadOverrides } from './editor.js';
 import { spawnCloudDive, flyToWorld } from './transition.js';
 import { initPeople } from './people.js';
 import { initWorldSwitcher } from './switcher.js';
@@ -399,15 +399,35 @@ export function createWorldApp({
     const pin = pins.find((p) => p.userData.poi === poi);
     if (pin) pin.userData.dir = poiDir(poi);
   };
+  // per-stop camera shots locked in the ?edit story-camera editor — stored in
+  // the layout file under "__cameras": { poiId: { pos, look } }, world-local
+  const cameraOverrides = {};
+  Object.assign(cameraOverrides, bakedLayout.__cameras ?? {}, loadOverrides(worldKey).__cameras ?? {});
+  function flyPoi(poi) {
+    const cam = cameraOverrides[poi.id];
+    if (cam?.pos && cam?.look) {
+      rig.flyToPose(new THREE.Vector3().fromArray(cam.pos), new THREE.Vector3().fromArray(cam.look));
+    } else {
+      rig.flyToDir(poiDir(poi), poi.dist, {
+        side: poi.side ?? 0.42,
+        look: poiDir(poi).multiplyScalar(poi.lookR ?? 32),
+      });
+    }
+  }
   applyLayout(MOVABLES, bakedLayout, syncPoiToMovable);
   applyLayoutOverrides(MOVABLES, syncPoiToMovable, worldKey);
   fetch(layoutEndpoint(worldKey))
     .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('json') ? r.json() : null))
-    .then((live) => { if (live) applyLayout(MOVABLES, live, syncPoiToMovable); })
+    .then((live) => {
+      if (!live) return;
+      applyLayout(MOVABLES, live, syncPoiToMovable);
+      Object.assign(cameraOverrides, live.__cameras ?? {});
+    })
     .catch(() => {});
   const editing = initEditor({
     dom: renderer.domElement, camera, world,
     movables: MOVABLES, animators, onMoved: syncPoiToMovable, worldKey,
+    rig, camFocus, storyPois: allPois, cameraOverrides, flyPoi,
   });
   window.__movables = MOVABLES;
 
@@ -467,10 +487,7 @@ export function createWorldApp({
       return false; // no deck intro on case worlds — straight to chapter 1
     },
     onSelect(poi) {
-      rig.flyToDir(poiDir(poi), poi.dist, {
-        side: poi.side ?? 0.42,
-        look: poiDir(poi).multiplyScalar(poi.lookR ?? 32),
-      });
+      flyPoi(poi);
       poi.onArrive?.(ctx);
     },
     onOverview() {

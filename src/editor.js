@@ -7,8 +7,12 @@ import { R, dirFromLatLon, surfacePlace } from './globe.js';
 //
 //   · click an element to select it, then drag it anywhere on the globe
 //   · Q / E rotate it (hold Shift for fine 1° steps) · arrows nudge
+//   · - / = scale it smaller / larger (hold Shift for fine steps)
 //   · Delete / Backspace (or the Remove button) removes it
 //   · Esc deselects
+//
+// STORY CAMERAS: pick a tour stop, frame the shot by dragging / zooming /
+// panning, then Lock camera — the tour flies to that exact shot from then on.
 //
 // Every change saves to localStorage instantly AND syncs to the dev server,
 // which writes it into src/layout.json — so the layout is baked into the
@@ -21,7 +25,7 @@ export const layoutEndpoint = (worldKey) =>
   worldKey === 'purolator' ? '/__layout' : `/__layout?world=${worldKey}`;
 const _Y = new THREE.Vector3(0, 1, 0);
 
-function loadOverrides(worldKey) {
+export function loadOverrides(worldKey) {
   try { return JSON.parse(localStorage.getItem(lsKey(worldKey))) || {}; } catch { return {}; }
 }
 
@@ -39,21 +43,35 @@ function persist(overrides, worldKey) {
   }, 400);
 }
 
-/** Re-place every part of a movable at (lat, lon) with the given heading (deg). */
+/** Re-place every part of a movable at (lat, lon) with the given heading (deg),
+ *  applying the movable's scale multiplier (m.scale, 1 = shipped size). */
 function applyPlacement(m, lat, lon, headingDeg) {
   if (!m.base) return;
   m.lat = lat;
   m.lon = lon;
   m.heading = headingDeg;
+  const s = m.scale ?? 1;
   const dir = dirFromLatLon(lat, lon);
   const dh = THREE.MathUtils.degToRad(headingDeg) - m.base.headingRad;
   for (const p of m.parts) {
+    if (p.kind !== 'plate' && p.kind !== 'surface') continue;
+    if (!p.baseScale) p.baseScale = p.obj.scale.clone(); // shipped scale, captured once
     if (p.kind === 'plate') {
       p.obj.quaternion.setFromUnitVectors(_Y, dir);
-    } else if (p.kind === 'surface') {
+      // cap-patch geometry lives at radius R+alt around +Y — scaling it about
+      // the origin lifts it off the globe, so slide it back along its axis
+      p.obj.scale.copy(p.baseScale).multiplyScalar(s);
+      p.obj.position.copy(dir).multiplyScalar((1 - s) * (R + (p.alt ?? 0)));
+    } else {
       surfacePlace(p.obj, dir, p.headingRad + dh, p.alt);
+      p.obj.scale.copy(p.baseScale).multiplyScalar(s);
     }
   }
+}
+
+function applyScale(m, s) {
+  m.scale = THREE.MathUtils.clamp(s, 0.25, 3);
+  applyPlacement(m, m.lat, m.lon, m.heading);
 }
 
 function setRemoved(m, removed) {
@@ -64,10 +82,17 @@ function setRemoved(m, removed) {
 /** Apply a saved layout object (baked file or localStorage) to the movables. */
 export function applyLayout(movables, layout, onMoved) {
   for (const [name, v] of Object.entries(layout || {})) {
+    if (name.startsWith('__')) continue; // reserved sections (e.g. __cameras)
     const m = movables.find((x) => x.name === name);
     if (!m) continue;
-    if (Number.isFinite(v.lat) && m.base) {
-      applyPlacement(m, v.lat, v.lon, v.heading ?? m.heading);
+    if (Number.isFinite(v.scale)) m.scale = v.scale;
+    if ((Number.isFinite(v.lat) || Number.isFinite(v.scale)) && m.base) {
+      applyPlacement(
+        m,
+        Number.isFinite(v.lat) ? v.lat : m.lat,
+        Number.isFinite(v.lon) ? v.lon : m.lon,
+        v.heading ?? m.heading
+      );
       onMoved?.(m);
     }
     if (v.removed) setRemoved(m, true);
@@ -79,20 +104,39 @@ export function applyLayoutOverrides(movables, onMoved, worldKey = 'purolator') 
   applyLayout(movables, loadOverrides(worldKey), onMoved);
 }
 
-export function initEditor({ dom, camera, world, movables, animators, onMoved, worldKey = 'purolator' }) {
+export function initEditor({
+  dom, camera, world, movables, animators, onMoved, worldKey = 'purolator',
+  // story-camera editing (optional — panel section appears when provided)
+  rig = null, camFocus = null, storyPois = null, cameraOverrides = null, flyPoi = null,
+}) {
   if (!new URLSearchParams(location.search).has('edit')) return false;
 
   const overrides = loadOverrides(worldKey);
   const items = movables.filter((m) => m.base || m.removableOnly);
   items.sort((a, b) => a.name.localeCompare(b.name));
   const listed = items.filter((m) => m.listed !== false);
+  const camEditing = !!(rig && camFocus && storyPois?.length && cameraOverrides);
+  // the shared cameraOverrides object (already merged from file + localStorage
+  // by the caller) becomes the single source of truth for the __cameras section
+  const syncCameras = () => {
+    if (!cameraOverrides) return;
+    if (Object.keys(cameraOverrides).length) overrides.__cameras = cameraOverrides;
+    else delete overrides.__cameras;
+  };
+  syncCameras();
   // seed from the layout FILE before syncing: the file is the source of truth
   // (it may hold fixes made outside this browser), then local-only edits on top
   fetch(layoutEndpoint(worldKey))
     .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('json') ? r.json() : null))
     .then((server) => {
-      if (server) Object.assign(overrides, server);
+      if (server) {
+        const serverCams = server.__cameras;
+        Object.assign(overrides, server);
+        if (cameraOverrides && serverCams) Object.assign(cameraOverrides, serverCams);
+        syncCameras();
+      }
       if (Object.keys(overrides).length) persist(overrides, worldKey);
+      refreshCamPanel?.();
     })
     .catch(() => { if (Object.keys(overrides).length) persist(overrides, worldKey); });
 
@@ -152,12 +196,28 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
   badge.textContent = 'LAYOUT EDIT MODE';
   document.body.appendChild(badge);
 
+  const camSection = camEditing ? `
+    <div class="ed-sub">STORY CAMERAS</div>
+    <select id="ed-cam-poi"><option value="">— select a story stop —</option>
+      ${storyPois.map((p) => `<option value="${p.id}">${p.step ? `${p.step} — ` : ''}${p.title}</option>`).join('')}
+    </select>
+    <div class="ed-vals" id="ed-cam-status">no stop selected</div>
+    <div class="ed-row">
+      <button id="ed-cam-view">Fly to stop</button>
+      <button id="ed-cam-lock" class="primary">Lock camera</button>
+      <button id="ed-cam-clear" class="danger">Unlock</button>
+    </div>
+    <div class="ed-hint">Pick a stop, frame the shot (drag to spin ·
+      wheel to zoom · right-drag to pan), then <b>Lock camera</b> —
+      the tour uses that exact shot from then on.<br>
+      Re-lock if you later move that stop's landmark.</div>` : '';
+
   const panel = document.createElement('div');
   panel.id = 'edit-panel';
   panel.innerHTML = `
     <h3>LAYOUT EDITOR</h3>
     <div class="ed-hint">Click an element, drag to move.<br>
-      Q / E rotate (Shift = fine) · arrows nudge<br>
+      Q / E rotate · − / = resize (Shift = fine) · arrows nudge<br>
       Delete removes · Esc deselects · saves to <b>src/layout.json</b></div>
     <select id="ed-select"><option value="">— select an element —</option>
       ${listed.map((m) => `<option value="${m.name}">${m.name}</option>`).join('')}
@@ -169,11 +229,19 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
       <button id="ed-rr">⟳ 15°</button>
       <button id="ed-remove" class="danger">Remove</button>
     </div>
+    <div class="ed-sub">SIZE <span id="ed-scale-val"></span></div>
+    <input type="range" id="ed-scale" min="0.4" max="2.5" step="0.05" value="1" disabled>
+    <div class="ed-row">
+      <button id="ed-sm">− smaller</button>
+      <button id="ed-lg">+ larger</button>
+      <button id="ed-s1">1×</button>
+    </div>
     <div class="ed-row">
       <button id="ed-reset">Reset item</button>
       <button id="ed-copy" class="primary">Copy layout</button>
       <button id="ed-clear" class="danger">Reset all</button>
     </div>
+    ${camSection}
     <div class="ed-sub">REMOVED (click to restore)</div>
     <div id="ed-removed"><span style="color:#a5aec0">none</span></div>
   `;
@@ -182,10 +250,13 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
   const selEl = panel.querySelector('#ed-select');
   const valsEl = panel.querySelector('#ed-vals');
   const headEl = panel.querySelector('#ed-heading');
+  const scaleEl = panel.querySelector('#ed-scale');
+  const scaleValEl = panel.querySelector('#ed-scale-val');
   const removeBtn = panel.querySelector('#ed-remove');
   const removedEl = panel.querySelector('#ed-removed');
 
   let selected = null;
+  let refreshCamPanel = null;
 
   function refreshRemoved() {
     const names = items.filter((m) => m.removed).map((m) => m.name);
@@ -208,18 +279,26 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
     if (!selected) {
       valsEl.textContent = 'nothing selected';
       headEl.disabled = true;
+      scaleEl.disabled = true;
+      scaleValEl.textContent = '';
       removeBtn.disabled = true;
       selEl.value = '';
       ring.visible = false;
       return;
     }
     const locked = !selected.base;
+    const sc = selected.scale ?? 1;
     valsEl.textContent = locked
       ? `${selected.name} — position locked (remove only)`
-      : `lat ${selected.lat.toFixed(1)}°  ·  lon ${selected.lon.toFixed(1)}°  ·  rot ${Math.round(selected.heading)}°`;
+      : `lat ${selected.lat.toFixed(1)}°  ·  lon ${selected.lon.toFixed(1)}°  ·  rot ${Math.round(selected.heading)}°  ·  ×${sc.toFixed(2)}`;
     headEl.disabled = locked;
+    scaleEl.disabled = locked;
+    scaleValEl.textContent = locked ? '' : `×${sc.toFixed(2)}`;
     removeBtn.disabled = false;
-    if (!locked) headEl.value = String(Math.round(((selected.heading + 180) % 360 + 360) % 360 - 180));
+    if (!locked) {
+      headEl.value = String(Math.round(((selected.heading + 180) % 360 + 360) % 360 - 180));
+      scaleEl.value = String(sc);
+    }
     selEl.value = selected.listed === false ? '' : selected.name;
     ring.visible = true;
   }
@@ -231,12 +310,14 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
       v.lat = +m.lat.toFixed(2);
       v.lon = +m.lon.toFixed(2);
       v.heading = +m.heading.toFixed(1);
+      if (Math.abs((m.scale ?? 1) - 1) > 0.005) v.scale = +m.scale.toFixed(2);
     }
     if (m.removed) v.removed = true;
     // drop entries that match the shipped state exactly
     const pristine = !m.removed && m.base
       && Math.abs(m.lat - m.base.lat) < 0.01
       && Math.abs(m.lon - m.base.lon) < 0.01
+      && Math.abs((m.scale ?? 1) - 1) < 0.005
       && Math.abs(THREE.MathUtils.degToRad(m.heading) - m.base.headingRad) < 0.001;
     if (pristine || (!m.base && !m.removed)) delete overrides[m.name];
     else overrides[m.name] = v;
@@ -271,6 +352,12 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
     commit();
   }
 
+  function scaleBy(factor) {
+    if (!selected || !selected.base) return;
+    applyScale(selected, (selected.scale ?? 1) * factor);
+    commit();
+  }
+
   function removeSelected() {
     if (!selected) return;
     setRemoved(selected, true);
@@ -290,11 +377,24 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
   });
   panel.querySelector('#ed-rl').addEventListener('click', () => rotate(-15));
   panel.querySelector('#ed-rr').addEventListener('click', () => rotate(15));
+  scaleEl.addEventListener('input', () => {
+    if (!selected || !selected.base) return;
+    applyScale(selected, Number(scaleEl.value));
+    commit();
+  });
+  panel.querySelector('#ed-sm').addEventListener('click', () => scaleBy(1 / 1.1));
+  panel.querySelector('#ed-lg').addEventListener('click', () => scaleBy(1.1));
+  panel.querySelector('#ed-s1').addEventListener('click', () => {
+    if (!selected || !selected.base) return;
+    applyScale(selected, 1);
+    commit();
+  });
   removeBtn.addEventListener('click', removeSelected);
   panel.querySelector('#ed-reset').addEventListener('click', () => {
     if (!selected) return;
     setRemoved(selected, false);
     if (selected.base) {
+      selected.scale = 1;
       applyPlacement(selected, selected.base.lat, selected.base.lon, THREE.MathUtils.radToDeg(selected.base.headingRad));
     }
     delete overrides[selected.name];
@@ -306,13 +406,18 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
     for (const m of items) {
       if (!overrides[m.name]) continue;
       setRemoved(m, false);
-      if (m.base) applyPlacement(m, m.base.lat, m.base.lon, THREE.MathUtils.radToDeg(m.base.headingRad));
+      if (m.base) {
+        m.scale = 1;
+        applyPlacement(m, m.base.lat, m.base.lon, THREE.MathUtils.radToDeg(m.base.headingRad));
+      }
       onMoved?.(m);
     }
     for (const k of Object.keys(overrides)) delete overrides[k];
+    if (cameraOverrides) for (const k of Object.keys(cameraOverrides)) delete cameraOverrides[k];
     persist(overrides, worldKey);
     selected = null;
     refreshPanel();
+    refreshCamPanel?.();
   });
   panel.querySelector('#ed-copy').addEventListener('click', async (e) => {
     const json = JSON.stringify(overrides, null, 2);
@@ -398,6 +503,8 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
     switch (e.code) {
       case 'KeyQ': rotate(-rotStep); break;
       case 'KeyE': rotate(rotStep); break;
+      case 'Minus': scaleBy(fine ? 1 / 1.02 : 1 / 1.1); break;
+      case 'Equal': scaleBy(fine ? 1.02 : 1.1); break;
       case 'Delete':
       case 'Backspace': removeSelected(); e.preventDefault(); break;
       case 'ArrowUp': move(selected.lat + nudge, selected.lon); e.preventDefault(); break;
@@ -407,6 +514,56 @@ export function initEditor({ dom, camera, world, movables, animators, onMoved, w
       case 'Escape': selected = null; refreshPanel(); break;
     }
   });
+
+  // --- story cameras: frame a tour stop by hand, then lock that exact shot ---
+  if (camEditing) {
+    const camSel = panel.querySelector('#ed-cam-poi');
+    const camStatus = panel.querySelector('#ed-cam-status');
+    const activePoi = () => storyPois.find((p) => p.id === camSel.value) ?? null;
+
+    refreshCamPanel = () => {
+      const poi = activePoi();
+      if (!poi) { camStatus.textContent = 'no stop selected'; return; }
+      camStatus.innerHTML = cameraOverrides[poi.id]
+        ? '<b style="color:#0f7c3f">● custom shot locked</b>'
+        : 'default shot (not locked)';
+    };
+
+    camSel.addEventListener('change', () => {
+      const poi = activePoi();
+      if (poi) flyPoi?.(poi);
+      refreshCamPanel();
+    });
+    panel.querySelector('#ed-cam-view').addEventListener('click', () => {
+      const poi = activePoi();
+      if (poi) flyPoi?.(poi);
+    });
+    panel.querySelector('#ed-cam-lock').addEventListener('click', () => {
+      const poi = activePoi();
+      if (!poi) return;
+      // capture the live framing in world-local space, so it replays exactly
+      // after the rig eases the spun globe back to its canonical orientation
+      const qi = world.quaternion.clone().invert();
+      const pos = camera.position.clone().applyQuaternion(qi);
+      const look = camFocus.clone().applyQuaternion(qi);
+      cameraOverrides[poi.id] = {
+        pos: pos.toArray().map((n) => +n.toFixed(2)),
+        look: look.toArray().map((n) => +n.toFixed(2)),
+      };
+      syncCameras();
+      persist(overrides, worldKey);
+      refreshCamPanel();
+    });
+    panel.querySelector('#ed-cam-clear').addEventListener('click', () => {
+      const poi = activePoi();
+      if (!poi || !cameraOverrides[poi.id]) return;
+      delete cameraOverrides[poi.id];
+      syncCameras();
+      persist(overrides, worldKey);
+      refreshCamPanel();
+      flyPoi?.(poi); // show the default shot it reverts to
+    });
+  }
 
   refreshRemoved();
   return true;
