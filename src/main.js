@@ -1398,8 +1398,16 @@ dom.addEventListener('wheel', (e) => {
   e.preventDefault();
   if (walk.active) return;
   const dir = camera.position.clone().sub(camFocus);
-  const dist = THREE.MathUtils.clamp(dir.length() * Math.exp(e.deltaY * 0.0011), 46, 320);
-  camera.position.copy(camFocus).addScaledVector(dir.normalize(), dist);
+  const d = dir.clone().normalize();
+  // zoom is measured to the focus point (which sits on the surface after a
+  // chapter flight), so allow getting truly close to it and instead floor the
+  // camera just above the globe: solve |focus + t·d| = R + 2.5 along the ray
+  let dist = THREE.MathUtils.clamp(dir.length() * Math.exp(e.deltaY * 0.0011), 5, 320);
+  const minR = 44.5;
+  const fd = camFocus.dot(d);
+  const disc = fd * fd - camFocus.lengthSq() + minR * minR;
+  if (disc > 0) dist = Math.max(dist, -fd + Math.sqrt(disc));
+  camera.position.copy(camFocus).addScaledVector(d, dist);
 }, { passive: false });
 
 // deck-style animated intro; when it ends the camera starts high above the
