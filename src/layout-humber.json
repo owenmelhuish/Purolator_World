@@ -5,9 +5,9 @@
     "heading": 182
   },
   "stage": {
-    "lat": -18.77,
-    "lon": 74.11,
-    "heading": 54
+    "lat": 43.82,
+    "lon": -30.65,
+    "heading": -36
   },
   "barrett": {
     "lat": -53.81,
@@ -29,6 +29,11 @@
     "lon": -161.12,
     "heading": 39,
     "removed": true
+  },
+  "lrc": {
+    "lat": 76.82,
+    "lon": 111.14,
+    "heading": 0
   },
   "blk7-16-8": {
     "lat": -58.01,
