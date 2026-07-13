@@ -1073,14 +1073,44 @@ export function makeHumberHQ() {
       w.add(box(WW - 1.2, 0.5, 0.08, railM, 0, 0.5 + WH + 0.5, -WD / 2 + 0.3));
       w.add(box(WW - 1.2, 0.5, 0.08, railM, 0, 0.5 + WH + 0.5, WD / 2 - 0.3));
       w.add(box(0.08, 0.5, WD - 0.6, railM, WW / 2 - 0.3, 0.5 + WH + 0.5, 0));
-      const canopy = new THREE.Group();
-      canopy.add(box(3.2, 0.18, 2.2, navy, 0, 1.5, 0));
-      canopy.add(box(3.0, 0.06, 2.0, gold, 0, 1.38, 0));
-      for (const [cx, cz] of [[-1.4, -0.9], [1.4, -0.9], [-1.4, 0.9], [1.4, 0.9]]) {
-        canopy.add(cyl(0.06, 0.06, 1.5, gold, cx, 0.75, cz, 8));
+      // creative studio mount: a glazed production penthouse on the roof
+      const st = new THREE.Group();
+      const sw = 4.8, sh = 2.4, sd = 3.2;
+      const stFront = hqGlazing(sw, 1, { litRatio: 0.85 });
+      const stSide = hqGlazing(sd, 1, { litRatio: 0.7 });
+      const stBody = new THREE.Mesh(new THREE.BoxGeometry(sw, sh, sd), [stSide, stSide, white, white, stFront, stFront]);
+      stBody.position.y = sh / 2;
+      stBody.castShadow = true;
+      st.add(stBody);
+      for (const [cx, cz] of [[-sw / 2 + 0.12, -sd / 2 + 0.12], [sw / 2 - 0.12, -sd / 2 + 0.12], [-sw / 2 + 0.12, sd / 2 - 0.12], [sw / 2 - 0.12, sd / 2 - 0.12]]) {
+        st.add(box(0.24, sh, 0.24, purple, cx, sh / 2, cz));
       }
-      canopy.position.set(1.8, 0.5 + WH + 0.4, -1.6);
-      w.add(canopy);
+      st.add(box(sw + 0.4, 0.24, sd + 0.4, navy, 0, sh + 0.12, 0));
+      st.add(box(2.2, 0.1, 1.5, mat(0xaec4e0, { roughness: 0.2, metalness: 0.2 }), -0.6, sh + 0.29, -0.3));
+      const stSign = new THREE.Group();
+      stSign.add(box(4.5, 0.78, 0.16, navy, 0, 0, 0));
+      const stTex = canvasMat(640, 96, (ctx, W, H) => {
+        ctx.fillStyle = '#041E42'; ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#CC9900'; ctx.lineWidth = 6; ctx.strokeRect(8, 8, W - 16, H - 16);
+        ctx.fillStyle = '#CC9900';
+        ctx.font = '900 52px Inter, Arial, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('CREATIVE STUDIO', W / 2, H / 2 + 2);
+      });
+      const stFace = new THREE.Mesh(new THREE.PlaneGeometry(4.4, 0.72), stTex);
+      stFace.position.z = 0.085;
+      stSign.add(stFace);
+      const stBack = stFace.clone();
+      stBack.rotation.y = Math.PI;
+      stBack.position.z = -0.085;
+      stSign.add(stBack);
+      for (const sx of [-1.7, 1.7]) stSign.add(cyl(0.05, 0.05, 0.5, gold, sx, -0.6, 0, 8));
+      stSign.position.set(0, sh + 0.24 + 0.85, 0.4);
+      st.add(stSign);
+      st.add(cyl(0.07, 0.07, 1.1, gold, sw / 2 - 0.4, sh + 0.79, -sd / 2 + 0.4, 8));
+      st.add(box(0.42, 0.3, 0.3, purple, sw / 2 - 0.4, sh + 1.36, -sd / 2 + 0.4));
+      st.position.set(1.3, 0.5 + WH + 0.42, -0.9);
+      w.add(st);
       for (const [tx, tz, s] of [[-2.0, -2.0, 0.5], [-1.6, 1.0, 0.42], [2.2, 1.2, 0.45]]) {
         const t = makeFrostTree(s);
         t.position.set(tx, 0.5 + WH + 0.4, tz);

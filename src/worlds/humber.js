@@ -288,11 +288,18 @@ function build(ctx) {
       { lat: 27, lon: -1 }, { lat: -22, lon: 7 }, { lat: -22, lon: 41 },
       { lat: 13, lon: 99 }, { lat: -16, lon: 165 }, { lat: -22, lon: -55 },
       { lat: -57, lon: -4 }, { lat: 19, lon: 130 },
+      // second wave: denser downtown clusters in the remaining open land
+      // (spots greedy-packed clear of landmarks, roads, rail and the lake)
+      { lat: 24, lon: 170, big: true }, { lat: -26, lon: 78, big: true },
+      { lat: -14, lon: 134, big: true }, { lat: -8, lon: 82 },
+      { lat: 48, lon: 134, big: true }, { lat: 10, lon: 158 },
+      { lat: 8, lon: 178 }, { lat: 20, lon: 62, big: true },
+      { lat: -8, lon: 110 }, { lat: 50, lon: -66, big: true },
     ];
     let bi = 0;
     for (const b of BLOCKS) {
       bi++;
-      plate(null, b.lat, b.lon, 0.13, 0.22, 0xe9edf5);
+      plate(null, b.lat, b.lon, b.big ? 0.17 : 0.13, 0.22, 0xe9edf5);
       const put = (obj, du, dv, ry = 0) => {
         const lat = b.lat + dv / 0.733;
         const lon = b.lon + du / (0.733 * Math.cos(THREE.MathUtils.degToRad(b.lat)));
@@ -302,6 +309,15 @@ function build(ctx) {
       put(o1, -1.5, -0.7, 0.2);
       const o2 = makeOfficeBlock(bi + 1, 3.2 + ((bi + 1) % 2));
       put(o2, 1.6, 0.8, -0.2);
+      if (b.big) {
+        // downtown cluster: a couple of proper towers + an infill office
+        const t1 = makeOfficeBlock(bi + 2, 7 + (bi % 3));
+        put(t1, 0.3, -2.6, -0.4);
+        const t2 = makeOfficeBlock(bi + 3, 5 + ((bi + 1) % 3));
+        put(t2, 3.4, -1.2, 0.5);
+        const o3 = makeOfficeBlock(bi + 5, 3 + (bi % 2));
+        put(o3, -3.2, 1.1, 0.9);
+      }
       if (bi % 2 === 0) {
         const h = makeHouse(bi % 2); h.scale.setScalar(0.5);
         put(h, 2.4, -1.5, 0.6);
