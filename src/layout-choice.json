@@ -1,1 +1,253 @@
-{}
+{
+  "proof": {
+    "lat": 21.53,
+    "lon": -16.86,
+    "heading": -33
+  },
+  "personas": {
+    "lat": -76.23,
+    "lon": -153.5,
+    "heading": 0
+  },
+  "tree-57": {
+    "lat": -61.76,
+    "lon": 159.42,
+    "heading": 176.6
+  },
+  "hotel-sleep": {
+    "lat": -15.53,
+    "lon": 103.02,
+    "heading": -30
+  },
+  "hotel-clarion": {
+    "lat": -24.63,
+    "lon": 90.36,
+    "heading": -60
+  },
+  "hotel-econo": {
+    "lat": -26.96,
+    "lon": 127.78,
+    "heading": -225
+  },
+  "hotel-mainstay": {
+    "lat": -49.51,
+    "lon": 99.26,
+    "heading": -90
+  },
+  "hotel-quality": {
+    "lat": -50.58,
+    "lon": 146.29,
+    "heading": -30
+  },
+  "hotel-comfort": {
+    "lat": -28.05,
+    "lon": 161.8,
+    "heading": -15
+  },
+  "town5--22--12": {
+    "lat": -19.64,
+    "lon": 144.84,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town5-22--14": {
+    "lat": -19.91,
+    "lon": 151.16,
+    "heading": -149,
+    "removed": true
+  },
+  "town5-0-14": {
+    "lat": -27.9,
+    "lon": -171.74,
+    "heading": -177.8
+  },
+  "town6-0-14": {
+    "lat": -19.9,
+    "lon": -16.77,
+    "heading": -56
+  },
+  "town6-26-12": {
+    "lat": -56.44,
+    "lon": 23.17,
+    "heading": -163,
+    "removed": true
+  },
+  "town3-0-14": {
+    "lat": -49.08,
+    "lon": -42.84,
+    "heading": 143
+  },
+  "hotel-beachfront": {
+    "lat": 26.89,
+    "lon": -137.18,
+    "heading": 42
+  },
+  "town7-0-14": {
+    "lat": 10,
+    "lon": -145.1,
+    "heading": -148
+  },
+  "hotel-lakeside": {
+    "lat": 23.22,
+    "lon": 167.76,
+    "heading": 24
+  },
+  "bb-splurge": {
+    "lat": 15.96,
+    "lon": 24.58,
+    "heading": -117
+  },
+  "bb-french": {
+    "lat": -10.79,
+    "lon": 18.9,
+    "heading": -167
+  },
+  "town2-22--14": {
+    "lat": -17.23,
+    "lon": 28.41,
+    "heading": -149,
+    "removed": true
+  },
+  "town2--22--12": {
+    "lat": -21.64,
+    "lon": 6.81,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town2-0-14": {
+    "lat": -29.1,
+    "lon": 18.16,
+    "heading": -160.4
+  },
+  "town6-22--14": {
+    "lat": -59.91,
+    "lon": -14.34,
+    "heading": -149,
+    "removed": true
+  },
+  "town6--22--12": {
+    "lat": -59.64,
+    "lon": -25.66,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town8-22--14": {
+    "lat": -56.91,
+    "lon": -144.77,
+    "heading": -149,
+    "removed": true
+  },
+  "town8--22--12": {
+    "lat": -56.64,
+    "lon": -155.23,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town8-0-14": {
+    "lat": -47.39,
+    "lon": -132.19,
+    "heading": 45
+  },
+  "reststop": {
+    "lat": -60.63,
+    "lon": 26.48,
+    "heading": -164
+  },
+  "bb-explore": {
+    "lat": -47.17,
+    "lon": -21.8,
+    "heading": -12
+  },
+  "town4-22--14": {
+    "lat": 12.09,
+    "lon": 103.09,
+    "heading": -149,
+    "removed": true
+  },
+  "town4--22--12": {
+    "lat": 9.99,
+    "lon": 97.61,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town4-0-14": {
+    "lat": 11.17,
+    "lon": 127.55,
+    "heading": -178
+  },
+  "privileges": {
+    "lat": 16.93,
+    "lon": 103.24,
+    "heading": 0
+  },
+  "tree-50": {
+    "lat": 16.93,
+    "lon": 134.49,
+    "heading": 171.3
+  },
+  "tree-27": {
+    "lat": 8.74,
+    "lon": 118.88,
+    "heading": 279.5
+  },
+  "bb-download": {
+    "lat": 26.87,
+    "lon": 82.31,
+    "heading": -105
+  },
+  "muskoka": {
+    "lat": -20.27,
+    "lon": -62.48,
+    "heading": 39
+  },
+  "town3-26-12": {
+    "lat": -13.58,
+    "lon": -55.02,
+    "heading": 34.4,
+    "removed": true
+  },
+  "town3--22--12": {
+    "lat": -21.64,
+    "lon": -63.19,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town3-22--14": {
+    "lat": -21.91,
+    "lon": -56.81,
+    "heading": -149,
+    "removed": true
+  },
+  "bb-wonderland": {
+    "lat": 24.95,
+    "lon": -60.17,
+    "heading": -111
+  },
+  "town1-22--14": {
+    "lat": 30.41,
+    "lon": 48.19,
+    "heading": -149,
+    "removed": true
+  },
+  "town1--22--12": {
+    "lat": 31.18,
+    "lon": 47.99,
+    "heading": 22.9,
+    "removed": true
+  },
+  "town1-0-14": {
+    "lat": 10.37,
+    "lon": 37.36,
+    "heading": 30
+  },
+  "rockies": {
+    "lat": 51.25,
+    "lon": 98.33,
+    "heading": 0
+  },
+  "resort": {
+    "lat": 90,
+    "lon": 0,
+    "heading": -17
+  }
+}

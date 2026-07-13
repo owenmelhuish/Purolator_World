@@ -69,7 +69,7 @@ const POIS = [
     step: 'Case Study · Chapter 4 · The Loyalty Loop',
     body: 'Choice Privileges closes the loop: book direct, earn on every stay, milestone rewards every five nights — Gold to Platinum to Diamond to Titanium. Rewards are a download away, and every install feeds the demand engine for the next trip.',
     stats: [['Program', 'Choice Privileges'], ['Tiers', 'Gold → Titanium']],
-    lat: 54, lon: 58, dist: 80, pinAlt: 11, side: -0.8, lookR: 44,
+    lat: 54, lon: 58, dist: 76, pinAlt: 11, side: -0.25, lookR: 44,
   },
   {
     id: 'proof',
