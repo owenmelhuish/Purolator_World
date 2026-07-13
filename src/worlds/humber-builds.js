@@ -912,3 +912,248 @@ export function busWrap(ctx, W, H) {
   drawStackedType(ctx, W, H, { x: 0.32, y: 0.3, size: H * 0.24 });
   humberLockup(ctx, W - 190, H - 46, 0.62, true);
 }
+
+// --- Humber Global Headquarters — the pole hero ------------------------------------
+// Built from the model sheet: central tower (navy sign, gold louvers, white
+// fins), academic + innovation wings (purple frame accent, rooftop terrace),
+// curved glass atrium connector, plaza forecourt, mechanical penthouses.
+
+/** glazing facade: blue-gray curtain wall, white mullions, navy spandrels, lit panes */
+function hqGlazing(w, floors, { litRatio = 0.42 } = {}) {
+  return canvasMat(Math.round(w * 40), floors * 64, (ctx, W, H) => {
+    ctx.fillStyle = '#bfc6d8';
+    ctx.fillRect(0, 0, W, H);
+    for (let f = 0; f < floors; f++) {
+      const yy = f * 64;
+      // navy spandrel band
+      ctx.fillStyle = '#0b2246';
+      ctx.fillRect(0, yy, W, 14);
+      for (let x = 4; x + 26 < W; x += 30) {
+        ctx.fillStyle = Math.random() < litRatio ? '#f3e7c4' : (Math.random() < 0.5 ? '#9fb2cf' : '#8ba0c2');
+        ctx.fillRect(x, yy + 18, 24, 40);
+      }
+    }
+    // white mullion grid
+    ctx.strokeStyle = 'rgba(248,250,253,0.9)';
+    ctx.lineWidth = 3;
+    for (let x = 0; x <= W; x += 30) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y <= H; y += 64) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.3 });
+}
+
+export function makeHumberHQ() {
+  const g = new THREE.Group();
+  const white = mat(0xedf0f7, { roughness: 0.7 });
+  const grayPh = mat(0xc3c9d4, { roughness: 0.75 });
+  const navy = mat(HU.navy, { roughness: 0.55 });
+  const gold = mat(HU.gold, { roughness: 0.4, metalness: 0.25 });
+  const purple = mat(HU.purple, { roughness: 0.5 });
+  const dark = mat(0x101216, { roughness: 0.5 });
+  const paving = canvasMat(768, 576, (ctx, W, H) => {
+    ctx.fillStyle = '#e6eaf2';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(160,172,196,0.55)';
+    ctx.lineWidth = 3;
+    for (let x = 0; x < W; x += 48) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+    for (let y = 0; y < H; y += 48) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  }, { roughness: 0.85 });
+
+  // --- base podium + plaza forecourt ---------------------------------------------
+  g.add(rbox(30, 0.5, 23, white, 0, 0.25, -1, 0.1));
+  g.add(box(30.4, 0.22, 23.4, mat(0xb9c0cd, { roughness: 0.8 }), 0, 0.11, -1));
+  const plaza = new THREE.Mesh(new THREE.BoxGeometry(24, 0.14, 7.5), paving);
+  plaza.position.set(0, 0.57, 6.2);
+  plaza.receiveShadow = true;
+  g.add(plaza);
+  for (let s = 0; s < 3; s++) {
+    g.add(box(10 + s * 1.6, 0.16, 0.8, white, 0, 0.48 - s * 0.15, 10.2 + s * 0.65));
+  }
+
+  // --- central tower ----------------------------------------------------------------
+  const TW = 12.5, TD = 9.5, TH = 11.5, FLOORS = 7;
+  const tf = hqGlazing(TW, FLOORS);
+  const ts = hqGlazing(TD, FLOORS);
+  const tower = new THREE.Mesh(new THREE.BoxGeometry(TW, TH, TD), [ts, ts, white, white, tf, tf]);
+  tower.position.set(0, 0.5 + TH / 2, -5.2);
+  tower.castShadow = true;
+  g.add(tower);
+  // white corner piers + parapet
+  for (const sx of [-TW / 2 + 0.25, TW / 2 - 0.25]) {
+    for (const sz of [-5.2 - TD / 2 + 0.25, -5.2 + TD / 2 - 0.25]) {
+      g.add(box(0.55, TH, 0.55, white, sx, 0.5 + TH / 2, sz));
+    }
+  }
+  g.add(box(TW + 0.4, 0.35, TD + 0.4, white, 0, 0.5 + TH + 0.16, -5.2));
+  // gold accent louvers on the front-left bay
+  for (let i = 0; i < 7; i++) {
+    g.add(box(0.22, TH * 0.62, 0.14, gold, -TW / 2 + 1.1 + i * 0.52, 0.5 + TH * 0.4, -5.2 + TD / 2 + 0.1));
+  }
+  // white vertical fins on the side faces
+  for (let i = 0; i < 9; i++) {
+    for (const sx of [-TW / 2 - 0.08, TW / 2 + 0.08]) {
+      g.add(box(0.12, TH * 0.8, 0.3, white, sx, 0.5 + TH * 0.46, -5.2 - TD / 2 + 1.2 + i * 0.9));
+    }
+  }
+  // navy HUMBER sign panel near the top (readable both sides)
+  const signFace = canvasMat(760, 190, (ctx, W, H) => {
+    ctx.fillStyle = '#041e42';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = 'rgba(248,250,253,0.35)';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(8, 8, W - 16, H - 16);
+    humberLockup(ctx, 130, H / 2, 1.7, true);
+    ctx.fillStyle = '#f8fafd';
+    ctx.font = '800 74px Georgia, serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('HUMBER', 230, H / 2 + 26);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.4 });
+  const signBox = rbox(8.6, 2.1, 0.5, navy, 0, 0.5 + TH - 1.6, -5.2 + TD / 2 + 0.32, 0.06);
+  g.add(signBox);
+  const signF = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 1.85), signFace);
+  signF.position.set(0, 0.5 + TH - 1.6, -5.2 + TD / 2 + 0.6);
+  g.add(signF);
+  const signB = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 1.85), signFace);
+  signB.rotation.y = Math.PI;
+  signB.position.set(0, 0.5 + TH - 1.6, -5.2 + TD / 2 + 0.05);
+  g.add(signB);
+  // mechanical penthouse
+  g.add(rbox(5.2, 1.3, 3.6, grayPh, -1.2, 0.5 + TH + 0.95, -5.6, 0.06));
+  g.add(rbox(2.4, 0.8, 2.0, grayPh, 3.2, 0.5 + TH + 0.7, -4.4, 0.06));
+
+  // --- wings ------------------------------------------------------------------------
+  const WW = 10.5, WD = 8.5, WH = 5.2, WFL = 3;
+  const mkWing = (px) => {
+    const wf = hqGlazing(WW, WFL);
+    const ws = hqGlazing(WD, WFL);
+    const wing = new THREE.Mesh(new THREE.BoxGeometry(WW, WH, WD), [ws, ws, white, white, wf, wf]);
+    wing.position.set(px, 0.5 + WH / 2, -1.8);
+    wing.castShadow = true;
+    g.add(wing);
+    g.add(box(WW + 0.35, 0.3, WD + 0.35, white, px, 0.5 + WH + 0.14, -1.8));
+    return wing;
+  };
+  mkWing(-11.2); // north wing (academic)
+  mkWing(11.2);  // south wing (innovation)
+  // helipad on the north wing roof
+  const heli = new THREE.Mesh(new THREE.CircleGeometry(2.0, 28), canvasMat(256, 256, (ctx, W, H) => {
+    ctx.fillStyle = '#aab2c2';
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, W / 2, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#f8fafd'; ctx.lineWidth = 10;
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, W / 2 - 14, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#f8fafd';
+    ctx.font = '900 120px Inter, Arial, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('H', W / 2, H / 2 + 6);
+  }, { roughness: 0.8 }));
+  heli.rotation.x = -Math.PI / 2;
+  heli.position.set(-11.9, 0.5 + WH + 0.31, -2.4);
+  g.add(heli);
+  g.add(rbox(2.6, 0.9, 1.8, grayPh, -8.6, 0.5 + WH + 0.6, -4.2, 0.06));
+  // purple frame accent on the innovation wing front
+  const pf = new THREE.Group();
+  const fw = 5.6, fh = 3.4, ft = 0.45;
+  pf.add(box(fw, ft, 0.7, purple, 0, fh / 2 - ft / 2, 0));
+  pf.add(box(fw, ft, 0.7, purple, 0, -fh / 2 + ft / 2, 0));
+  pf.add(box(ft, fh, 0.7, purple, -fw / 2 + ft / 2, 0, 0));
+  pf.add(box(ft, fh, 0.7, purple, fw / 2 - ft / 2, 0, 0));
+  pf.position.set(12.4, 0.5 + WH * 0.52, -1.8 + WD / 2 + 0.18);
+  g.add(pf);
+  // rooftop terrace on the innovation wing: green, planters, canopy, furniture
+  g.add(box(WW - 1.6, 0.14, WD - 2.6, mat(0x9dbb8e, { roughness: 0.95 }), 11.2, 0.5 + WH + 0.36, -2.2));
+  const railM = mat(0xd7dce6, { roughness: 0.6 });
+  g.add(box(WW - 1.2, 0.5, 0.08, railM, 11.2, 0.5 + WH + 0.5, -1.8 - WD / 2 + 0.3));
+  g.add(box(WW - 1.2, 0.5, 0.08, railM, 11.2, 0.5 + WH + 0.5, -1.8 + WD / 2 - 0.3));
+  g.add(box(0.08, 0.5, WD - 0.6, railM, 11.2 + WW / 2 - 0.3, 0.5 + WH + 0.5, -1.8));
+  const canopy = new THREE.Group();
+  canopy.add(box(3.2, 0.18, 2.2, navy, 0, 1.5, 0));
+  canopy.add(box(3.0, 0.06, 2.0, gold.clone(), 0, 1.38, 0));
+  for (const [cx, cz] of [[-1.4, -0.9], [1.4, -0.9], [-1.4, 0.9], [1.4, 0.9]]) {
+    canopy.add(cyl(0.06, 0.06, 1.5, gold, cx, 0.75, cz, 8));
+  }
+  canopy.position.set(13.0, 0.5 + WH + 0.4, -3.4);
+  g.add(canopy);
+  for (const [tx, tz, s] of [[9.2, -3.8, 0.5], [9.6, -0.8, 0.42], [13.4, -0.6, 0.45]]) {
+    const t = makeFrostTree(s);
+    t.position.set(tx, 0.5 + WH + 0.4, tz);
+    g.add(t);
+  }
+
+  // --- atrium connector: leaning curved-glass entrance ---------------------------------
+  {
+    const atrium = new THREE.Group();
+    const glassM = new THREE.MeshPhysicalMaterial({
+      color: 0xaec4e0, transparent: true, opacity: 0.55, roughness: 0.12, metalness: 0.1,
+    });
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(8.2, 5.4, 0.5), glassM);
+    slab.rotation.x = 0.42;
+    slab.position.set(0, 2.9, 1.9);
+    atrium.add(slab);
+    // navy structural ribs following the lean
+    for (const rx of [-3.6, -1.8, 0, 1.8, 3.6]) {
+      const rib = box(0.22, 5.6, 0.3, navy, rx, 2.9, 1.9);
+      rib.rotation.x = 0.42;
+      atrium.add(rib);
+    }
+    const header = box(8.6, 0.5, 0.55, navy, 0, 5.35, 0.85);
+    header.rotation.x = 0.42;
+    atrium.add(header);
+    // gold entrance banner with the H tile
+    const banner = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 4.2, 0.28),
+      [gold, gold, gold, gold,
+        canvasMat(150, 420, (ctx, W, H) => {
+          ctx.fillStyle = '#cc9900';
+          ctx.fillRect(0, 0, W, H);
+          ctx.fillStyle = '#041e42';
+          ctx.beginPath(); ctx.roundRect(25, 30, 100, 100, 18); ctx.fill();
+          ctx.fillStyle = '#f8fafd';
+          ctx.font = '900 74px Georgia, serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('H', 75, 105);
+          ctx.save();
+          ctx.translate(88, 190); ctx.rotate(Math.PI / 2);
+          ctx.font = '800 44px Inter, Arial, sans-serif';
+          ctx.textAlign = 'left';
+          ctx.fillStyle = '#041e42';
+          ctx.fillText('HUMBER', 0, 0);
+          ctx.restore();
+        }, { emissive: 0xffffff, emissiveIntensity: 0.25 }),
+        gold]
+    );
+    banner.position.set(2.6, 2.5, 3.05);
+    banner.rotation.x = 0.1;
+    atrium.add(banner);
+    // glowing entry doors
+    const doors = new THREE.Mesh(new THREE.PlaneGeometry(3.4, 1.6), new THREE.MeshStandardMaterial({
+      color: 0xfff1d4, emissive: 0xffd9a0, emissiveIntensity: 0.55, roughness: 0.4,
+    }));
+    doors.position.set(-0.6, 1.35, 3.42);
+    atrium.add(doors);
+    atrium.position.set(0, 0.5, 0);
+    g.add(atrium);
+  }
+
+  // --- plaza life: trees, students, lamps, flags ----------------------------------------
+  for (const [tx, tz, s] of [[-9.5, 6.4, 0.85], [-5.4, 7.6, 0.7], [5.6, 7.4, 0.75], [9.8, 6.2, 0.9], [-13.2, 3.4, 0.8], [13.4, 4.6, 0.7]]) {
+    const t = makeFrostTree(s);
+    t.position.set(tx, 0.6, tz);
+    g.add(t);
+  }
+  let hp = 0;
+  for (const [pxx, pzz, ry] of [[-3.2, 6.4, 0.4], [-1.2, 7.4, -0.6], [1.6, 6.2, 2.2], [3.8, 7.8, 0.1], [-6.8, 5.6, 1.2], [6.4, 5.8, -1.8], [0.4, 4.6, 3.0], [-2.4, 4.9, -2.6]]) {
+    const p = makePerson({});
+    p.position.set(pxx, 0.6, pzz);
+    p.rotation.y = ry;
+    g.add(p);
+    hp++;
+  }
+  for (const lx of [-7.6, 7.6]) {
+    g.add(cyl(0.07, 0.09, 2.6, mat(0x8b94a6, { roughness: 0.5 }), lx, 1.85, 8.6, 8));
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshStandardMaterial({
+      color: 0xfff3d8, emissive: 0xffe2a8, emissiveIntensity: 0.9,
+    }));
+    lamp.position.set(lx, 3.2, 8.6);
+    g.add(lamp);
+  }
+  return g;
+}

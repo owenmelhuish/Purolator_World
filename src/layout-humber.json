@@ -185,9 +185,9 @@
     "heading": -11.5,
     "removed": true
   },
-  "lrc": {
-    "lat": 76.82,
-    "lon": 111.14,
-    "heading": 0
+  "hq": {
+    "lat": 90,
+    "lon": 0,
+    "heading": -38
   }
 }

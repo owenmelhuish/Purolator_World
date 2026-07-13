@@ -7,7 +7,7 @@ import {
   makeArtBillboard, makeScreenTower, makeConifer, makeBus, makeStreetcar, makeCar, makeFlag,
 } from './props.js';
 import {
-  HU, adsHU, makeCampaignStage, makeLRC, makeBarrettCTI, makeQuad,
+  HU, adsHU, makeCampaignStage, makeHumberHQ, makeBarrettCTI, makeQuad,
   makeHeritageHall, makeHawksField, makeDataPavilion, makeEnrollmentMonument,
   makeFrostTree, makeFrostShrub, streetcarWrap, busWrap,
 } from './humber-builds.js';
@@ -42,7 +42,7 @@ const POIS = [
     step: 'Case Study · Chapter 1 · The Relaunch',
     body: 'In August 2024, Humber College became Humber Polytechnic — a once-in-a-generation brand relaunch for 86,000+ learners. PUSH ran awareness and presence for the launch: a full-funnel media strategy with planning and oversight across every traditional and digital platform. This is the campus the country got reintroduced to.',
     stats: [['Learners', '86,000+'], ['Relaunched', 'August 2024']],
-    lat: 90, lon: 0, dist: 124, pinAlt: 20, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 142, pinAlt: 26, side: 0.85, lookR: 42,
   },
   {
     id: 'stage',
@@ -107,14 +107,14 @@ function build(ctx) {
   ];
   for (const t of TERRACES) terrace(t.lat, t.lon, t.r, t.alt, t.c);
 
-  plate(null, 90, 0, 0.4, 0.3, 0xebeef6);
+  plate(null, 90, 0, 0.48, 0.3, 0xebeef6);
   plate('stage', 54, -50, 0.28, 0.34, 0xe8ebf4);
   plate('signals', 54, 58, 0.25, 0.31, 0xebeef6);
   plate('city', 33, -18, 0.25, 0.34, 0xe8ebf4);
   plate('impact', 20, -15, 0.21, 0.33, 0xebeef6);
   plate('hawks', 55, 115, 0.29, 0.3, 0xe4ecdf);
 
-  foundation(90, 0, 0, 23, 17, 0.35, { dz: 0, name: 'lrc' });
+  foundation(90, 0, 0, 33, 26, 0.35, { dz: 0, name: 'hq' });
   foundation(76, -95, 0, 15, 15, 0.33, { round: true, name: 'barrett' });
   foundation(78, 95, 0, 18.5, 18.5, 0.32, { round: true, name: 'quad' });
   foundation(54, -50, 0, 24, 24, 0.36, { round: true, name: 'stage' });
@@ -125,10 +125,9 @@ function build(ctx) {
   foundation(34, -108, 0.4, 17.5, 9, 0.3, { name: 'lakeshore' });
 
   // --- North Campus at the pole -----------------------------------------------
-  const lrc = makeLRC();
-  lrc.scale.setScalar(1.5);
-  placeM('lrc', lrc, 90, 0, -1.1, 0.35, 'campus');
-  registerPoi(lrc, 'campus');
+  const hq = makeHumberHQ();
+  placeM('hq', hq, 90, 0, -1.1, 0.35, 'campus');
+  registerPoi(hq, 'campus');
   const barrett = makeBarrettCTI();
   barrett.scale.setScalar(1.35);
   placeM('barrett', barrett, 76, -95, 0.4, 0.33, 'campus');
@@ -347,7 +346,7 @@ function build(ctx) {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
     const exclude = [
-      { lat: 90, lon: 0, ang: 0.48 }, { lat: 76, lon: -95, ang: 0.3 }, { lat: 78, lon: 95, ang: 0.32 },
+      { lat: 90, lon: 0, ang: 0.56 }, { lat: 76, lon: -95, ang: 0.3 }, { lat: 78, lon: 95, ang: 0.32 },
       { lat: 54, lon: -50, ang: 0.34 }, { lat: 54, lon: 58, ang: 0.3 }, { lat: 33, lon: -18, ang: 0.32 },
       { lat: 20, lon: -15, ang: 0.26 }, { lat: 55, lon: 115, ang: 0.34 }, { lat: 34, lon: -108, ang: 0.28 },
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
