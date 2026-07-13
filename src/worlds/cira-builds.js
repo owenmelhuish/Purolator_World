@@ -1076,3 +1076,352 @@ export function makeAurora() {
   };
   return g;
 }
+
+// --- the futuristic wifi nation: signal infrastructure set pieces -------------------
+
+/** Futuristic wifi mast — expanding signal rings pulse from the tip. */
+export function makeWifiTower(scale = 1) {
+  const g = new THREE.Group();
+  const white = mat(0xf3efe4, { roughness: 0.6 });
+  const steel = mat(CI.snowshoe, { roughness: 0.5, metalness: 0.3 });
+  g.add(cyl(1.4, 1.6, 0.28, mat(CI.cream, { roughness: 0.85 }), 0, 0.14, 0, 18));
+  g.add(cyl(0.1, 0.26, 6.2, white, 0, 0.28 + 3.1, 0, 10));
+  for (const my of [3.4, 4.4]) {
+    g.add(box(1.15, 0.05, 0.05, steel, 0, my, 0));
+    g.add(box(0.05, 0.05, 1.15, steel, 0, my, 0));
+  }
+  const dish = new THREE.Mesh(new THREE.SphereGeometry(0.3, 10, 8, 0, Math.PI * 2, 0, Math.PI / 2.6), steel);
+  dish.rotation.z = 1.9;
+  dish.position.set(0.28, 5.0, 0);
+  g.add(dish);
+  const tip = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 8), new THREE.MeshStandardMaterial({
+    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.7,
+  }));
+  tip.position.y = 6.6;
+  g.add(tip);
+  // pulsing signal rings
+  const rings = [];
+  for (let k = 0; k < 3; k++) {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.7, 0.045, 8, 32), new THREE.MeshBasicMaterial({
+      color: 0xd94a63, transparent: true, opacity: 0.5, depthWrite: false,
+    }));
+    ring.rotation.x = Math.PI / 2;
+    ring.position.y = 6.6;
+    rings.push(ring);
+    g.add(ring);
+  }
+  g.userData.update = (dt, time) => {
+    rings.forEach((r, k) => {
+      const s = (time * 0.45 + k / 3) % 1;
+      r.scale.setScalar(0.4 + s * 3.4);
+      r.material.opacity = (1 - s) * 0.5;
+      r.position.y = 6.6 + s * 0.5;
+    });
+  };
+  g.scale.setScalar(scale);
+  return g;
+}
+
+/** Connected Canada — the hero wifi-symbol sculpture on a civic plaza. */
+export function makeConnectedMonument() {
+  const g = new THREE.Group();
+  g.add(cyl(6.4, 6.6, 0.3, mat(CI.cream, { roughness: 0.85 }), 0, 0.15, 0, 36));
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(5.6, 0.08, 8, 56), mat(0xd9b64c, { roughness: 0.45 }));
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.32;
+  g.add(ring);
+  g.add(rbox(4.2, 0.7, 2.4, mat(CI.redDark, { roughness: 0.6 }), 0, 0.65, 0, 0.08));
+  // the wifi glyph: dot + three arcs, tilted back like a rising signal
+  const glowM = (i) => new THREE.MeshStandardMaterial({
+    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.1 - i * 0.15, roughness: 0.35,
+  });
+  const glyph = new THREE.Group();
+  const dot = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 12), glowM(0));
+  dot.position.y = 1.15;
+  glyph.add(dot);
+  const arcs = [dot];
+  for (let i = 0; i < 3; i++) {
+    const arc = new THREE.Mesh(new THREE.TorusGeometry(1.5 + i * 1.15, 0.3, 10, 40, Math.PI * 0.62), glowM(i + 1));
+    arc.rotation.z = Math.PI / 2 - Math.PI * 0.31;
+    arc.position.y = 1.15;
+    arcs.push(arc);
+    glyph.add(arc);
+  }
+  glyph.position.y = 1.0;
+  glyph.rotation.x = -0.28;
+  g.add(glyph);
+  g.userData.update = (dt, time) => {
+    arcs.forEach((a, i) => {
+      a.material.emissiveIntensity = 0.75 + Math.sin(time * 1.6 - i * 0.9) * 0.4;
+    });
+  };
+  // plinth plaque
+  const plaque = new THREE.Mesh(
+    new THREE.BoxGeometry(3.6, 0.62, 0.12),
+    [mat(CI.maroon), mat(CI.maroon), mat(CI.maroon), mat(CI.maroon),
+      canvasMat(560, 96, (ctx, W, H) => {
+        ctx.fillStyle = '#2c0000';
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = '#d9b64c';
+        ctx.font = '800 42px Georgia, serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('CONNECTED CANADA', W / 2, 62);
+      }, { emissive: 0xffffff, emissiveIntensity: 0.25 }),
+      mat(CI.maroon)]
+  );
+  plaque.position.set(0, 0.85, 1.32);
+  plaque.rotation.x = -0.15;
+  g.add(plaque);
+  for (const [px, pz, ry] of [[2.6, 2.8, -0.6], [-2.4, 3.0, 0.5]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.3, pz);
+    p.rotation.y = ry;
+    g.add(p);
+  }
+  const wg = makeGoose(0.7);
+  wg.position.set(-3.4, 0.3, -1.6);
+  wg.rotation.y = 1.2;
+  g.add(wg);
+  for (const a of [0.6, 2.2, 3.9, 5.5]) {
+    const lp = new THREE.Group();
+    lp.add(cyl(0.05, 0.07, 1.7, mat(CI.snowshoe), 0, 0.85, 0, 8));
+    const lamp = new THREE.Mesh(new THREE.SphereGeometry(0.12, 8, 8), new THREE.MeshStandardMaterial({
+      color: 0xffd9de, emissive: 0xff4560, emissiveIntensity: 1.0,
+    }));
+    lamp.position.y = 1.78;
+    lp.add(lamp);
+    lp.position.set(Math.cos(a) * 5.6, 0.3, Math.sin(a) * 5.6);
+    g.add(lp);
+  }
+  return g;
+}
+
+/** Northern satellite ground station — dish array + control hut. */
+export function makeGroundStation() {
+  const g = new THREE.Group();
+  const steel = mat(CI.snowshoe, { roughness: 0.5, metalness: 0.3 });
+  const white = mat(0xf3efe4, { roughness: 0.65 });
+  g.add(rbox(11, 0.32, 8, mat(0xe9e4d6, { roughness: 0.9 }), 0, 0.16, 0, 0.1));
+  const dish = (r, px, pz, ry) => {
+    const d = new THREE.Group();
+    d.add(cyl(0.5, 0.7, 0.5, white, 0, 0.25, 0, 12));
+    d.add(cyl(0.14, 0.18, 1.1, steel, 0, 1.0, 0, 8));
+    const bowl = new THREE.Mesh(new THREE.SphereGeometry(r, 18, 12, 0, Math.PI * 2, 0, Math.PI / 2.5), white);
+    bowl.rotation.x = -0.95;
+    bowl.position.y = 1.6;
+    d.add(bowl);
+    const feed = new THREE.Mesh(new THREE.SphereGeometry(0.1, 8, 8), new THREE.MeshStandardMaterial({
+      color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.4,
+    }));
+    feed.position.set(0, 1.6 + r * 0.75, r * 0.55);
+    d.add(feed);
+    d.position.set(px, 0.3, pz);
+    d.rotation.y = ry;
+    g.add(d);
+  };
+  dish(1.7, -2.8, -1.4, 0.4);
+  dish(1.3, 0.6, -2.2, -0.3);
+  // control hut with glow windows + red band
+  g.add(rbox(3.4, 1.6, 2.2, white, 2.8, 0.3 + 0.8, 1.4, 0.06));
+  g.add(box(3.5, 0.28, 2.3, mat(CI.red, { roughness: 0.55 }), 2.8, 0.3 + 1.7, 1.4));
+  const win = new THREE.Mesh(new THREE.PlaneGeometry(1.8, 0.6), new THREE.MeshStandardMaterial({
+    color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.8,
+  }));
+  win.position.set(2.8, 1.05, 2.52);
+  g.add(win);
+  // comms mast
+  g.add(cyl(0.05, 0.1, 3.4, steel, -4.2, 0.3 + 1.7, 2.2, 8));
+  const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), new THREE.MeshStandardMaterial({
+    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.7,
+  }));
+  beacon.position.set(-4.2, 0.3 + 3.5, 2.2);
+  g.add(beacon);
+  const tech = makePerson({});
+  tech.position.set(1.0, 0.3, 2.8);
+  tech.rotation.y = -0.6;
+  g.add(tech);
+  return g;
+}
+
+/** Outdoor server farm — the registry's muscle, racks in the open air. */
+export function makeServerFarm() {
+  const g = new THREE.Group();
+  g.add(rbox(10.5, 0.32, 7, mat(0xe9e4d6, { roughness: 0.9 }), 0, 0.16, 0, 0.1));
+  const rackFace = canvasMat(160, 200, (ctx, W, H) => {
+    ctx.fillStyle = '#0c1c2b';
+    ctx.fillRect(0, 0, W, H);
+    for (let y = 12; y < H - 10; y += 24) {
+      ctx.fillStyle = '#13293d';
+      ctx.fillRect(10, y, W - 20, 17);
+      ctx.fillStyle = Math.random() < 0.5 ? '#ba2241' : '#2479ba';
+      ctx.beginPath(); ctx.arc(W - 22, y + 8, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#9bbfe5';
+      ctx.fillRect(14, y + 5, 30, 3);
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.55 });
+  const navy = mat(CI.navy, { roughness: 0.55 });
+  for (let row = 0; row < 2; row++) {
+    for (let i = 0; i < 3; i++) {
+      const cab = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.0, 1.0), navy);
+      cab.position.set(-3 + i * 3, 0.32 + 1.0, -1.6 + row * 3.2);
+      cab.castShadow = true;
+      g.add(cab);
+      const face = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.8), rackFace);
+      face.position.set(-3 + i * 3, 0.32 + 1.0, -1.6 + row * 3.2 + 0.52);
+      g.add(face);
+      // red conduit into the ground
+      g.add(box(0.1, 0.1, 1.2, mat(CI.redDark, { roughness: 0.5 }), -3 + i * 3, 0.4, -1.0 + row * 3.2));
+    }
+  }
+  // chillers
+  for (const cx of [-4.6, 4.6]) {
+    g.add(rbox(1.2, 0.9, 1.6, mat(0xc9c4b8, { roughness: 0.7 }), cx, 0.32 + 0.45, 0, 0.06));
+    const fan = new THREE.Mesh(new THREE.CircleGeometry(0.34, 16), mat(0x62707f, { roughness: 0.5 }));
+    fan.rotation.x = -Math.PI / 2;
+    fan.position.set(cx, 0.32 + 0.92, 0);
+    g.add(fan);
+  }
+  const tech = makePerson({});
+  tech.position.set(1.4, 0.32, 1.0);
+  tech.rotation.y = 2.6;
+  g.add(tech);
+  return g;
+}
+
+/** Roadside DOOH totem — the PUSH digital buy, campaign on a slim screen. */
+export function makeDigitalTotem(drawFn) {
+  const g = new THREE.Group();
+  g.add(cyl(1.1, 1.3, 0.26, mat(CI.cream, { roughness: 0.85 }), 0, 0.13, 0, 16));
+  g.add(rbox(1.9, 3.9, 0.42, mat(CI.red, { roughness: 0.5 }), 0, 0.26 + 1.95, 0, 0.12));
+  const face = canvasMat(300, 560, (ctx, W, H) => {
+    ctx.fillStyle = '#101216';
+    ctx.fillRect(0, 0, W, H);
+    ctx.save();
+    ctx.translate(0, H * 0.18);
+    ctx.scale(1, 0.64);
+    drawFn(ctx, W, H);
+    ctx.restore();
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 22px Inter, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('.CA — CHOOSE SUCCESS', W / 2, 40);
+    ctx.fillStyle = '#ba2241';
+    ctx.fillRect(0, H - 14, W, 8);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.5 });
+  const scrF = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 3.4), face);
+  scrF.position.set(0, 0.26 + 1.95, 0.22);
+  g.add(scrF);
+  const scrB = new THREE.Mesh(new THREE.PlaneGeometry(1.6, 3.4), face);
+  scrB.rotation.y = Math.PI;
+  scrB.position.set(0, 0.26 + 1.95, -0.22);
+  g.add(scrB);
+  const blink = new THREE.Mesh(new THREE.SphereGeometry(0.08, 8, 8), new THREE.MeshStandardMaterial({
+    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.5,
+  }));
+  blink.position.y = 0.26 + 4.05;
+  g.add(blink);
+  return g;
+}
+
+/** Backyard-of-the-nation hockey rink — boards wear the campaign. */
+export function makeRink() {
+  const g = new THREE.Group();
+  // ice
+  const ice = new THREE.Mesh(new THREE.CylinderGeometry(4.4, 4.5, 0.22, 36), new THREE.MeshStandardMaterial({
+    color: 0xeaf3f8, roughness: 0.25, metalness: 0.05,
+  }));
+  ice.position.y = 0.11;
+  g.add(ice);
+  // centre-ice mark
+  const centre = new THREE.Mesh(new THREE.CircleGeometry(1.15, 28), canvasMat(220, 220, (ctx, W, H) => {
+    ctx.fillStyle = '#eaf3f8';
+    ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = '#aa1e3a';
+    ctx.lineWidth = 10;
+    ctx.beginPath(); ctx.arc(W / 2, H / 2, W / 2 - 12, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = '#aa1e3a';
+    ctx.font = '900 76px Montserrat, Inter, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('.CA', W / 2, H / 2 + 28);
+  }, { roughness: 0.3 }));
+  centre.rotation.x = -Math.PI / 2;
+  centre.rotation.z = 0.4;
+  centre.position.y = 0.225;
+  g.add(centre);
+  // boards with ads all the way round
+  const boards = new THREE.Mesh(
+    new THREE.CylinderGeometry(4.6, 4.6, 0.75, 36, 1, true),
+    canvasMat(1400, 110, (ctx, W, H) => {
+      ctx.fillStyle = '#f6f2e8';
+      ctx.fillRect(0, 0, W, H);
+      const msgs = ['.CA', 'cira', 'CHOOSE SUCCESS', '.CA', 'NET GOOD', 'cira', 'HONK', '.CA'];
+      ctx.textAlign = 'center';
+      msgs.forEach((m, i) => {
+        ctx.fillStyle = i % 2 ? '#aa1e3a' : '#0c1c2b';
+        ctx.font = '900 52px Inter, Arial, sans-serif';
+        ctx.fillText(m, (i + 0.5) * (W / msgs.length), 72);
+      });
+      ctx.fillStyle = '#aa1e3a';
+      ctx.fillRect(0, H - 12, W, 12);
+    }, { roughness: 0.6, emissive: 0xffffff, emissiveIntensity: 0.12 })
+  );
+  boards.material.side = THREE.DoubleSide;
+  boards.position.y = 0.55;
+  g.add(boards);
+  const capRing = new THREE.Mesh(new THREE.TorusGeometry(4.6, 0.07, 8, 48), mat(0xaa1e3a, { roughness: 0.5 }));
+  capRing.rotation.x = Math.PI / 2;
+  capRing.position.y = 0.95;
+  g.add(capRing);
+  // nets
+  for (const nz of [-3.1, 3.1]) {
+    const net = new THREE.Group();
+    net.add(box(1.3, 0.75, 0.08, mat(CI.redBright, { roughness: 0.5 }), 0, 0.4, 0));
+    net.add(box(0.08, 0.75, 0.55, mat(CI.redBright, { roughness: 0.5 }), -0.65, 0.4, -0.28));
+    net.add(box(0.08, 0.75, 0.55, mat(CI.redBright, { roughness: 0.5 }), 0.65, 0.4, -0.28));
+    net.add(box(1.3, 0.06, 0.55, mat(0xf4f1e8, { roughness: 0.7 }), 0, 0.78, -0.28));
+    net.position.set(0, 0.22, nz);
+    net.rotation.y = nz > 0 ? Math.PI : 0;
+    g.add(net);
+  }
+  // players with sticks
+  for (const [px, pz, ry] of [[-1.6, 0.8, 0.5], [1.2, -0.6, -2.2], [0.4, 1.9, 2.8], [-0.8, -2.0, 1.1]]) {
+    const p = makePerson({});
+    p.position.set(px, 0.22, pz);
+    p.rotation.y = ry;
+    g.add(p);
+    const stick = box(0.05, 0.8, 0.05, mat(0xb9a184, { roughness: 0.8 }), px + 0.3 * Math.cos(ry), 0.62, pz + 0.3 * Math.sin(ry));
+    stick.rotation.z = 0.7;
+    g.add(stick);
+  }
+  // puck + snowbanks around the rink
+  g.add(cyl(0.09, 0.09, 0.05, mat(0x16181c), 0.6, 0.26, 0.4, 10));
+  for (const a of [0.5, 1.6, 2.9, 4.1, 5.3]) {
+    const bank = new THREE.Mesh(new THREE.SphereGeometry(0.8 + (a % 1), 10, 8), mat(0xf4f7fa, { roughness: 0.95 }));
+    bank.scale.y = 0.35;
+    bank.position.set(Math.cos(a) * 5.1, 0.15, Math.sin(a) * 5.1);
+    g.add(bank);
+  }
+  return g;
+}
+
+/** Parcel drone — the .ca economy in flight. */
+export function makeDrone() {
+  const g = new THREE.Group();
+  const dark = mat(0x2b2f38, { roughness: 0.5 });
+  g.add(rbox(0.5, 0.16, 0.5, mat(0xf3efe4, { roughness: 0.5 }), 0, 0, 0, 0.05));
+  for (const [ax, az] of [[-0.42, -0.42], [0.42, -0.42], [-0.42, 0.42], [0.42, 0.42]]) {
+    g.add(box(0.3, 0.04, 0.04, dark, ax * 0.7, 0.02, az * 0.7));
+    g.add(cyl(0.22, 0.22, 0.02, mat(0x9aa3b2, { roughness: 0.4, transparent: true, opacity: 0.55 }), ax, 0.08, az, 12));
+  }
+  const light = new THREE.Mesh(new THREE.SphereGeometry(0.07, 8, 8), new THREE.MeshStandardMaterial({
+    color: 0xff8798, emissive: 0xba2241, emissiveIntensity: 1.8,
+  }));
+  light.position.y = 0.14;
+  g.add(light);
+  // parcel sling
+  g.add(box(0.03, 0.3, 0.03, dark, 0, -0.25, 0));
+  const parcel = rbox(0.36, 0.3, 0.32, mat(0xb9915e, { roughness: 0.85 }), 0, -0.5, 0, 0.03);
+  g.add(parcel);
+  g.add(box(0.38, 0.05, 0.34, mat(CI.red, { roughness: 0.6 }), 0, -0.42, 0));
+  return g;
+}

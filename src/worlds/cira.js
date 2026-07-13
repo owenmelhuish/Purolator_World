@@ -11,6 +11,8 @@ import {
   CI, adsCI, makeGoose, makeGoosePlaza, makeDotCaMonument, makeCiraHQ,
   makeShieldDome, makeRegistry, makeIxpNode, makeNorthernCommunity,
   makeRecallMonument, makeAurora, makeShardCluster,
+  makeWifiTower, makeConnectedMonument, makeGroundStation, makeServerFarm,
+  makeDigitalTotem, makeRink, makeDrone,
 } from './cira-builds.js';
 import BAKED_LAYOUT from '../layout-cira.json';
 
@@ -251,6 +253,8 @@ function build(ctx) {
       tor: dir(28, -60), mtl: dir(10, -40), van: dir(44, 150), wpg: dir(-8, 60),
       t1: dir(32, 34), t2: dir(-20, 10), t3: dir(-20, -60), t4: dir(14, 128),
       t5: dir(-18, 155), t6: dir(-56, -20), t7: dir(12, -125), t8: dir(-54, -155),
+      glyph: dir(47, -28), station: dir(59, -120), farm: dir(26, 92),
+      w1: dir(35, 52), w2: dir(11, -148), w3: dir(-25, 40), w4: dir(-13, 172), w5: dir(62, -76),
     };
     const LINKS = [
       // trunk lines home to the HQ
@@ -260,6 +264,9 @@ function build(ctx) {
       ['infra', 'registry'], ['registry', 'north'], ['registry', 'van'], ['registry', 'wpg'],
       ['van', 't5'], ['wpg', 't2'], ['t2', 't3'], ['t3', 't7'], ['t7', 't8'], ['t4', 'van'],
       ['t1', 'infra'], ['t6', 't3'], ['recall', 't2'], ['north', 't4'], ['t1', 'registry'],
+      // the wifi grid ties into the web
+      ['hub', 'glyph'], ['glyph', 'w5'], ['w5', 'station'], ['station', 'hub'],
+      ['farm', 'registry'], ['w1', 'infra'], ['w1', 'farm'], ['w2', 't7'], ['w3', 't2'], ['w4', 't5'],
     ];
     const pipeM = new THREE.MeshStandardMaterial({
       color: 0x7e0e27, roughness: 0.45, metalness: 0.15,
@@ -312,6 +319,68 @@ function build(ctx) {
     });
   }
 
+  // --- the futuristic wifi nation: signal towers, glyph, station, farm, rink -----------------
+  {
+    const glyph = makeConnectedMonument();
+    placeM('glyph', glyph, 47, -28, 0.4, 0.32, 'infra');
+    registerPoi(glyph, 'infra');
+    animators.push({ update: (dt, time) => glyph.userData.update(dt, time) });
+
+    const station = makeGroundStation();
+    plate(null, 59, -120, 0.16, 0.24, 0xecebe2);
+    placeM('station', station, 59, -120, 0.5, 0.26, 'north');
+    registerPoi(station, 'north');
+
+    const farm = makeServerFarm();
+    plate(null, 26, 92, 0.15, 0.24, 0xf0ead9);
+    placeM('farm', farm, 26, 92, -0.4, 0.26, 'registry');
+    registerPoi(farm, 'registry');
+
+    const rink = makeRink();
+    placeM('rink', rink, 23, 4, 0.3, 0.28, 'media');
+    registerPoi(rink, 'media');
+
+    const WIFI = [[35, 52], [11, -148], [-25, 40], [-13, 172], [62, -76]];
+    WIFI.forEach(([la, lo], i) => {
+      const tower = makeWifiTower(0.95 + (i % 3) * 0.15);
+      placeM(`wifi-${i + 1}`, tower, la, lo, i * 0.7, 0.28, 'infra');
+      registerPoi(tower, 'infra');
+      animators.push({ update: (dt, time) => tower.userData.update(dt, time + i * 1.3) });
+    });
+
+    const TOTEMS = [
+      [11, 12, adsCI.chooseSuccess], [23, -140, adsCI.honk],
+      [-25, 124, adsCI.eightyFive], [35, 120, adsCI.spotify],
+    ];
+    TOTEMS.forEach(([la, lo, ad], i) => {
+      const totem = makeDigitalTotem(ad);
+      placeM(`totem-${i + 1}`, totem, la, lo, 0.3 + i, 0.28, 'media');
+      registerPoi(totem, 'media');
+    });
+
+    // parcel drones — the .ca economy in flight
+    for (let i = 0; i < 3; i++) {
+      const drone = makeDrone();
+      drone.userData.noWalk = true;
+      const wrap = new THREE.Group();
+      wrap.add(drone);
+      world.add(wrap);
+      const path = new CirclePath(
+        [dir(30, -30), dir(-16, 64), dir(58, 96)][i],
+        THREE.MathUtils.degToRad(30 + i * 9), 8 + i * 1.6
+      );
+      let t = i / 3;
+      animators.push({
+        update(dt, time) {
+          t = (t + dt * 6 / path.length) % 1;
+          pathPlace(wrap, path, t);
+          drone.position.y = Math.sin(time * 2.4 + i) * 0.4;
+          drone.rotation.y = time * 0.8;
+        },
+      });
+    }
+  }
+
   // --- +66% monument ---------------------------------------------------------------------------------
   const recall = makeRecallMonument();
   recall.scale.setScalar(1.25);
@@ -325,12 +394,17 @@ function build(ctx) {
       [46, -38, 0.6, 0.85], [35, -60, -1.2, 0.7], [16, -22, 2.1, 0.8],
       [60, 22, 0.3, 0.75], [44, 116, -0.6, 0.8], [6, -54, 1.4, 0.7],
       [68, -60, -0.4, 0.75], [30, 66, 2.6, 0.7],
+      [66, 20, 0.8, 0.75], [38, -48, -0.5, 0.7], [23, 76, 1.7, 0.8],
+      [-25, -8, 0.2, 0.7], [-49, 136, -1.0, 0.75], [11, 68, 2.4, 0.7],
     ]) {
       const wgoose = makeGoose(s);
       placeSmall(`goose-w${++wn}`, wgoose, la, lo, ry, 0.3);
     }
     let sn = 0;
-    for (const [la, lo, s] of [[48, 12, 1.2], [22, 42, 0.9], [-32, 100, 1.1], [64, -44, 0.8], [-12, -132, 1.0]]) {
+    for (const [la, lo, s] of [
+      [48, 12, 1.2], [22, 42, 0.9], [-32, 100, 1.1], [64, -44, 0.8], [-12, -132, 1.0],
+      [68, 164, 0.9], [-58, 84, 1.1], [23, -172, 0.8], [-70, 24, 1.0],
+    ]) {
       placeSmall(`shard-${++sn}`, makeShardCluster(s), la, lo, sn * 1.3, 0.24);
     }
   }
@@ -492,7 +566,7 @@ function build(ctx) {
     const rings = [ringEq, ringS, connA];
     const fallColors = [0xd2452e, 0xb8352c, 0xdd8433, 0xc9a53a, 0x9e8e56];
     let placed = 0, guard = 0;
-    while (placed < 100 && guard < 1200) {
+    while (placed < 135 && guard < 1700) {
       guard++;
       const lat = -80 + rand() * 160;
       const lon = -180 + rand() * 360;
@@ -516,7 +590,7 @@ function build(ctx) {
 
   // benches near the plazas
   let bn = 0;
-  for (const [la, lo, ry] of [[77, 40, -0.4], [48, -40, 0.9], [46, 68, 2.2], [26, -8, 1.4], [72, -20, 0.2]]) {
+  for (const [la, lo, ry] of [[77, 40, -0.4], [48, -40, 0.9], [46, 68, 2.2], [26, -8, 1.4], [72, -20, 0.2], [43, -22, 1.0], [18, 8, -0.7], [56, -114, 0.4]]) {
     placeSmall(`bench-${++bn}`, makeBench(), la, lo, ry, 0.32);
   }
 }
