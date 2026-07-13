@@ -45,7 +45,7 @@ const POIS = [
     step: 'Case Study · Chapter 1 · The Partner',
     body: 'CIRA — the Canadian Internet Registration Authority — runs .CA on behalf of all Canadians: 3.4 million domains, a member-driven nonprofit in Ottawa. PUSH powers the national campaigns behind internet safety, .CA registration and digital identity — B2B and consumer at once. Welcome to the Canadian internet, as a place.',
     stats: [['.CA domains', '3.4M'], ['Mission', 'Trusted internet']],
-    lat: 90, lon: 0, dist: 128, pinAlt: 20, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 168, pinAlt: 28, side: 0.85, lookR: 42,
   },
   {
     id: 'goose',
@@ -53,7 +53,7 @@ const POIS = [
     step: 'Case Study · Chapter 2 · The Campaign',
     body: 'Meet Bernard — a persuasive (and slightly menacing) online business coach with serious Goose-itude. He debuted on Dragons\' Den and has been intimidating small-business owners away from .com ever since. 85% of Canadians prefer a .CA when supporting local business; Bernard just makes sure they remember it.',
     stats: [['Debut', "Dragons' Den, CBC"], ['Prefer .CA', '85% of Canadians']],
-    lat: 54, lon: -50, dist: 84, pinAlt: 12, side: -0.6, lookR: 43.5,
+    lat: 54, lon: -50, dist: 108, pinAlt: 15, side: -0.6, lookR: 43.5,
   },
   {
     id: 'media',
@@ -61,7 +61,7 @@ const POIS = [
     step: 'Case Study · Chapter 3 · The Media',
     body: 'Integrated digital and traditional: video, display, Spotify audio and custom programs reaching both consumers and small-business owners. Messaging adapted province by province, with media flighting aligned to CIRA\'s advocacy and product-launch cycles. PUSH planned and placed all of it.',
     stats: [['Channels', 'Video · Display · Audio · Custom'], ['Messaging', 'By province']],
-    lat: 33, lon: -18, dist: 92, pinAlt: 14, side: -0.6, lookR: 43,
+    lat: 33, lon: -18, dist: 100, pinAlt: 14, side: -0.6, lookR: 43,
   },
   {
     id: 'infra',
@@ -69,7 +69,7 @@ const POIS = [
     step: 'Case Study · Chapter 4 · The Mission',
     body: 'This is what the campaigns protect: Canadian Shield gives every household free protected DNS, the DNS Firewall guards schools and hospitals, IXPs keep Canadian traffic in Canada, and Net Good reinvests 100% of .CA profits — $14.2M across 245 community projects and counting.',
     stats: [['Protected', '8M+ Canadians'], ['Net Good', '$14.2M reinvested']],
-    lat: 54, lon: 58, dist: 84, pinAlt: 12, side: -0.7, lookR: 43.5,
+    lat: 54, lon: 58, dist: 108, pinAlt: 15, side: -0.7, lookR: 43.5,
   },
   {
     id: 'recall',
@@ -77,7 +77,7 @@ const POIS = [
     step: 'Case Study · Chapter 5 · The Proof',
     body: 'Total campaign unaided recall up 66% among Canadian SMEs — the goose landed. Three worlds, three categories, one operating system: that\'s what PUSH + STRATIS builds. Now imagine the Purolator world we started in, running the same way.',
     stats: [['Unaided recall', '+66%'], ['Audience', 'Canadian SMEs']],
-    lat: 20, lon: -15, dist: 96, pinAlt: 11, side: -0.5, lookR: 42.5,
+    lat: 20, lon: -15, dist: 112, pinAlt: 13, side: -0.5, lookR: 42.5,
   },
 ];
 
@@ -88,7 +88,7 @@ const EXTRAS = [
     step: 'The Mission · Community',
     body: 'Net Good grants fund community networks across the North — connectivity as nation-building, funded entirely by .CA. The lights are on and the internet is fast.',
     stats: [['Projects', '245 funded'], ['Grants', '$1M+ / year']],
-    lat: 55, lon: 115, dist: 96, pinAlt: 11, side: -0.6, lookR: 43.5,
+    lat: 55, lon: 115, dist: 112, pinAlt: 13, side: -0.6, lookR: 43.5,
   },
   {
     id: 'registry',
@@ -96,7 +96,7 @@ const EXTRAS = [
     step: 'The Mission · The Registry',
     body: '3,426,339 domains under management, resolved on anycast DNS that answers around the planet. The counter only goes up.',
     stats: [['Domains', '3.4M+'], ['Uptime', 'Always']],
-    lat: 40, lon: 90, dist: 94, pinAlt: 11, side: 0.5, lookR: 43,
+    lat: 40, lon: 90, dist: 110, pinAlt: 13, side: 0.5, lookR: 43,
   },
   {
     id: 'ixp',
@@ -104,7 +104,7 @@ const EXTRAS = [
     step: 'The Mission · IXPs',
     body: 'Internet Exchange Points from coast to coast keep Canadian data on Canadian soil — faster, safer, sovereign. Watch the red routes: they never leave the planet\'s north.',
     stats: [['IXPs', 'Coast to coast'], ['Latency', 'Down']],
-    lat: 28, lon: -60, dist: 88, pinAlt: 9, side: 0.6, lookR: 43,
+    lat: 28, lon: -60, dist: 92, pinAlt: 10, side: 0.6, lookR: 43,
   },
 ];
 
@@ -125,37 +125,37 @@ function build(ctx) {
   ];
   for (const t of TERRACES) terrace(t.lat, t.lon, t.r, t.alt, t.c);
 
-  plate(null, 90, 0, 0.44, 0.3, 0xf4eedf);
-  plate('goose', 54, -50, 0.29, 0.34, 0xf2ecdc);
-  plate('infra', 54, 58, 0.27, 0.31, 0xf4eedf);
-  plate('media', 33, -18, 0.24, 0.34, 0xf2ecdc);
-  plate('recall', 20, -15, 0.22, 0.33, 0xf4eedf);
-  plate('north', 55, 115, 0.26, 0.3, 0xecf0f2);
-  plate('registry', 40, 90, 0.21, 0.3, 0xf2ecdc);
+  plate(null, 90, 0, 0.56, 0.3, 0xf4eedf);
+  plate('goose', 54, -50, 0.4, 0.34, 0xf2ecdc);
+  plate('infra', 54, 58, 0.38, 0.31, 0xf4eedf);
+  plate('media', 33, -18, 0.27, 0.34, 0xf2ecdc);
+  plate('recall', 20, -15, 0.3, 0.33, 0xf4eedf);
+  plate('north', 55, 115, 0.36, 0.3, 0xecf0f2);
+  plate('registry', 40, 90, 0.3, 0.3, 0xf2ecdc);
 
-  foundation(90, 0, 0, 21, 14, 0.35, { dz: 1, name: 'hq' });
-  foundation(79, -42, 0.1, 17, 8, 0.33, { name: 'ca' });
-  foundation(54, -50, 0, 22, 22, 0.36, { round: true, name: 'goose' });
-  foundation(54, 58, 0, 20, 20, 0.33, { round: true, name: 'infra' });
-  foundation(20, -15, 0, 18, 12.5, 0.35, { name: 'recall' });
-  foundation(55, 115, 0, 17, 17, 0.32, { round: true, name: 'north' });
-  foundation(40, 90, 0, 15, 10.5, 0.32, { name: 'registry' });
+  foundation(90, 0, 0, 32, 21, 0.35, { dz: 1, name: 'hq' });
+  foundation(62, 10, 0.1, 23, 11, 0.33, { name: 'ca' });
+  foundation(54, -50, 0, 32, 32, 0.36, { round: true, name: 'goose' });
+  foundation(54, 58, 0, 30, 30, 0.33, { round: true, name: 'infra' });
+  foundation(20, -15, 0, 26, 17, 0.35, { name: 'recall' });
+  foundation(55, 115, 0, 25, 25, 0.32, { round: true, name: 'north' });
+  foundation(40, 90, 0, 23, 15, 0.32, { name: 'registry' });
 
   // --- pole: the Parliament-style CIRA HQ, .CA monument on the front slope ----------
   const hq = makeCiraHQ();
-  hq.scale.setScalar(1.1);
+  hq.scale.setScalar(1.6);
   placeM('hq', hq, 90, 0, -0.95, 0.32, 'ca');
   registerPoi(hq, 'ca');
   const monument = makeDotCaMonument();
-  monument.scale.setScalar(1.15);
-  placeM('ca', monument, 79, -42, 1.7 - Math.PI, 0.35, 'ca');
+  monument.scale.setScalar(1.35);
+  placeM('ca', monument, 62, 10, 1.7 - Math.PI, 0.35, 'ca');
   registerPoi(monument, 'ca');
   placeSmall('flag-ca-pole', makeFlag(), 82, 55, 0.4, 0.32);
   placeSmall('flag-ca-2', makeFlag(), 81, -75, 0.2, 0.32);
 
   // --- Bernard's plaza ---------------------------------------------------------------
   const plaza = makeGoosePlaza();
-  plaza.scale.setScalar(1.25);
+  plaza.scale.setScalar(1.6);
   placeM('goose', plaza, 54, -50, 0.2, 0.36, 'goose');
   registerPoi(plaza, 'goose');
   animators.push({
@@ -169,7 +169,7 @@ function build(ctx) {
   const bills = [
     ['bb-honk', adsCI.honk, 33, -18, 0.15, { w: 15.5, h: 8.2 }, 'media'],
     ['bb-choose', adsCI.chooseSuccess, 26, -33, -0.3, { w: 13.5, h: 7.2 }, 'media'],
-    ['bb-85', adsCI.eightyFive, 60, -8, 0.1, { w: 14, h: 7.4 }, 'goose'],
+    ['bb-85', adsCI.eightyFive, 44, -8, 0.1, { w: 14, h: 7.4 }, 'goose'],
     ['bb-dragons', adsCI.dragons, 40, -68, 0.5, { w: 13.5, h: 7.2 }, 'media'],
     ['bb-spotify', adsCI.spotify, 13, 100, -0.2, { w: 13, h: 7 }, 'media'],
     ['bb-honk-s', adsCI.honk, -46, 176, Math.PI, { w: 13.5, h: 7.2 }, 'media'],
@@ -188,13 +188,13 @@ function build(ctx) {
 
   // --- infrastructure district ---------------------------------------------------------------
   const shield = makeShieldDome();
-  shield.scale.setScalar(1.25);
+  shield.scale.setScalar(1.8);
   placeM('infra', shield, 54, 58, 0, 0.33, 'infra');
   registerPoi(shield, 'infra');
   animators.push({ update: (dt, time) => shield.userData.update(dt, time) });
 
   const registry = makeRegistry();
-  registry.scale.setScalar(1.2);
+  registry.scale.setScalar(1.7);
   placeM('registry', registry, 40, 90, 0.3, 0.32, 'registry');
   registerPoi(registry, 'registry');
 
@@ -205,7 +205,7 @@ function build(ctx) {
   const nodeDirs = [];
   for (const [city, lat, lon] of IXPS) {
     const node = makeIxpNode(city);
-    node.scale.setScalar(1.2);
+    node.scale.setScalar(1.5);
     placeM(`ixp-${city.toLowerCase()}`, node, lat, lon, 0.3, 0.3, 'ixp');
     registerPoi(node, 'ixp');
     nodeDirs.push(dir(lat, lon));
@@ -229,7 +229,7 @@ function build(ctx) {
 
   // --- northern community + aurora --------------------------------------------------------------
   const north = makeNorthernCommunity();
-  north.scale.setScalar(1.25);
+  north.scale.setScalar(1.7);
   placeM('north', north, 55, 115, 0.3, 0.32, 'north');
   registerPoi(north, 'north');
   const aurora = makeAurora();
@@ -253,7 +253,7 @@ function build(ctx) {
       tor: dir(28, -60), mtl: dir(10, -40), van: dir(44, 150), wpg: dir(-8, 60),
       t1: dir(32, 34), t2: dir(-20, 10), t3: dir(-20, -60), t4: dir(14, 128),
       t5: dir(-18, 155), t6: dir(-56, -20), t7: dir(12, -125), t8: dir(-54, -155),
-      glyph: dir(47, -28), station: dir(59, -120), farm: dir(26, 92),
+      glyph: dir(11, -164), station: dir(59, -120), farm: dir(18, 74),
       w1: dir(35, 52), w2: dir(11, -148), w3: dir(-25, 40), w4: dir(-13, 172), w5: dir(62, -76),
     };
     const LINKS = [
@@ -275,11 +275,11 @@ function build(ctx) {
     const capM = new THREE.MeshStandardMaterial({
       color: 0xaa1e3a, roughness: 0.4, emissive: 0xba2241, emissiveIntensity: 0.5,
     });
-    const bulbGeo = new THREE.SphereGeometry(0.24, 10, 8);
+    const bulbGeo = new THREE.SphereGeometry(0.32, 10, 8);
     const bulbM = new THREE.MeshStandardMaterial({
       color: 0xffd9de, emissive: 0xff4560, emissiveIntensity: 1.9, roughness: 0.3,
     });
-    const capGeo = new THREE.SphereGeometry(0.3, 12, 10);
+    const capGeo = new THREE.SphereGeometry(0.38, 12, 10);
     const pulses = [];
     LINKS.forEach(([ka, kb], li) => {
       const a = NODES[ka], b = NODES[kb];
@@ -290,7 +290,7 @@ function build(ctx) {
         pts.push(p);
       }
       const curve = new THREE.CatmullRomCurve3(pts);
-      const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.13, 6), pipeM);
+      const tube = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.17, 6), pipeM);
       world.add(tube);
       for (const e of [pts[0], pts[pts.length - 1]]) {
         const cap = new THREE.Mesh(capGeo, capM);
@@ -322,27 +322,31 @@ function build(ctx) {
   // --- the futuristic wifi nation: signal towers, glyph, station, farm, rink -----------------
   {
     const glyph = makeConnectedMonument();
-    placeM('glyph', glyph, 47, -28, 0.4, 0.32, 'infra');
+    glyph.scale.setScalar(1.3);
+    placeM('glyph', glyph, 11, -164, 0.4, 0.32, 'infra');
     registerPoi(glyph, 'infra');
     animators.push({ update: (dt, time) => glyph.userData.update(dt, time) });
 
     const station = makeGroundStation();
-    plate(null, 59, -120, 0.16, 0.24, 0xecebe2);
+    station.scale.setScalar(1.4);
+    plate(null, 59, -120, 0.22, 0.24, 0xecebe2);
     placeM('station', station, 59, -120, 0.5, 0.26, 'north');
     registerPoi(station, 'north');
 
     const farm = makeServerFarm();
-    plate(null, 26, 92, 0.15, 0.24, 0xf0ead9);
-    placeM('farm', farm, 26, 92, -0.4, 0.26, 'registry');
+    farm.scale.setScalar(1.4);
+    plate(null, 18, 74, 0.21, 0.24, 0xf0ead9);
+    placeM('farm', farm, 18, 74, -0.4, 0.26, 'registry');
     registerPoi(farm, 'registry');
 
     const rink = makeRink();
+    rink.scale.setScalar(1.5);
     placeM('rink', rink, 23, 4, 0.3, 0.28, 'media');
     registerPoi(rink, 'media');
 
     const WIFI = [[35, 52], [11, -148], [-25, 40], [-13, 172], [62, -76]];
     WIFI.forEach(([la, lo], i) => {
-      const tower = makeWifiTower(0.95 + (i % 3) * 0.15);
+      const tower = makeWifiTower(1.35 + (i % 3) * 0.15);
       placeM(`wifi-${i + 1}`, tower, la, lo, i * 0.7, 0.28, 'infra');
       registerPoi(tower, 'infra');
       animators.push({ update: (dt, time) => tower.userData.update(dt, time + i * 1.3) });
@@ -354,6 +358,7 @@ function build(ctx) {
     ];
     TOTEMS.forEach(([la, lo, ad], i) => {
       const totem = makeDigitalTotem(ad);
+      totem.scale.setScalar(1.3);
       placeM(`totem-${i + 1}`, totem, la, lo, 0.3 + i, 0.28, 'media');
       registerPoi(totem, 'media');
     });
@@ -383,7 +388,7 @@ function build(ctx) {
 
   // --- +66% monument ---------------------------------------------------------------------------------
   const recall = makeRecallMonument();
-  recall.scale.setScalar(1.25);
+  recall.scale.setScalar(1.6);
   placeM('recall', recall, 20, -15, 0.2, 0.35, 'recall');
   registerPoi(recall, 'recall');
 
@@ -558,10 +563,12 @@ function build(ctx) {
       return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
     };
     const exclude = [
-      { lat: 90, lon: 0, ang: 0.48 }, { lat: 79, lon: -42, ang: 0.3 },
-      { lat: 54, lon: -50, ang: 0.36 }, { lat: 54, lon: 58, ang: 0.34 },
-      { lat: 33, lon: -18, ang: 0.28 }, { lat: 20, lon: -15, ang: 0.28 },
-      { lat: 55, lon: 115, ang: 0.32 }, { lat: 40, lon: 90, ang: 0.28 },
+      { lat: 90, lon: 0, ang: 0.62 }, { lat: 62, lon: 10, ang: 0.4 },
+      { lat: 54, lon: -50, ang: 0.5 }, { lat: 54, lon: 58, ang: 0.48 },
+      { lat: 33, lon: -18, ang: 0.3 }, { lat: 20, lon: -15, ang: 0.36 },
+      { lat: 55, lon: 115, ang: 0.42 }, { lat: 40, lon: 90, ang: 0.36 },
+      { lat: 23, lon: 4, ang: 0.28 }, { lat: 11, lon: -164, ang: 0.3 },
+      { lat: 59, lon: -120, ang: 0.28 }, { lat: 18, lon: 74, ang: 0.26 },
     ].map((e) => ({ dir: dir(e.lat, e.lon), ang: e.ang }));
     const rings = [ringEq, ringS, connA];
     const fallColors = [0xd2452e, 0xb8352c, 0xdd8433, 0xc9a53a, 0x9e8e56];
