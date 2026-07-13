@@ -1503,7 +1503,7 @@ const intro = initIntro({
 const ui = setupUI({
   // the story continues into the client worlds PUSH has already built
   nextWorld: {
-    label: 'See the worlds we\'ve built — Choice Hotels Canada',
+    label: 'See the worlds we\'ve built: Choice Hotels Canada',
     go: () => flyToWorld({ scene, camera, url: '/choice.html?story' }),
   },
   onStart() {

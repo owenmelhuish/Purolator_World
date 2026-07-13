@@ -279,19 +279,30 @@ html, body {
 .sp-stript { fill: #5a6480; font: 800 8.2px Inter, sans-serif; letter-spacing: 0.08em; text-anchor: middle; }
 .sp-stripc { fill: #9aa4bb; font: 600 7.5px Inter, sans-serif; text-anchor: middle; }
 
-/* ch6 · closed loop */
-.loop-track { stroke: var(--puro-blue); stroke-width: 2.4; stroke-dasharray: 4 5; animation: ic-orbit 9s linear infinite; }
-.loop-arr { stroke: var(--puro-blue); stroke-width: 2.2; fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.loop-pulse { fill: var(--puro-red); transform-origin: 160px 80px; animation: ic-orbit-62 5.5s linear infinite; }
-.loop-pulse2 { animation-delay: -2.75s; }
-.loop-halo { stroke: rgba(28, 79, 196, 0.18); stroke-width: 1.2; }
-.loop-core { fill: var(--puro-blue-dark); filter: drop-shadow(0 4px 10px rgba(16, 48, 124, 0.3)); }
-.loop-c1 { fill: rgba(255, 255, 255, 0.75); font: 800 7.5px Inter, sans-serif; letter-spacing: 0.2em; text-anchor: middle; }
-.loop-c2 { fill: #fff; font: 900 12.5px Inter, sans-serif; letter-spacing: 0.05em; text-anchor: middle; }
-.loop-node { opacity: 0; transform-origin: center; transform-box: fill-box; animation: ic-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) forwards; }
-.loop-nc { fill: #fff; stroke: var(--puro-blue); stroke-width: 2; filter: drop-shadow(0 2px 4px rgba(16, 48, 124, 0.18)); }
-.loop-ic { fill: none; stroke: var(--puro-blue); stroke-width: 1.8; stroke-linecap: round; }
-.loop-cap { fill: var(--puro-blue); font: 800 8.5px Inter, sans-serif; letter-spacing: 0.1em; text-anchor: middle; }
+/* ch6 · infinity loop */
+@keyframes inf-travel { to { offset-distance: 100%; } }
+.inf-base { fill: none; stroke: rgba(28, 79, 196, 0.22); stroke-width: 2.6; }
+.inf-flow {
+  fill: none; stroke: var(--puro-blue); stroke-width: 2.6; stroke-linecap: round;
+  stroke-dasharray: 4 6; animation: ic-orbit 3.2s linear infinite;
+}
+.inf-arr { fill: none; stroke: var(--puro-blue); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.inf-dot { fill: var(--puro-red); offset-rotate: 0deg; animation: inf-travel 7s linear infinite; filter: drop-shadow(0 0 4px rgba(228, 30, 47, 0.5)); }
+.inf-name { fill: var(--puro-blue-dark); font: 800 14px Inter, sans-serif; text-anchor: middle; }
+.inf-curve textPath { fill: var(--puro-blue); font: 800 8.5px Inter, sans-serif; letter-spacing: 0.22em; }
+.inf-zw textPath { fill: var(--puro-red); font: 800 8.5px Inter, sans-serif; letter-spacing: 0.1em; }
+
+/* ch6 pt2 · the wrap checklist */
+.wc-row { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; border-bottom: 1px solid rgba(28, 79, 196, 0.08); }
+.wc-num {
+  flex: 0 0 auto; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--puro-blue); color: #fff;
+  font-size: 11px; font-weight: 800; display: grid; place-items: center;
+  box-shadow: 0 3px 8px rgba(28, 79, 196, 0.3);
+}
+.wc-txt { font-size: 12px; line-height: 1.45; color: #46506a; padding-top: 3px; }
+.wc-txt b { color: var(--ink); font-weight: 800; }
+.wc-punch { font-size: 12.5px; border-top: 0 !important; }
 
 /* demo link button */
 .ic-btn {

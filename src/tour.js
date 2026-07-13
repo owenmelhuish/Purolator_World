@@ -165,39 +165,29 @@ function studioDiagram() {
     </div>`;
 }
 
-// PUSH + Studio P + STRATIS — the closed loop, around one bigger Purolator
+// PUSH + Studio P + STRATIS — the closed loop as an infinity, built for momentum
 function loopDiagram() {
+  const INF = "M 160 70 C 120 20, 55 20, 55 70 C 55 120, 120 120, 160 70 C 200 20, 265 20, 265 70 C 265 120, 200 120, 160 70";
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">One loop, around one bigger Purolator</div>
+      <div class="ic-diagram-title">A closed-loop system built for momentum</div>
       <div class="ic-panel">
-        <svg viewBox="0 -22 320 202">
-          <circle class="loop-track" cx="160" cy="80" r="62" fill="none"/>
-          <path class="loop-arr" d="M98 84 L98 76 M94.5 79.5 L98 76 L101.5 79.5"/>
-          <path class="loop-arr" d="M222 76 L222 84 M218.5 80.5 L222 84 L225.5 80.5"/>
-          <circle class="loop-pulse" r="4.2"/>
-          <circle class="loop-pulse loop-pulse2" r="4.2"/>
-          <circle class="loop-halo" cx="160" cy="80" r="44" fill="none"/>
-          <circle class="loop-core" cx="160" cy="80" r="36"/>
-          <text class="loop-c1" x="160" y="76">ONE BIGGER</text>
-          <text class="loop-c2" x="160" y="92">PUROLATOR</text>
-          <g class="loop-node" style="animation-delay:.2s">
-            <circle class="loop-nc" cx="160" cy="18" r="16"/>
-            <circle cx="160" cy="23" r="2.2" fill="#1c4fc4"/>
-            <path class="loop-ic" d="M153.5 18 A 9 9 0 0 1 166.5 18"/>
-            <path class="loop-ic" d="M157 13.5 A 5 5 0 0 1 163 13.5"/>
-            <text class="loop-cap" x="160" y="-8">STRATIS · INTELLIGENCE</text>
-          </g>
-          <g class="loop-node" style="animation-delay:.35s">
-            <circle class="loop-nc" cx="106" cy="111" r="16"/>
-            <path d="M101.5 105 L101.5 117 L112.5 111 Z" fill="#1c4fc4"/>
-            <text class="loop-cap" x="106" y="140">PUSH · MEDIA</text>
-          </g>
-          <g class="loop-node" style="animation-delay:.5s">
-            <circle class="loop-nc" cx="214" cy="111" r="16"/>
-            <path d="M214 103 L216.3 108.7 L222 111 L216.3 113.3 L214 119 L211.7 113.3 L206 111 L211.7 108.7 Z" fill="#1c4fc4"/>
-            <text class="loop-cap" x="214" y="140">STUDIO P · CREATIVE</text>
-          </g>
+        <svg viewBox="0 0 320 140">
+          <defs>
+            <path id="inf-g1" d="M 58 54 C 66 20, 122 12, 156 50" fill="none"/>
+            <path id="inf-g2" d="M 218 122 C 244 116, 258 104, 262 84" fill="none"/>
+            <path id="inf-g3" d="M 174 46 C 204 12, 246 12, 262 42" fill="none"/>
+          </defs>
+          <path class="inf-base" d="${INF}"/>
+          <path class="inf-flow" pathLength="100" d="${INF}"/>
+          <path class="inf-arr" d="M 106 27 L 94 32.5 L 104 39"/>
+          <path class="inf-arr" d="M 224 102 L 212 107.5 L 222 113"/>
+          <circle class="inf-dot" r="4.4" style="offset-path: path('${INF}')"/>
+          <text class="inf-name" x="105" y="75">PUSH</text>
+          <text class="inf-name" x="215" y="75">Studio P</text>
+          <text class="inf-curve"><textPath href="#inf-g1" startOffset="18%">STRATIS</textPath></text>
+          <text class="inf-curve"><textPath href="#inf-g2" startOffset="8%">STRATIS</textPath></text>
+          <text class="inf-zw"><textPath href="#inf-g3" startOffset="30%">ZeroWaste™</textPath></text>
         </svg>
       </div>
       <div class="ic-mini">
@@ -206,6 +196,29 @@ function loopDiagram() {
         <div><b>STRATIS</b> connects insight, learning and opportunity in real time</div>
         <div class="ic-mini-punch">Creative informs media. Media informs creative. Momentum compounds.</div>
       </div>
+    </div>`;
+}
+
+// The wrap — the whole PUSH story as one checklist
+function wrapChecklist() {
+  const POINTS = [
+    ['Headquartered in Canada, but <b>N.A. in scope</b>'],
+    ['A team of dedicated <b>senior experts</b>'],
+    ['Leveraging <b>STRATIS to integrate all</b> signals into a single decision tool'],
+    ['And <b>Studio P</b> for closed-loop, <b>high velocity creative</b>'],
+    ['To deliver <b>outsized results</b> throughout the funnel'],
+    ['With <b>ZeroWaste™</b>'],
+  ];
+  const rows = POINTS.map(([t], i) => `
+    <div class="wc-row rise" style="animation-delay:${(0.15 + i * 0.22).toFixed(2)}s">
+      <span class="wc-num">${i + 1}</span>
+      <span class="wc-txt">${t}</span>
+    </div>`).join('');
+  return `
+    <div class="ic-diagram">
+      <div class="ic-diagram-title">PUSH MEDIA, on one hand</div>
+      ${rows}
+      <div class="ic-mini-punch wc-punch rise" style="animation-delay:1.6s">When we PUSH, you succeed.</div>
     </div>`;
 }
 
@@ -265,6 +278,14 @@ export const POIS = [
     body: 'Creative, media and intelligence operating as one system, not three disciplines and not three brands. Purolator, Livingston and Williams, one story told consistently from the national campaign to the booth to the deck your sales team carries. This whole world runs on that loop, and it\'s how it feels to work inside it. The conversation we\'d love to have next: your 2027 mandates, and where fresh eyes would help most.',
     stats: [['The system', 'Yours to use'], ['Next', 'Let\'s talk 2027']],
     html: loopDiagram(),
+    lat: 90, lon: 0, dist: 150, pinAlt: 0, pin: false, side: 0.8, lookR: 40,
+  },
+  {
+    id: 'wrap',
+    title: 'PUSH MEDIA',
+    step: 'Chapter 6 \u00b7 The Wrap',
+    body: 'The whole story, in six checks:',
+    html: wrapChecklist(),
     lat: 90, lon: 0, dist: 150, pinAlt: 0, pin: false, side: 0.8, lookR: 40,
   },
 ];
