@@ -1,1 +1,193 @@
-{}
+{
+  "city": {
+    "lat": -44,
+    "lon": 162.26,
+    "heading": 182
+  },
+  "stage": {
+    "lat": -18.77,
+    "lon": 74.11,
+    "heading": 54
+  },
+  "barrett": {
+    "lat": -53.81,
+    "lon": -17.61,
+    "heading": 0
+  },
+  "impact": {
+    "lat": 14.03,
+    "lon": -146.26,
+    "heading": -146
+  },
+  "signals": {
+    "lat": -19.46,
+    "lon": 177.72,
+    "heading": 180
+  },
+  "lakeshore": {
+    "lat": 34.86,
+    "lon": -161.12,
+    "heading": 39,
+    "removed": true
+  },
+  "blk7-16-8": {
+    "lat": -58.01,
+    "lon": -0.82,
+    "heading": -11.5,
+    "removed": true
+  },
+  "blk7--15--7": {
+    "lat": -57.95,
+    "lon": -7.76,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk5--15--7": {
+    "lat": -16.95,
+    "lon": 162.87,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk5-16-8": {
+    "lat": -16.12,
+    "lon": 168.77,
+    "heading": -11.5,
+    "removed": true
+  },
+  "hawks": {
+    "lat": 16.98,
+    "lon": 171.21,
+    "heading": 0,
+    "removed": true
+  },
+  "quad": {
+    "lat": -17.32,
+    "lon": -7.52,
+    "heading": 0
+  },
+  "blk3--15--7": {
+    "lat": -18.2,
+    "lon": 38.37,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk3-16-8": {
+    "lat": -20.91,
+    "lon": 43.35,
+    "heading": -11.5,
+    "removed": true
+  },
+  "blk2-16-8": {
+    "lat": -20.91,
+    "lon": 9.35,
+    "heading": -11.5,
+    "removed": true
+  },
+  "blk2-24--15": {
+    "lat": -19.35,
+    "lon": 12.25,
+    "heading": 34.4,
+    "removed": true
+  },
+  "blk2--15--7": {
+    "lat": -22.95,
+    "lon": 4.79,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk6-16-8": {
+    "lat": -9.06,
+    "lon": -54.29,
+    "heading": -11.5,
+    "removed": true
+  },
+  "blk6--15--7": {
+    "lat": -22.95,
+    "lon": -57.21,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk6-24--15": {
+    "lat": -24.05,
+    "lon": -51.47,
+    "heading": 34.4,
+    "removed": true
+  },
+  "bb-apply": {
+    "lat": -46.81,
+    "lon": -58.2,
+    "heading": -60
+  },
+  "bb-campaign-s": {
+    "lat": -8.23,
+    "lon": -159.63,
+    "heading": -162
+  },
+  "bb-enrollment": {
+    "lat": 43.07,
+    "lon": -154.96,
+    "heading": 41
+  },
+  "bb-campaign": {
+    "lat": 14.76,
+    "lon": 132.49,
+    "heading": 5.7
+  },
+  "blk8--15--7": {
+    "lat": 18.05,
+    "lon": 127.84,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk8-16-8": {
+    "lat": 20,
+    "lon": 132.03,
+    "heading": -11.5,
+    "removed": true
+  },
+  "blk8-24--15": {
+    "lat": 16.95,
+    "lon": 133.46,
+    "heading": 34.4,
+    "removed": true
+  },
+  "blk4--15--7": {
+    "lat": 10.22,
+    "lon": 96.21,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk4-16-8": {
+    "lat": 11.2,
+    "lon": 99.67,
+    "heading": -11.5,
+    "removed": true
+  },
+  "bb-apply-e": {
+    "lat": -7.15,
+    "lon": 34.95,
+    "heading": 35
+  },
+  "bb-builders": {
+    "lat": 13.3,
+    "lon": -52.28,
+    "heading": 80
+  },
+  "blk1--15--7": {
+    "lat": 26.05,
+    "lon": -3.3,
+    "heading": 11.5,
+    "removed": true
+  },
+  "blk1-16-8": {
+    "lat": 28.09,
+    "lon": 1.45,
+    "heading": -11.5,
+    "removed": true
+  },
+  "lrc": {
+    "lat": 76.82,
+    "lon": 111.14,
+    "heading": 0
+  }
+}

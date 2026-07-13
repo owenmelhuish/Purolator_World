@@ -58,7 +58,7 @@ const POIS = [
     step: 'Case Study · Chapter 3 · The Media',
     body: 'Full-funnel media, planned and paced by PUSH: digital platforms, television, out-of-home, campus environments and social — with benchmarking, trafficking, pacing and optimization behind every placement. The streetcar wears it. The screen corner plays it. The city can\'t miss it.',
     stats: [['Strategy', 'Full-funnel'], ['Channels', 'OOH · TV · Digital · Transit']],
-    lat: 33, lon: -18, dist: 92, pinAlt: 14, side: -0.6, lookR: 43,
+    lat: 33, lon: -18, dist: 92, pinAlt: 14, side: -0.7, lookR: 43,
   },
   {
     id: 'signals',
@@ -79,22 +79,8 @@ const POIS = [
 ];
 
 const EXTRAS = [
-  {
-    id: 'lakeshore',
-    title: 'Lakeshore Campus',
-    step: 'The Campus · By the Water',
-    body: 'Victorian red-brick cottages on the waterfront — a heritage campus where the 1880s buildings hold 2020s programs. The other half of Humber\'s postcard.',
-    stats: [['Buildings', 'Heritage 1880s'], ['Setting', 'Waterfront']],
-    lat: 34, lon: -108, dist: 94, pinAlt: 11, side: 0.6, lookR: 43,
-  },
-  {
-    id: 'hawks',
-    title: 'Humber Hawks',
-    step: 'The Campus · Athletics',
-    body: 'Blue and gold, ~20 varsity teams, and a home crowd that shows up. The Hawks are the heartbeat of campus pride.',
-    stats: [['Teams', '~20 varsity'], ['Colours', 'Blue & gold']],
-    lat: 55, lon: 115, dist: 100, pinAlt: 11, side: -0.6, lookR: 43.5,
-  },
+  // ('lakeshore' and 'hawks' cards retired — their landmarks were removed in
+  // Owen's baked layout; restore from git if the landmarks come back)
   {
     id: 'transit',
     title: 'The Wrap Seen Round Toronto',
