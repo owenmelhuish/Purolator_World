@@ -416,7 +416,12 @@ export function createWorldApp({
   function flyPoi(poi) {
     const cam = cameraOverrides[poi.id];
     if (cam?.pos && cam?.look) {
-      rig.flyToPose(new THREE.Vector3().fromArray(cam.pos), new THREE.Vector3().fromArray(cam.look));
+      rig.flyToPose(
+        new THREE.Vector3().fromArray(cam.pos),
+        new THREE.Vector3().fromArray(cam.look),
+        1.7,
+        cam.up ? new THREE.Vector3().fromArray(cam.up) : null
+      );
     } else {
       rig.flyToDir(poiDir(poi), poi.dist, {
         side: poi.side ?? 0.42,

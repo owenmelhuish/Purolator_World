@@ -358,13 +358,14 @@ export class CameraRig {
     this._start(this.homePos.clone(), this.homeFocus.clone(), duration);
   }
 
-  /** Fly to an exact camera pose (position + look target) in world-local space —
+  /** Fly to an exact camera pose (position + look target, optional up vector
+   *  for the screen roll the shot was framed with) in world-local space —
    *  used by story-camera overrides locked in the layout editor. */
-  flyToPose(pos, look, duration = 1.7) {
-    this._start(pos.clone(), look.clone(), duration);
+  flyToPose(pos, look, duration = 1.7, up = null) {
+    this._start(pos.clone(), look.clone(), duration, up ? up.clone().normalize() : null);
   }
 
-  _start(toPos, toLook, duration) {
+  _start(toPos, toLook, duration, toUp = null) {
     this.anim = {
       t: 0,
       duration,
@@ -372,6 +373,7 @@ export class CameraRig {
       to: toPos,
       fromLook: this.focus.clone(),
       toLook,
+      toUp,
       fromWQ: this.world.quaternion.clone(),
       fromUp: this.camera.up.clone(),
     };
@@ -393,7 +395,7 @@ export class CameraRig {
     const radius = THREE.MathUtils.lerp(a.from.length(), a.to.length(), k);
     this.camera.position.copy(dir.multiplyScalar(radius));
     this.focus.lerpVectors(a.fromLook, a.toLook, k);
-    this.camera.up.lerpVectors(a.fromUp, _WORLD_UP, k).normalize();
+    this.camera.up.lerpVectors(a.fromUp, a.toUp ?? _WORLD_UP, k).normalize();
     this.camera.lookAt(this.focus);
     if (a.t >= 1) this.anim = null;
   }

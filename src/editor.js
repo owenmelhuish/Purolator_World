@@ -560,13 +560,17 @@ export function initEditor({
       const poi = activePoi();
       if (!poi) return;
       // capture the live framing in world-local space, so it replays exactly
-      // after the rig eases the spun globe back to its canonical orientation
+      // after the rig eases the spun globe back to its canonical orientation.
+      // up carries the screen roll — without it, shots framed with the globe
+      // tilted replay rotated back to north-up
       const qi = world.quaternion.clone().invert();
       const pos = camera.position.clone().applyQuaternion(qi);
       const look = camFocus.clone().applyQuaternion(qi);
+      const up = camera.up.clone().applyQuaternion(qi).normalize();
       cameraOverrides[poi.id] = {
         pos: pos.toArray().map((n) => +n.toFixed(2)),
         look: look.toArray().map((n) => +n.toFixed(2)),
+        up: up.toArray().map((n) => +n.toFixed(3)),
       };
       syncCameras();
       persist(overrides, worldKey);
