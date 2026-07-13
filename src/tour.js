@@ -21,103 +21,147 @@ const LEADERS = [
 function leadershipDiagram() {
   const nodes = LEADERS.map(([ini], i) => {
     const a = (i / LEADERS.length) * Math.PI * 2 - Math.PI / 2;
-    const x = 160 + Math.cos(a) * 118;
-    const y = 96 + Math.sin(a) * 70;
+    const x = 160 + Math.cos(a) * 120;
+    const y = 88 + Math.sin(a) * 62;
     return `
-      <g class="ring-node" style="animation-delay:${(0.15 + i * 0.09).toFixed(2)}s">
-        <circle cx="${x}" cy="${y}" r="15" fill="#1c4fc4"/>
-        <circle cx="${x}" cy="${y}" r="15" fill="none" stroke="rgba(28,79,196,.35)" class="ring-halo"/>
-        <text class="ring-ini" x="${x}" y="${y + 4}">${ini}</text>
+      <g class="ring-node" style="animation-delay:${(0.15 + i * 0.08).toFixed(2)}s">
+        <circle class="ld-dot" cx="${x}" cy="${y}" r="14"/>
+        <text class="ld-ini" x="${x}" y="${y + 3.5}">${ini}</text>
       </g>`;
   }).join('');
-  const roster = LEADERS.map(([, name, title], i) =>
-    `<div class="ic-person rise" style="animation-delay:${(0.4 + i * 0.05).toFixed(2)}s"><b>${name}</b><span>${title}</span></div>`).join('');
+  const roster = LEADERS.map(([ini, name, title], i) => `
+    <div class="ld-row rise" style="animation-delay:${(0.5 + i * 0.05).toFixed(2)}s">
+      <span class="ld-chip">${ini}</span>
+      <span class="ld-nm"><b>${name}</b><i>${title}</i></span>
+    </div>`).join('');
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">PUSH leadership surrounds your team</div>
-      <svg viewBox="0 0 320 192">
-        <ellipse class="ring-orbit" cx="160" cy="96" rx="118" ry="70" fill="none" stroke="rgba(28,79,196,.35)" stroke-width="1.5" stroke-dasharray="3 7"/>
-        <text class="ring-c1" x="160" y="92">Purolator</text>
-        <text class="ring-c2" x="160" y="108">× PUSH SENIOR TEAM</text>
-        ${nodes}
-      </svg>
-      <div class="ic-roster">${roster}</div>
+      <div class="ic-panel">
+        <svg viewBox="0 0 320 176">
+          <ellipse class="ring-orbit" cx="160" cy="88" rx="120" ry="62" fill="none"/>
+          <ellipse class="ring-orbit ring-orbit2" cx="160" cy="88" rx="86" ry="42" fill="none"/>
+          <rect class="ld-pill" x="102" y="74" width="116" height="28" rx="14"/>
+          <text class="ld-c1" x="160" y="92">PUROLATOR</text>
+          <text class="ld-c2" x="160" y="116">× PUSH SENIOR TEAM</text>
+          ${nodes}
+        </svg>
+      </div>
+      <div class="ld-roster">${roster}</div>
     </div>`;
 }
 
 // ZeroWaste™ — the old leaky line vs the sealed loop
 function zerowasteDiagram() {
-  const steps = ['Brief', 'Tech', 'Media', 'Creative'];
-  const oldWay = steps.map((s, i) => `
-    <div class="zw-step rise" style="animation-delay:${(0.1 + i * 0.12).toFixed(2)}s">${s}</div>
-    ${i < 3 ? `<div class="zw-leak" style="animation-delay:${(0.2 + i * 0.12).toFixed(2)}s"><span class="zw-drip" style="animation-delay:${(0.9 + i * 0.35).toFixed(2)}s"></span>→</div>` : ''}
-  `).join('');
+  const STEPS = ['BRIEF', 'TECH', 'MEDIA', 'CREATIVE'];
+  const stepsSvg = STEPS.map((t, i) => {
+    const x = 2 + i * 74;
+    return `
+      <g class="rise" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">
+        <rect class="zw-stepbox" x="${x}" y="6" width="56" height="22" rx="7"/>
+        <text class="zw-stept" x="${x + 28}" y="20.5">${t}</text>
+      </g>
+      ${i < 3 ? `
+        <path class="zw-arr" d="M${x + 60} 17 L${x + 70} 17 M${x + 66.5} 13.5 L${x + 70} 17 L${x + 66.5} 20.5"/>
+        <circle class="zw-dripc" cx="${x + 65}" cy="28" r="2.6" style="animation-delay:${(0.8 + i * 0.4).toFixed(2)}s"/>` : ''}`;
+  }).join('');
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">The old way leaks. The loop doesn't</div>
-      <div class="zw-lane"><span class="zw-lane-tag">THE OLD LINE</span>${oldWay}<span class="zw-loss rise" style="animation-delay:0.6s">− budget</span></div>
-      <svg class="zw-loopsvg" viewBox="0 0 320 104">
-        <circle cx="160" cy="52" r="38" fill="none" stroke="#1c4fc4" stroke-width="2.5" class="zw-loopring"/>
-        <path d="M160 14 L151 7 M160 14 L151 21" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
-        <path d="M160 90 L169 83 M160 90 L169 97" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
-        <circle class="zw-dollar" r="5"/>
-        <text class="zw-loop-t1" x="160" y="48">MEDIA × CREATIVE</text>
-        <text class="zw-loop-t2" x="160" y="63">conceived together</text>
-        <text class="zw-loop-side" x="48" y="52">20+ integrated</text>
-        <text class="zw-loop-side" x="48" y="64">tools</text>
-        <text class="zw-loop-side" x="272" y="52">every dollar</text>
-        <text class="zw-loop-side" x="272" y="64">in motion</text>
-      </svg>
+      <div class="ic-diagram-title">Why no dollar goes to waste</div>
+      <div class="ic-panel">
+        <div class="ic-panel-tag">THE OLD LINE</div>
+        <svg viewBox="0 0 296 54">${stepsSvg}
+          <text class="zw-losst" x="148" y="50">budget leaks at every handoff</text>
+        </svg>
+      </div>
+      <div class="zw-vs rise" style="animation-delay:0.5s">PUSH RUNS IT AS A LOOP</div>
+      <div class="ic-panel">
+        <svg viewBox="0 0 296 116">
+          <circle class="zw-loopring" cx="148" cy="58" r="40" fill="none"/>
+          <path class="zw-arr" d="M108 62 L108 54 M104.5 57.5 L108 54 L111.5 57.5"/>
+          <path class="zw-arr" d="M188 54 L188 62 M184.5 58.5 L188 62 L191.5 58.5"/>
+          <circle class="zw-dollar" r="5"/>
+          <rect class="zw-node" x="118" y="8" width="60" height="20" rx="10"/>
+          <text class="zw-nodet" x="148" y="21.5">MEDIA</text>
+          <rect class="zw-node" x="110" y="88" width="76" height="20" rx="10"/>
+          <text class="zw-nodet" x="148" y="101.5">CREATIVE</text>
+          <text class="zw-ct1" x="148" y="55">conceived</text>
+          <text class="zw-ct1" x="148" y="66">together</text>
+          <text class="zw-side" x="44" y="54">20+ integrated</text>
+          <text class="zw-side" x="44" y="65">tools</text>
+          <text class="zw-side" x="252" y="54">every dollar</text>
+          <text class="zw-side" x="252" y="65">in motion</text>
+        </svg>
+      </div>
       <div class="zw-badge zw-glow">ZEROWASTE™</div>
     </div>`;
 }
 
-// Insight engine — radar sweep in, next moves out
-function insightDiagram() {
-  const moves = [
-    ['Next dollar', 'which vertical gets it'],
-    ['Next flight', 'which message runs'],
-    ['Next cut', 'made on data, not sentiment'],
-  ].map(([t, s], i) => `
-    <div class="ie-move rise" style="animation-delay:${(0.5 + i * 0.22).toFixed(2)}s"><b>${t}</b><span>${s}</span></div>`).join('');
-  const dots = [[62, 34], [38, 62], [76, 74], [52, 48], [82, 50]].map(([x, y], i) =>
-    `<circle class="ie-dot" cx="${x}" cy="${y}" r="3.2" style="animation-delay:${(0.3 + i * 0.5).toFixed(2)}s"/>`).join('');
+// Ideation Lab — creative × media woven through the full funnel
+function ideationDiagram() {
+  const STAGES = [['AWARENESS', 104], ['CONSIDERATION', 82], ['CONVERSION', 62], ['LOYALTY', 46]];
+  const cols = STAGES.map(([label, h], i) => {
+    const x = 8 + i * 77;
+    const y = 86 - h / 2;
+    return `
+      <g class="rise" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">
+        <rect class="fl-stage" x="${x}" y="${y}" width="70" height="${h}" rx="10"/>
+        <text class="fl-lbl" x="${x + 35}" y="152">${label}</text>
+      </g>`;
+  }).join('');
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">Signals in → the next move out</div>
-      <div class="ie-grid">
-        <svg viewBox="0 0 116 116" class="ie-radar">
-          <circle cx="58" cy="58" r="52" fill="none" stroke="rgba(28,79,196,.18)" stroke-width="1.5"/>
-          <circle cx="58" cy="58" r="34" fill="none" stroke="rgba(28,79,196,.18)" stroke-width="1.5"/>
-          <circle cx="58" cy="58" r="16" fill="none" stroke="rgba(28,79,196,.18)" stroke-width="1.5"/>
-          <g class="ie-sweep"><path d="M58 58 L58 6 A52 52 0 0 1 92 19 Z" fill="rgba(28,79,196,.22)"/></g>
-          ${dots}
-          <circle cx="58" cy="58" r="4" fill="#1c4fc4"/>
-        </svg>
-        <div class="ie-moves">${moves}</div>
+      <div class="ic-diagram-title">Creative × media, one room, whole funnel</div>
+      <div class="fl-legend">
+        <span class="fl-key fl-key-c rise" style="animation-delay:0.15s">CREATIVE</span>
+        <span class="fl-key fl-key-m rise" style="animation-delay:0.25s">MEDIA</span>
+        <span class="fl-cap rise" style="animation-delay:0.35s">no handoffs between them</span>
       </div>
-      <div class="ie-cap">performance · market · customer · competition</div>
+      <div class="ic-panel">
+        <svg viewBox="0 0 320 160">
+          ${cols}
+          <path class="fl-thread fl-thread-c" pathLength="100" d="M12 58 C 45 58, 80 112, 120 112 S 180 64, 200 64 S 264 98, 304 98"/>
+          <path class="fl-thread fl-thread-m" pathLength="100" d="M12 112 C 45 112, 80 60, 120 60 S 180 106, 200 106 S 264 76, 304 76"/>
+          <circle class="fl-dot fl-dot-c" cx="304" cy="98" r="4"/>
+          <circle class="fl-dot fl-dot-m" cx="304" cy="76" r="4"/>
+        </svg>
+      </div>
+      <div class="fl-foot rise" style="animation-delay:1.2s">One team owns the whole journey</div>
     </div>`;
 }
 
 // Studio P — three brands, one narrative, every audience and channel
 function studioDiagram() {
-  const audiences = ['Enterprise', 'Healthcare', 'SMB', 'E-commerce'].map((a, i) =>
-    `<div class="sp-aud rise" style="animation-delay:${(0.55 + i * 0.12).toFixed(2)}s">${a}</div>`).join('');
-  const channels = ['Brand', 'Digital', 'Events', 'Sales enablement'].map((c, i) =>
-    `<span class="sp-chan rise" style="animation-delay:${(1.05 + i * 0.1).toFixed(2)}s">${c}</span>`).join('');
+  const brands = [['PUROLATOR', 12], ['LIVINGSTON', 116], ['WILLIAMS', 220]];
+  const tiles = [['ENTERPRISE', 8], ['HEALTHCARE', 86], ['SMB', 164], ['E-COMMERCE', 242]];
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">One message hierarchy, built modular</div>
-      <div class="sp-brands">
-        <span class="sp-brand rise" style="animation-delay:0.1s">PUROLATOR</span>
-        <span class="sp-brand rise" style="animation-delay:0.2s">LIVINGSTON</span>
-        <span class="sp-brand rise" style="animation-delay:0.3s">WILLIAMS</span>
+      <div class="ic-panel">
+        <svg viewBox="0 0 320 178">
+          ${brands.map(([b, x], i) => `
+            <path class="sp-link" pathLength="100" d="M${x + 44} 26 C ${x + 44} 38, 160 36, 160 46" style="animation-delay:${(0.35 + i * 0.08).toFixed(2)}s"/>
+            <g class="rise" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">
+              <rect class="sp-brand" x="${x}" y="4" width="88" height="20" rx="10"/>
+              <text class="sp-brandt" x="${x + 44}" y="17.5">${b}</text>
+            </g>`).join('')}
+          <g class="rise" style="animation-delay:0.55s">
+            <rect class="sp-bar" x="10" y="48" width="300" height="26" rx="13"/>
+            <text class="sp-bart" x="160" y="65">ONE NARRATIVE: PROMISES, DELIVERED</text>
+          </g>
+          ${tiles.map(([t, x], i) => `
+            <path class="sp-link" pathLength="100" d="M160 76 C 160 88, ${x + 35.5} 86, ${x + 35.5} 100" style="animation-delay:${(0.75 + i * 0.07).toFixed(2)}s"/>
+            <g class="rise" style="animation-delay:${(0.85 + i * 0.1).toFixed(2)}s">
+              <rect class="sp-tile" x="${x}" y="102" width="71" height="24" rx="9"/>
+              <text class="sp-tilet" x="${x + 35.5}" y="117.5">${t}</text>
+            </g>`).join('')}
+          <g class="rise" style="animation-delay:1.3s">
+            <rect class="sp-strip" x="8" y="140" width="304" height="32" rx="10"/>
+            <text class="sp-stript" x="160" y="155">BRAND · DIGITAL · EVENTS · SALES ENABLEMENT</text>
+            <text class="sp-stripc" x="160" y="166">same assets, every channel</text>
+          </g>
+        </svg>
       </div>
-      <div class="sp-merge rise" style="animation-delay:0.38s">↓</div>
-      <div class="sp-bar rise" style="animation-delay:0.45s">ONE NARRATIVE: PROMISES, DELIVERED</div>
-      <div class="sp-auds">${audiences}</div>
-      <div class="sp-chans">${channels}</div>
     </div>`;
 }
 
@@ -126,18 +170,36 @@ function loopDiagram() {
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">One loop, around one bigger Purolator</div>
-      <svg viewBox="0 -16 320 168">
-        <circle class="loop-track" cx="160" cy="78" r="58" fill="none" stroke="#1c4fc4" stroke-width="2.5"/>
-        <path d="M160 20 L151 13 M160 20 L151 27" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
-        <path d="M160 136 L169 129 M160 136 L169 143" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
-        <circle class="loop-pulse" r="4.5"/>
-        <circle class="loop-pulse loop-pulse2" r="4.5"/>
-        <g class="loop-node" style="animation-delay:.15s"><circle cx="160" cy="20" r="15" fill="#fff" stroke="#1c4fc4" stroke-width="2.5"/><text class="loop-ic" x="160" y="25">◉</text><text class="loop-cap" x="160" y="-6">STRATIS · intelligence</text></g>
-        <g class="loop-node" style="animation-delay:.3s"><circle cx="104" cy="120" r="15" fill="#fff" stroke="#1c4fc4" stroke-width="2.5"/><text class="loop-ic" x="104" y="125">▶</text><text class="loop-cap" x="78" y="145">PUSH · media</text></g>
-        <g class="loop-node" style="animation-delay:.45s"><circle cx="216" cy="120" r="15" fill="#fff" stroke="#1c4fc4" stroke-width="2.5"/><text class="loop-ic" x="216" y="125">✦</text><text class="loop-cap" x="244" y="145">Studio P · creative</text></g>
-        <text class="loop-c1" x="160" y="74">ONE BIGGER</text>
-        <text class="loop-c2" x="160" y="92">PUROLATOR</text>
-      </svg>
+      <div class="ic-panel">
+        <svg viewBox="0 -22 320 202">
+          <circle class="loop-track" cx="160" cy="80" r="62" fill="none"/>
+          <path class="loop-arr" d="M98 84 L98 76 M94.5 79.5 L98 76 L101.5 79.5"/>
+          <path class="loop-arr" d="M222 76 L222 84 M218.5 80.5 L222 84 L225.5 80.5"/>
+          <circle class="loop-pulse" r="4.2"/>
+          <circle class="loop-pulse loop-pulse2" r="4.2"/>
+          <circle class="loop-halo" cx="160" cy="80" r="44" fill="none"/>
+          <circle class="loop-core" cx="160" cy="80" r="36"/>
+          <text class="loop-c1" x="160" y="76">ONE BIGGER</text>
+          <text class="loop-c2" x="160" y="92">PUROLATOR</text>
+          <g class="loop-node" style="animation-delay:.2s">
+            <circle class="loop-nc" cx="160" cy="18" r="16"/>
+            <circle cx="160" cy="23" r="2.2" fill="#1c4fc4"/>
+            <path class="loop-ic" d="M153.5 18 A 9 9 0 0 1 166.5 18"/>
+            <path class="loop-ic" d="M157 13.5 A 5 5 0 0 1 163 13.5"/>
+            <text class="loop-cap" x="160" y="-8">STRATIS · INTELLIGENCE</text>
+          </g>
+          <g class="loop-node" style="animation-delay:.35s">
+            <circle class="loop-nc" cx="106" cy="111" r="16"/>
+            <path d="M101.5 105 L101.5 117 L112.5 111 Z" fill="#1c4fc4"/>
+            <text class="loop-cap" x="106" y="140">PUSH · MEDIA</text>
+          </g>
+          <g class="loop-node" style="animation-delay:.5s">
+            <circle class="loop-nc" cx="214" cy="111" r="16"/>
+            <path d="M214 103 L216.3 108.7 L222 111 L216.3 113.3 L214 119 L211.7 113.3 L206 111 L211.7 108.7 Z" fill="#1c4fc4"/>
+            <text class="loop-cap" x="214" y="140">STUDIO P · CREATIVE</text>
+          </g>
+        </svg>
+      </div>
       <div class="ic-mini">
         <div><b>Studio P</b> shapes creative designed to move with the market</div>
         <div><b>PUSH</b> activates and scales it through modern media</div>
@@ -171,11 +233,11 @@ export const POIS = [
   },
   {
     id: 'lab',
-    title: 'The Innovation Centre',
-    step: 'Chapter 3 · Decide With Data',
-    body: '"Leverage AI to scale" only matters if it changes decisions. Signals from the whole network flow into this lab: performance, market, customer, competition. Out comes the next move: which vertical gets the next dollar, which message gets the next flight, what gets cut without sentiment. AI-accelerated market intelligence, message testing and scenario modelling: marketing decisions with logistics-grade precision. For Purolator: performance tracking that doesn\'t just report the quarter. It steers it.',
-    stats: [['Trade-offs', 'Data-informed'], ['Cadence', 'Weekly, not quarterly']],
-    html: insightDiagram(),
+    title: 'The Ideation Lab',
+    step: 'Chapter 3 \u00b7 Silos Down, Full Funnel',
+    body: 'Most funnels break at the handoff: one agency makes the ads, another buys the media, and nobody owns the middle. PUSH is built cross-dimensional. Creative and media live in-house, in one room, reading the same signals and working the full funnel together, from first impression to booked shipment. Ideas start anywhere: a media gap becomes a creative brief, a creative spark becomes a channel plan, the same day. For Purolator: no silos to manage, no brief lost in translation, and one team accountable for the whole journey.',
+    stats: [['Creative \u00d7 media', 'In-house, together'], ['Funnel', 'Full, no handoffs']],
+    html: ideationDiagram(),
     lat: 54, lon: 58, dist: 80, pinAlt: 9, side: -0.8, lookR: 44,
   },
   {
