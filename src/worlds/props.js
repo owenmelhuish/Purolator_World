@@ -54,6 +54,12 @@ export function makeArtBillboard(drawFn, {
   panel.position.set(0, h / 2 + 2.4, 0);
   panel.castShadow = true;
   g.add(panel);
+  // maintenance catwalk under the panel
+  g.add(box(w * 0.9, 0.12, 0.9, mat(legColor, { roughness: 0.6 }), 0, 2.05, 0.35));
+  for (let rx = -w * 0.42; rx <= w * 0.42; rx += w * 0.21) {
+    g.add(cyl(0.03, 0.03, 0.5, mat(legColor), rx, 2.36, 0.76, 6));
+  }
+  g.add(box(w * 0.9, 0.05, 0.05, mat(legColor), 0, 2.62, 0.76));
   if (doubleLeg) {
     g.add(cyl(0.28, 0.36, 4.6, mat(legColor), -w / 3, 0.3, 0, 10));
     g.add(cyl(0.28, 0.36, 4.6, mat(legColor), w / 3, 0.3, 0, 10));
@@ -358,22 +364,74 @@ export function makeCar(color = 0xe3573a) {
   return g;
 }
 
-/** Campervan / RV for the roadtrip motif. */
+/** Retro VW-style campervan — two-tone, rounded, friendly. */
 export function makeCamper(accent = 0xf2803a) {
   const g = new THREE.Group();
-  const white = mat(0xf7f9fd, { roughness: 0.5 });
-  g.add(rbox(3.4, 1.5, 1.5, white, 0, 1.05, 0, 0.18));
-  g.add(box(3.4, 0.32, 1.52, mat(accent, { roughness: 0.55 }), 0, 0.85, 0)); // stripe
-  g.add(rbox(0.9, 0.85, 1.4, white, 1.95, 0.75, 0, 0.14)); // cab
-  g.add(box(0.06, 0.5, 1.2, mat(C.glass, { roughness: 0.2, metalness: 0.3 }), 2.42, 0.9, 0));
-  for (const [wx, wz] of [[-1.2, -0.78], [-1.2, 0.78], [1.6, -0.78], [1.6, 0.78]]) {
-    const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 12), mat(C.wheel));
+  const white = mat(0xf9f6ee, { roughness: 0.45 });
+  const accM = mat(accent, { roughness: 0.5 });
+  const glass = mat(C.glass, { roughness: 0.18, metalness: 0.3 });
+  // rounded bus body: lower accent half, upper cream half
+  g.add(rbox(3.1, 0.72, 1.5, accM, 0, 0.72, 0, 0.2));
+  g.add(rbox(3.1, 0.66, 1.5, white, 0, 1.38, 0, 0.24));
+  // white roof cap + vintage roof rack
+  g.add(rbox(2.6, 0.16, 1.3, white, -0.1, 1.78, 0, 0.08));
+  for (const rx of [-1.0, -0.2, 0.6]) {
+    g.add(box(0.05, 0.09, 1.26, mat(0xcdbfa4, { roughness: 0.6 }), rx, 1.9, 0));
+  }
+  // v-nose split: accent V on the front face
+  const nose = box(0.1, 0.7, 1.44, accM, 1.56, 0.9, 0);
+  g.add(nose);
+  // big friendly windshield + side window band
+  g.add(box(0.06, 0.44, 1.2, glass, 1.58, 1.42, 0));
+  g.add(box(2.5, 0.4, 0.06, glass, -0.15, 1.42, 0.73));
+  g.add(box(2.5, 0.4, 0.06, glass, -0.15, 1.42, -0.73));
+  // round headlights + bumper
+  for (const hz of [-0.5, 0.5]) {
+    const hl = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.06, 12), new THREE.MeshStandardMaterial({
+      color: 0xfff4d8, emissive: 0xffdf9a, emissiveIntensity: 0.6, roughness: 0.3,
+    }));
+    hl.rotation.z = Math.PI / 2;
+    hl.position.set(1.62, 1.02, hz);
+    g.add(hl);
+  }
+  g.add(box(0.12, 0.14, 1.54, mat(0xd9d2c2, { roughness: 0.4, metalness: 0.4 }), 1.6, 0.42, 0));
+  for (const [wx, wz] of [[-1.05, -0.78], [-1.05, 0.78], [1.05, -0.78], [1.05, 0.78]]) {
+    const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2, 14), mat(C.wheel));
     wh.rotation.x = Math.PI / 2;
-    wh.position.set(wx, 0.3, wz);
+    wh.position.set(wx, 0.32, wz);
     wh.castShadow = true;
     g.add(wh);
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.22, 10), white);
+    hub.rotation.x = Math.PI / 2;
+    hub.position.set(wx, 0.32, wz);
+    g.add(hub);
   }
   return g;
+}
+
+/** Rounded landscaping shrub. */
+export function makeShrub(scale = 1, color = 0x7a8f5a) {
+  const g = new THREE.Group();
+  const m = mat(color, { roughness: 0.9 });
+  const n = 2 + Math.floor(Math.random() * 2);
+  for (let i = 0; i < n; i++) {
+    const b = new THREE.Mesh(new THREE.IcosahedronGeometry(0.34 * scale * (1 - i * 0.2), 1), m);
+    b.position.set((Math.random() - 0.5) * 0.4 * scale, 0.26 * scale + i * 0.14 * scale, (Math.random() - 0.5) * 0.4 * scale);
+    b.scale.y = 0.8;
+    b.castShadow = true;
+    g.add(b);
+  }
+  return g;
+}
+
+/** Low-poly boulder for shorelines and cliff edges. */
+export function makeRock(scale = 1, color = 0xc3b8a4) {
+  const r = new THREE.Mesh(new THREE.IcosahedronGeometry(0.55 * scale, 0), mat(color, { roughness: 0.95 }));
+  r.scale.set(1, 0.62 + Math.random() * 0.3, 0.8 + Math.random() * 0.3);
+  r.rotation.y = Math.random() * Math.PI;
+  r.castShadow = true;
+  r.receiveShadow = true;
+  return r;
 }
 
 // ---------------------------------------------------------------------------

@@ -6,7 +6,7 @@ import { makeTree, makeLamppost, makeBench, makeHouse, makeStore } from '../fact
 import { pathPlace } from '../globe.js';
 import {
   makeArtBillboard, makeMountain, makeConifer, makeLighthouse,
-  makeCar, makeCamper, makeBus, makeFlag,
+  makeCar, makeCamper, makeBus, makeFlag, makeShrub, makeRock,
 } from './props.js';
 import {
   CH, ads, makeChoiceResort, makeSubBrandHotel, SUB_BRANDS,
@@ -22,17 +22,17 @@ import BAKED_LAYOUT from '../layout-choice.json';
 // ---------------------------------------------------------------------------
 
 const THEME = {
-  // golden-hour Canadian sky
-  skyTop: '#5f92d8', skyBase: '#8db7e8', skyHorizon: '#ffe0ae',
-  bg: 0x8db7e8, fog: 0xc4cfe6, haloRGB: '255,224,174',
-  hemi: [0xfff6e8, 0xe4d6bd], ambient: 0xfaf4e8,
-  sun: 0xffedd2, fill: 0xf6e3c4,
+  // warm peach golden-hour atmosphere — the whole sky is late-afternoon cream
+  skyTop: '#ecc9a0', skyBase: '#f4dfc2', skyHorizon: '#fdf2dd',
+  bg: 0xf4dfc2, fog: 0xf0dcc0, haloRGB: '255,238,214',
+  hemi: [0xfff3e2, 0xe8d7ba], ambient: 0xfaf1e2,
+  sun: 0xffe8c8, fill: 0xf6ddba,
   globe: {
-    land: 0xf4efe3, sand: 0xe9dcbe, seabed: 0xbccadf,
-    water: 0x4f96c9, pond: 0x6fb0d8, pondRim: 0xe9e1cd,
+    land: 0xf4efe3, sand: 0xecdcb4, seabed: 0xb9cdd4,
+    water: 0x3fa9c9, pond: 0x54b4d0, pondRim: 0xecdfc6,
   },
-  road: { base: 0xd9d0bf, surface: 0xe6dfd0, curb: 0xf8f4ea },
-  foundation: 0xefe9dc,
+  road: { base: 0xd9cdb6, surface: 0xe8dfca, curb: 0xf8f2e4 },
+  foundation: 0xefe8d8,
   pin: 0xf57f29,
   veil: '#fdeed8',
   home: { lat: 30, lon: -70, dist: 228 },
@@ -45,7 +45,7 @@ const POIS = [
     step: 'Case Study · Chapter 1 · The Partnership',
     body: 'Choice Hotels Canada: 350+ hotels and ~30,000 rooms, in nearly every town from coast to coast — each one locally owned. PUSH built "Experience More," the national platform that turned that footprint into demand, with STRATIS keeping every media dollar accountable. This is their world: one Canada, and always a place to stay in it.',
     stats: [['Hotels', '350+ across Canada'], ['Platform', 'Experience More']],
-    lat: 90, lon: 0, dist: 110, pinAlt: 16, side: 0.85, lookR: 42,
+    lat: 90, lon: 0, dist: 122, pinAlt: 18, side: 0.85, lookR: 42,
   },
   {
     id: 'personas',
@@ -142,14 +142,15 @@ function build(ctx) {
   for (const t of TERRACES) terrace(t.lat, t.lon, t.r, t.alt, t.c);
 
   // district plates + foundations
-  plate(null, 90, 0, 0.3, 0.3, 0xf3ecdc);                    // resort plaza
+  plate(null, 90, 0, 0.36, 0.3, 0xf3ecdc);                   // resort plaza
+  terrace(58, 118, 0.3, 0.22, 0xf3f6f9);                     // rockies snowfield
   plate('personas', 54, -50, 0.2, 0.34, 0xf3ecdc);
   plate('privileges', 54, 58, 0.2, 0.31, 0xf3ecdc);
   plate('proof', 20, -15, 0.18, 0.34, 0xf3ecdc);
   plate('rockies', 55, 115, 0.24, 0.33, 0xeceada);
   plate('reststop', 8, -44, 0.14, 0.3, 0xf0e8d6);
 
-  foundation(90, 0, 0, 18, 16, 0.35, { dz: 4, name: 'resort' });
+  foundation(90, 0, 0, 32, 24, 0.35, { dz: 1, name: 'resort' });
   foundation(54, -50, 0, 15, 15, 0.36, { round: true, name: 'personas' });
   foundation(54, 58, 0, 14, 14, 0.33, { round: true, name: 'privileges' });
   foundation(20, -15, 0, 14, 9.5, 0.36, { name: 'proof' });
@@ -159,7 +160,7 @@ function build(ctx) {
 
   // --- hero: the Choice resort at the pole ------------------------------------
   const resort = makeChoiceResort();
-  placeM('resort', resort, 90, 0, -1.2, 0.35, 'resort');
+  placeM('resort', resort, 90, 0, -0.95, 0.35, 'resort');
   registerPoi(resort, 'resort');
 
   // --- persona plaza -----------------------------------------------------------
@@ -204,7 +205,7 @@ function build(ctx) {
     const range = makeMountain(1.5, { rock: 0xb9bfc9, snow: 0xf9fbfd, peaks: 4 });
     placeM('rockies-range', range, 65, 133, 0.4, 0.2);
     const range2 = makeMountain(1.1, { rock: 0xaeb6c2, snow: 0xf9fbfd, peaks: 3 });
-    placeM('rockies-range2', range2, 69, 100, -0.6, 0.2);
+    placeM('rockies-range2', range2, 63, 86, -0.6, 0.2);
     const lodge = makeSkiLodge();
     lodge.scale.setScalar(0.78);
     placeM('rockies', lodge, 53, 114, 0.2, 0.35, 'rockies');
@@ -218,7 +219,7 @@ function build(ctx) {
   // --- muskoka: lake + cottage dock ---------------------------------------------------
   {
     const dock = makeCottageDock();
-    placeM('muskoka', dock, 45, 30, 2.6, 0.26, 'muskoka');
+    placeM('muskoka', dock, 45.5, 29, 2.95, 0.26, 'muskoka');
     registerPoi(dock, 'muskoka');
     placeSmall('conifer-m1', makeConifer(1.1, 0x3e7a52), 42, 22, 1, 0.22);
     placeSmall('conifer-m2', makeConifer(0.9, 0x2f6a49), 48, 38, 2, 0.22);
@@ -362,6 +363,70 @@ function build(ctx) {
         ctx.registerRemovable(`lamp-${String(++lampN).padStart(3, '0')}`, wrap);
         flip = -flip;
       }
+    }
+  }
+
+  // --- wooden guardrails along the scenic highways -----------------------------------------------
+  {
+    const timberM = new THREE.MeshStandardMaterial({ color: 0xa98c62, roughness: 0.85 });
+    const postGeo = new THREE.BoxGeometry(0.14, 0.62, 0.14);
+    const railGeo = new THREE.BoxGeometry(2.6, 0.12, 0.1);
+    const crossings = [ring0, ringEq, ringS, connA];
+    const _gd = new THREE.Vector3();
+    for (const [path, w] of [[ring0, 4.4], [ringEq, 5.0], [ringS, 5.0], [connA, 4.4]]) {
+      const count = Math.floor(path.length / 3.1);
+      for (let i = 0; i < count; i++) {
+        const t = i / count;
+        path.dir(t, _gd);
+        if (crossings.some((r) => r !== path && Math.abs(_gd.angleTo(r.axis) - r.alpha) * 42 < 5.5)) continue;
+        const wrap = new THREE.Group();
+        const post = new THREE.Mesh(postGeo, timberM);
+        post.position.set(0, 0.31, w / 2 + 0.85);
+        post.castShadow = true;
+        wrap.add(post);
+        const rail = new THREE.Mesh(railGeo, timberM);
+        rail.position.set(0, 0.56, w / 2 + 0.85);
+        wrap.add(rail);
+        pathPlace(wrap, path, t, 0);
+        world.add(wrap);
+      }
+    }
+  }
+
+  // --- shrubs + shoreline rocks --------------------------------------------------------------------
+  {
+    let seed = 777;
+    const rand = () => {
+      seed |= 0; seed = (seed + 0x6d2b79f5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const rings = [ring0, ringEq, ringS, connA];
+    let placed = 0, guard = 0;
+    while (placed < 40 && guard < 500) {
+      guard++;
+      const lat = -80 + rand() * 160;
+      const lon = -180 + rand() * 360;
+      const d = dir(lat, lon);
+      if (ctx.OCEAN_DIR && d.angleTo(ctx.OCEAN_DIR) < ctx.OCEAN.base + ctx.OCEAN.amp + 0.08) continue;
+      if (rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.07)) continue;
+      placed++;
+      placeSmall(`shrub-${placed}`, makeShrub(0.8 + rand() * 0.9, rand() < 0.5 ? 0x7a8f5a : 0x8a9a63), lat, lon, rand() * 3, 0.14);
+    }
+    // boulders scattered along the coastline ring
+    let rocks = 0;
+    guard = 0;
+    while (rocks < 22 && guard < 400) {
+      guard++;
+      const lat = -80 + rand() * 160;
+      const lon = -180 + rand() * 360;
+      const d = dir(lat, lon);
+      const coast = Math.abs(d.angleTo(ctx.OCEAN_DIR) - (ctx.OCEAN.base + ctx.OCEAN.amp * (rand() - 0.3)));
+      if (coast > 0.055) continue;
+      if (rings.some((ring) => Math.abs(d.angleTo(ring.axis) - ring.alpha) < 0.07)) continue;
+      rocks++;
+      placeSmall(`rock-${rocks}`, makeRock(0.9 + rand() * 1.4, 0xc9bda6), lat, lon, rand() * 3, 0.06);
     }
   }
 

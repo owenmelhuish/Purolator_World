@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { C, mat, box, cyl } from '../materials.js';
 import { makePerson } from '../hero.js';
-import { rbox, canvasMat, makePool, makeFlag, makeConifer } from './props.js';
+import { rbox, canvasMat, makePool, makeFlag, makeConifer, makeShrub, makeRock } from './props.js';
 
 // ---------------------------------------------------------------------------
 // Choice Hotels Canada — travel-world builds. Golden-hour Canadiana:
@@ -222,82 +222,187 @@ export const ads = {
   },
 };
 
-// --- the hero resort ---------------------------------------------------------
+// --- the hero resort — rebuilt to the Grand Resort model sheet ---------------
+// Six-storey central wing + two stepped side wings, orange flat-roof fascias,
+// glass balcony bands with warm lit windows, double-height lobby + orange
+// porte-cochere, rooftop sign, stone podium terraces, pool terrace, flag court.
+
+const STONE = 0xd9ccb2;
+const STONE_DARK = 0xc7b99e;
+
+/** Repeating facade strip: glass balcony band with warm amber-lit rooms. */
+function windowBandMat(w) {
+  const W = Math.max(256, Math.round(w * 64));
+  return canvasMat(W, 72, (ctx, Wc, Hc) => {
+    ctx.fillStyle = '#3d4a5c';
+    ctx.fillRect(0, 0, Wc, Hc);
+    const win = 44, gap = 10;
+    for (let x = 8; x + win < Wc; x += win + gap) {
+      const lit = Math.random() < 0.82;
+      const grad = ctx.createLinearGradient(0, 8, 0, Hc - 8);
+      if (lit) {
+        grad.addColorStop(0, '#ffdda2');
+        grad.addColorStop(1, '#f5ad64');
+      } else {
+        grad.addColorStop(0, '#a8b5c6');
+        grad.addColorStop(1, '#7e8da1');
+      }
+      ctx.fillStyle = grad;
+      ctx.fillRect(x, 8, win, Hc - 16);
+      // mullion
+      ctx.fillStyle = 'rgba(40,48,60,0.5)';
+      ctx.fillRect(x + win / 2 - 1.5, 8, 3, Hc - 16);
+    }
+  }, { emissive: 0xffffff, emissiveIntensity: 0.5 });
+}
+
+/** One hotel mass: cream slab with balcony floors of lit glass. */
+function hotelMass(w, floors, d, { fasciaH = 0.42 } = {}) {
+  const m = new THREE.Group();
+  const cream = mat(CH.white, { roughness: 0.7 });
+  const fh = 1.28;
+  const h = floors * fh;
+  m.add(rbox(w, h, d, cream, 0, h / 2, 0, 0.1));
+  const band = windowBandMat(w * 0.94);
+  for (let f = 0; f < floors; f++) {
+    const y = f * fh;
+    // lit window band
+    const strip = new THREE.Mesh(new THREE.BoxGeometry(w * 0.94, fh * 0.62, 0.1),
+      [cream, cream, cream, cream, band, cream]);
+    strip.position.set(0, y + fh * 0.52, d / 2 + 0.04);
+    m.add(strip);
+    // balcony slab + glass rail
+    m.add(box(w * 0.98, 0.1, 0.42, mat(CH.cream, { roughness: 0.7 }), 0, y + fh * 0.12, d / 2 + 0.24));
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(w * 0.98, fh * 0.3, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xb8cdd9, roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.55 }));
+    rail.position.set(0, y + fh * 0.3, d / 2 + 0.44);
+    m.add(rail);
+  }
+  // bold orange flat-roof fascia
+  m.add(rbox(w + 0.5, fasciaH, d + 0.5, mat(CH.orange, { roughness: 0.5 }), 0, h + fasciaH / 2 - 0.04, 0, 0.08));
+  m.userData.h = h;
+  return m;
+}
 
 export function makeChoiceResort() {
   const g = new THREE.Group();
-  const body = mat(CH.white, { roughness: 0.75 });
-  const warm = mat(CH.cream, { roughness: 0.8 });
-  const orange = mat(CH.orange, { roughness: 0.55 });
+  const stoneM = mat(STONE, { roughness: 0.9 });
+  const cream = mat(CH.white, { roughness: 0.7 });
 
-  // stepped three-wing lodge
-  g.add(rbox(16, 1.1, 12, mat(CH.warmGrey, { roughness: 0.9 }), 0, 0.55, 0, 0.2)); // podium
-  const wings = [
-    [11, 6.5, 6.4, 0, 0, 0],
-    [6.4, 4.8, 5.6, -7.4, 0, 1.6],
-    [6.4, 4.8, 5.6, 7.4, 0, 1.6],
-  ];
-  for (const [w, h, d, x, , z] of wings) {
-    g.add(rbox(w, h, d, body, x, 1.1 + h / 2, z, 0.16));
-    // balcony strips
-    for (let fy = 2.4; fy < h - 0.6; fy += 1.35) {
-      g.add(box(w * 0.94, 0.12, 0.5, warm, x, 1.1 + fy, z + d / 2 + 0.22));
-      g.add(box(w * 0.94, 0.42, 0.06, mat(CH.glass, { roughness: 0.3, metalness: 0.3 }), x, 1.1 + fy + 0.26, z + d / 2 + 0.45));
-    }
-    // window bands
-    for (let fy = 1.75; fy < h - 0.4; fy += 1.35) {
-      g.add(box(w * 0.9, 0.85, 0.06, glassM(), x, 1.1 + fy, z + d / 2 + 0.03));
-    }
-    g.add(box(w + 0.5, 0.35, d + 0.5, orange, x, 1.1 + h + 0.17, z)); // orange roof fascia
+  // --- stone podium: two terraces + front stairs ------------------------------
+  g.add(rbox(30, 1.0, 21, mat(STONE_DARK, { roughness: 0.92 }), 0, 0.5, 0, 0.15));
+  g.add(rbox(26, 0.9, 16.5, stoneM, 0, 1.35, -1.2, 0.12));
+  for (let s = 0; s < 3; s++) {
+    g.add(box(7.5, 0.3, 1.0, stoneM, 0, 1.65 - s * 0.3, 7.6 + s * 1.0));
   }
-  // glass lobby + entrance canopy
-  g.add(rbox(6.5, 2.4, 3.2, glassM(), 0, 1.1 + 1.2, 4.6, 0.1));
-  g.add(box(7.6, 0.28, 4.2, orange, 0, 3.9, 4.9));
-  g.add(box(5.2, 0.3, 2.6, warm, 0, 0.3 + 1.05, 7.2));
+  // stone planters flanking the stairs
+  for (const px of [-4.6, 4.6]) {
+    g.add(rbox(2.0, 0.75, 1.5, mat(STONE_DARK, { roughness: 0.9 }), px, 1.9, 7.4, 0.06));
+    const shrub = makeShrub(1.3, 0x7a8f5a);
+    shrub.position.set(px, 2.25, 7.4);
+    g.add(shrub);
+  }
 
-  // rooftop sign
-  const sign = new THREE.Mesh(
-    new THREE.BoxGeometry(9.5, 1.5, 0.3),
-    [body, body, body, body,
-      canvasMat(1024, 162, (ctx, W, H) => {
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, W, H);
-        choiceLockup(ctx, 120, H / 2, 1.6);
-      }, { emissive: 0xffffff, emissiveIntensity: 0.25 }),
-      body]
-  );
-  sign.position.set(0, 1.1 + 6.5 + 1.1, 0.4);
+  const BASE = 1.8; // top of upper terrace
+
+  // --- central six-storey wing -------------------------------------------------
+  const central = hotelMass(11.5, 6, 7);
+  central.position.set(0, BASE, -2.2);
+  g.add(central);
+
+  // --- stepped side wings (4 -> 3 -> 2 floors), mirrored ------------------------
+  for (const sx of [-1, 1]) {
+    const steps = [[4, 3.8, 6.6, 7.6], [3, 3.6, 6.2, 11.2], [2, 3.4, 5.8, 14.4]];
+    for (const [floors, w, d, off] of steps) {
+      const massW = hotelMass(w, floors, d);
+      massW.position.set(sx * off, BASE, -1.4 + (6.6 - d) * 0.5);
+      g.add(massW);
+    }
+  }
+
+  // --- double-height glass lobby + orange porte-cochere --------------------------
+  const lobbyGlass = new THREE.MeshStandardMaterial({
+    color: 0xffca7e, roughness: 0.2, metalness: 0.1,
+    emissive: 0xcf8f4a, emissiveIntensity: 0.5,
+  });
+  g.add(rbox(7.5, 2.7, 1.6, lobbyGlass, 0, BASE + 1.35, 1.6, 0.08));
+  for (let mx = -3.3; mx <= 3.3; mx += 1.1) {
+    g.add(box(0.14, 2.7, 0.12, cream, mx, BASE + 1.35, 2.42));
+  }
+  // canopy on stone columns
+  g.add(rbox(8.6, 0.4, 4.6, mat(CH.orange, { roughness: 0.5 }), 0, BASE + 3.0, 3.9, 0.1));
+  for (const [cx, cz] of [[-3.6, 5.6], [3.6, 5.6]]) {
+    g.add(box(0.55, 3.0, 0.55, stoneM, cx, BASE + 1.5, cz));
+  }
+
+  // --- rooftop sign ---------------------------------------------------------------
+  const signFace = canvasMat(1024, 170, (ctx, W, H) => {
+    ctx.fillStyle = '#fdf9f0';
+    ctx.fillRect(0, 0, W, H);
+    choiceLockup(ctx, 330, H / 2, 1.7);
+  }, { emissive: 0xffffff, emissiveIntensity: 0.35 });
+  const sign = new THREE.Mesh(new THREE.BoxGeometry(9.8, 1.6, 0.35),
+    [cream, cream, cream, cream, signFace, signFace]);
+  sign.position.set(0, BASE + 6 * 1.28 + 1.3, -2.0);
   sign.castShadow = true;
   g.add(sign);
+  g.add(box(0.16, 0.6, 0.16, cream, -3.6, BASE + 6 * 1.28 + 0.4, -2.0));
+  g.add(box(0.16, 0.6, 0.16, cream, 3.6, BASE + 6 * 1.28 + 0.4, -2.0));
 
-  // pool terrace + guests
+  // --- pool terrace (front left, on the tour-camera side) ---------------------------
   const pool = makePool(CH.orange);
-  pool.position.set(0, 1.1, 9.8);
-  pool.scale.setScalar(0.9);
+  pool.scale.setScalar(0.95);
+  pool.rotation.y = Math.PI + 0.35;
+  pool.position.set(-5.4, BASE - 0.62, 4.9);
   g.add(pool);
-  const kid = makePerson({});
-  kid.scale.setScalar(0.72);
-  kid.position.set(-1.5, 1.15, 9.2);
-  g.add(kid);
-  const parent = makePerson({});
-  parent.position.set(-2.4, 1.1, 10.6);
-  parent.rotation.y = 0.7;
-  g.add(parent);
+  const swimmer = makePerson({});
+  swimmer.scale.setScalar(0.8);
+  swimmer.position.set(-6.6, BASE - 0.4, 4.0);
+  g.add(swimmer);
 
-  // flags at the entrance
-  for (const [fx, fn] of [[-3.4, null], [3.4, (ctx, W, H) => {
+  // --- flag court (front right, clear of the canopy) --------------------------------
+  const flagC = makeFlag();
+  flagC.position.set(7.8, BASE - 0.2, 7.2);
+  g.add(flagC);
+  const flagChoice = makeFlag((ctx, W, H) => {
     ctx.fillStyle = '#f57f29';
     ctx.fillRect(0, 0, W, H);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '900 64px Inter, Arial, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('C', W / 2, H / 2 + 4);
-  }]]) {
-    const f = makeFlag(fn);
-    f.position.set(fx, 1.1, 6.8);
-    g.add(f);
+    ctx.fillStyle = '#ffce34';
+    ctx.fillRect(0, H * 0.62, W, H * 0.38);
+  });
+  flagChoice.position.set(9.4, BASE - 0.4, 6.4);
+  g.add(flagChoice);
+  const flagGold = makeFlag((ctx, W, H) => {
+    ctx.fillStyle = '#ffce34';
+    ctx.fillRect(0, 0, W, H);
+  });
+  flagGold.position.set(6.2, BASE - 0.4, 6.2);
+  g.add(flagGold);
+
+  // --- landscaping + guests -------------------------------------------------------------
+  for (const [px, pz, s] of [[-11.5, 5.4, 1.2], [11.8, 1.8, 1.0], [-12.4, -3.5, 0.9], [12.6, -5.0, 1.1]]) {
+    const t = makeConifer(s, 0x4a6e50);
+    t.position.set(px, BASE - 0.6, pz);
+    g.add(t);
   }
+  for (const [px, pz] of [[-9.8, 6.4], [10.4, 6.2], [12.8, -1.4]]) {
+    const s = makeShrub(1.1);
+    s.position.set(px, BASE - 0.55, pz);
+    g.add(s);
+  }
+  const guest1 = makePerson({});
+  guest1.position.set(-2.2, BASE + 0.02, 5.4);
+  guest1.rotation.y = 0.4;
+  g.add(guest1);
+  const guest2 = makePerson({});
+  guest2.position.set(2.6, BASE + 0.02, 6.2);
+  guest2.rotation.y = -2.8;
+  g.add(guest2);
+  const bell = makePerson({});
+  bell.position.set(0.8, BASE + 0.02, 3.0);
+  bell.rotation.y = Math.PI;
+  g.add(bell);
+
   return g;
 }
 
@@ -378,7 +483,14 @@ export function makeSubBrandHotel(b) {
 export function makeSkiLodge() {
   const g = new THREE.Group();
   const timber = mat(0xa5795a, { roughness: 0.85 });
-  const dark = mat(0x6e4f39, { roughness: 0.85 });
+  const dark = mat(0x5e4632, { roughness: 0.85 });
+  const snow = mat(0xf7f9fc, { roughness: 0.9 });
+  // rocky base pad
+  for (const [rx, rz, s] of [[-3.4, 2.6, 1.6], [3.8, -2.2, 1.9], [-3.0, -3.0, 1.4]]) {
+    const rock = makeRock(s, 0xcfc4b0);
+    rock.position.set(rx, 0.1, rz);
+    g.add(rock);
+  }
   // A-frame
   const roofL = box(0.25, 7.2, 8.4, dark, 0, 0, 0);
   roofL.position.set(-1.95, 3.0, 0);
@@ -388,6 +500,15 @@ export function makeSkiLodge() {
   roofR.position.set(1.95, 3.0, 0);
   roofR.rotation.z = -0.62;
   g.add(roofR);
+  // snow blankets on both roof planes
+  const snowL = box(0.14, 6.0, 8.5, snow, 0, 0, 0);
+  snowL.position.set(-2.22, 3.35, 0);
+  snowL.rotation.z = 0.62;
+  g.add(snowL);
+  const snowR = box(0.14, 6.0, 8.5, snow, 0, 0, 0);
+  snowR.position.set(2.22, 3.35, 0);
+  snowR.rotation.z = -0.62;
+  g.add(snowR);
   // glass gable front
   const gable = new THREE.Mesh(
     new THREE.CylinderGeometry(3.05, 3.05, 0.18, 3, 1),
@@ -398,9 +519,17 @@ export function makeSkiLodge() {
   gable.position.set(0, 2.7, 4.1);
   g.add(gable);
   g.add(rbox(4.6, 1.6, 8.0, timber, 0, 0.8, 0, 0.1));
-  // deck + posts
+  // deck + railing + posts
   g.add(box(6.4, 0.24, 2.6, timber, 0, 0.6, 5.2));
   for (const px of [-2.9, 2.9]) g.add(cyl(0.09, 0.11, 0.6, dark, px, 0.3, 6.2, 8));
+  for (let px = -3.1; px <= 3.1; px += 1.24) {
+    g.add(box(0.09, 0.55, 0.09, dark, px, 0.98, 6.42));
+  }
+  g.add(box(6.4, 0.08, 0.1, dark, 0, 1.28, 6.42));
+  // deck stairs
+  for (let s = 0; s < 2; s++) {
+    g.add(box(1.6, 0.16, 0.5, timber, -3.6 - s * 0.3, 0.42 - s * 0.2, 5.2));
+  }
   // chimney + warm window glow
   g.add(box(0.8, 3.4, 0.8, mat(0x8d8d94, { roughness: 0.9 }), 1.2, 3.6, -2.6));
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.1), new THREE.MeshStandardMaterial({
@@ -423,23 +552,42 @@ export function makeCottageDock() {
   const g = new THREE.Group();
   const timber = mat(0xb98a63, { roughness: 0.85 });
   const roofM = mat(CH.orange, { roughness: 0.7 });
-  const mkCottage = (x, z, ry) => {
+  const glow = new THREE.MeshStandardMaterial({
+    color: 0xffd9a0, emissive: 0xffb45e, emissiveIntensity: 0.85, roughness: 0.4,
+  });
+  const mkCottage = (x, z, ry, storeys = 1) => {
     const c = new THREE.Group();
-    c.add(rbox(2.8, 1.5, 2.2, timber, 0, 0.75, 0, 0.08));
+    const h = storeys * 1.5;
+    c.add(rbox(2.8, h, 2.2, timber, 0, h / 2, 0, 0.08));
     const roof = new THREE.Mesh(new THREE.CylinderGeometry(1.75, 1.75, 2.4, 3, 1), roofM);
     roof.rotation.z = Math.PI / 2;
     roof.rotation.x = Math.PI / 2;
     roof.scale.y = 0.62;
-    roof.position.y = 1.95;
+    roof.position.y = h + 0.45;
     roof.castShadow = true;
     c.add(roof);
-    c.add(box(0.6, 0.9, 0.05, mat(0x5c4632, { roughness: 0.8 }), 0, 0.45, 1.13));
+    // warm-lit windows
+    for (let s = 0; s < storeys; s++) {
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(0.6, 0.5), glow);
+      win.position.set(-0.7, 0.75 + s * 1.5, 1.12);
+      c.add(win);
+    }
+    c.add(box(0.6, 0.9, 0.05, mat(0x5c4632, { roughness: 0.8 }), 0.55, 0.45, 1.13));
     c.position.set(x, 0, z);
     c.rotation.y = ry;
     return c;
   };
-  g.add(mkCottage(-2.4, -1.2, 0.35));
-  g.add(mkCottage(1.9, -2.0, -0.3));
+  // main two-storey cottage with a side gable annex, plus a bunkie
+  g.add(mkCottage(-2.4, -1.2, 0.35, 2));
+  const annex = mkCottage(-0.4, -2.0, 0.35, 1);
+  g.add(annex);
+  g.add(mkCottage(1.9, -2.0, -0.3, 1));
+  // shoreline rocks
+  for (const [rx, rz, s] of [[-4.2, 1.6, 1.2], [3.6, 0.8, 1.0], [-1.2, 2.6, 0.8]]) {
+    const rock = makeRock(s, 0xc6bba6);
+    rock.position.set(rx, 0.12, rz);
+    g.add(rock);
+  }
   // dock running toward +Z (place at shoreline pointing into the water)
   g.add(box(1.3, 0.14, 6.5, timber, 0, 0.42, 4.2));
   for (const dz of [1.6, 3.6, 5.6, 7.2]) {
@@ -456,14 +604,17 @@ export function makeCottageDock() {
   canoe.position.set(1.7, 0.32, 6.8);
   canoe.rotation.y = 0.5;
   g.add(canoe);
-  // muskoka chairs
-  for (const [cx, cz, ry] of [[-0.9, 1.6, 2.6], [0.6, 1.9, 3.4]]) {
+  // muskoka chairs out on the dock, facing the water
+  for (const [cx, cz, ry] of [[-0.42, 6.9, Math.PI + 0.15], [0.45, 6.9, Math.PI - 0.15]]) {
     const ch = new THREE.Group();
     ch.add(box(0.55, 0.08, 0.5, roofM, 0, 0.3, 0));
     const back = box(0.55, 0.6, 0.08, roofM, 0, 0.52, -0.26);
     back.rotation.x = -0.35;
     ch.add(back);
-    ch.position.set(cx, 0.1, cz);
+    for (const [lx, lz] of [[-0.22, 0.18], [0.22, 0.18], [-0.22, -0.18], [0.22, -0.18]]) {
+      ch.add(box(0.06, 0.3, 0.06, timber, lx, 0.15, lz));
+    }
+    ch.position.set(cx, 0.45, cz);
     ch.rotation.y = ry;
     g.add(ch);
   }
@@ -478,20 +629,27 @@ export function makeRewardsPavilion() {
   g.add(cyl(6.4, 6.6, 0.35, mat(CH.cream, { roughness: 0.85 }), 0, 0.18, 0, 36));
   g.add(cyl(5.2, 5.2, 0.1, mat(CH.gold, { roughness: 0.6 }), 0, 0.4, 0, 36));
 
-  // giant split-C monument (torus segments, orange + gold)
+  // giant split-C monument — a thick wheel with a nested gold wedge, like the
+  // reference: fat orange C + gold blade filling part of the opening
   const cGroup = new THREE.Group();
-  const seg1 = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.55, 14, 40, Math.PI * 1.35), mat(CH.orange, { roughness: 0.45 }));
-  seg1.rotation.z = Math.PI * 0.32;
+  const seg1 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.95, 18, 48, Math.PI * 1.42), mat(CH.orange, { roughness: 0.4 }));
+  seg1.rotation.z = Math.PI * 0.29;
   seg1.castShadow = true;
   cGroup.add(seg1);
-  const seg2 = new THREE.Mesh(new THREE.TorusGeometry(2.4, 0.55, 14, 24, Math.PI * 0.5), mat(CH.gold, { roughness: 0.45 }));
-  seg2.rotation.z = -Math.PI * 0.26;
+  const seg2 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.78, 16, 26, Math.PI * 0.46), mat(CH.gold, { roughness: 0.4 }));
+  seg2.rotation.z = -Math.PI * 0.21;
+  seg2.position.z = 0.12;
   seg2.castShadow = true;
   cGroup.add(seg2);
-  cGroup.position.y = 3.6;
+  // inner gold core disc peeking through the middle
+  const core = new THREE.Mesh(new THREE.CylinderGeometry(1.0, 1.0, 0.7, 24), mat(CH.gold, { roughness: 0.45 }));
+  core.rotation.x = Math.PI / 2;
+  core.castShadow = true;
+  cGroup.add(core);
+  cGroup.position.y = 3.5;
   g.add(cGroup);
   g.userData.cMark = cGroup;
-  g.add(cyl(0.5, 0.7, 0.9, mat(CH.warmGrey, { roughness: 0.8 }), 0, 0.85, 0, 12));
+  g.add(cyl(1.5, 1.8, 0.5, mat(CH.warmGrey, { roughness: 0.85 }), 0, 0.65, 0, 24));
 
   // phone monolith with the app on screen
   const phone = new THREE.Group();
@@ -566,12 +724,18 @@ export function makeRewardsPavilion() {
 
 export function makeRoasMonument() {
   const g = new THREE.Group();
-  g.add(rbox(13, 0.5, 8.5, mat(CH.cream, { roughness: 0.85 }), 0, 0.25, 0, 0.15));
-  // rising bars: media in → demand out
-  const barM = [mat(CH.warmGrey, { roughness: 0.7 }), mat(CH.gold, { roughness: 0.5 }), mat(CH.orange, { roughness: 0.5 })];
-  const hs = [1.1, 1.9, 3.0, 4.4, 6.2];
+  // circular stone terrace with a rim step, like the reference
+  g.add(cyl(7.6, 7.9, 0.4, mat(0xd9ccb2, { roughness: 0.9 }), 0, 0.2, 0, 40));
+  g.add(cyl(6.6, 6.6, 0.22, mat(CH.cream, { roughness: 0.85 }), 0, 0.51, 0, 40));
+  // rising bars: cream ledger bars growing into orange, peaking gold
+  const barMs = [
+    mat(0xece4d2, { roughness: 0.7 }), mat(0xece4d2, { roughness: 0.7 }),
+    mat(0xe4d8c0, { roughness: 0.7 }), mat(CH.orange, { roughness: 0.45 }),
+    mat(CH.gold, { roughness: 0.45 }),
+  ];
+  const hs = [1.0, 1.7, 2.6, 4.2, 6.0];
   hs.forEach((h, i) => {
-    g.add(rbox(1.5, h, 1.5, barM[Math.min(i, 2)], -4.6 + i * 2.05, 0.5 + h / 2, 1.6, 0.1));
+    g.add(rbox(1.45, h, 1.45, barMs[i], -4.4 + i * 1.95, 0.6 + h / 2, 1.7, 0.12));
   });
   // headline slab
   const slab = new THREE.Mesh(
@@ -607,33 +771,41 @@ export function makePersonaPlaza() {
   const inlay = new THREE.Mesh(
     new THREE.CircleGeometry(5.6, 48),
     canvasMat(512, 512, (ctx, W, H) => {
+      // reference-style eight-point compass rose in orange and tan
       ctx.fillStyle = '#f3ead8';
       ctx.fillRect(0, 0, W, H);
-      ctx.strokeStyle = '#f57f29';
-      ctx.lineWidth = 6;
+      ctx.strokeStyle = '#e0d2b4';
+      ctx.lineWidth = 10;
       ctx.beginPath();
-      ctx.arc(W / 2, H / 2, 200, 0, Math.PI * 2);
+      ctx.arc(W / 2, H / 2, 214, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.strokeStyle = '#d9c9a5';
-      ctx.lineWidth = 3;
-      for (let i = 0; i < 12; i++) {
-        const a = (i / 12) * Math.PI * 2;
-        ctx.beginPath();
-        ctx.moveTo(W / 2 + Math.cos(a) * 60, H / 2 + Math.sin(a) * 60);
-        ctx.lineTo(W / 2 + Math.cos(a) * 195, H / 2 + Math.sin(a) * 195);
-        ctx.stroke();
-      }
-      ctx.fillStyle = '#f57f29';
-      ctx.save();
-      ctx.translate(W / 2, H / 2);
+      ctx.strokeStyle = '#f57f29';
+      ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.moveTo(0, -150);
-      ctx.lineTo(28, 0);
-      ctx.lineTo(0, 150);
-      ctx.lineTo(-28, 0);
-      ctx.closePath();
+      ctx.arc(W / 2, H / 2, 188, 0, Math.PI * 2);
+      ctx.stroke();
+      const star = (points, r1, r2, color, rot = 0) => {
+        ctx.fillStyle = color;
+        ctx.save();
+        ctx.translate(W / 2, H / 2);
+        ctx.rotate(rot);
+        ctx.beginPath();
+        for (let i = 0; i < points * 2; i++) {
+          const a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2;
+          const r = i % 2 === 0 ? r1 : r2;
+          const x = Math.cos(a) * r, y = Math.sin(a) * r;
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      };
+      star(4, 178, 34, '#e8d9b8', Math.PI / 4); // tan diagonal points
+      star(4, 178, 34, '#f57f29');              // orange cardinal points
+      ctx.fillStyle = '#ffce34';
+      ctx.beginPath();
+      ctx.arc(W / 2, H / 2, 22, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
     }, { roughness: 0.8 })
   );
   inlay.rotation.x = -Math.PI / 2;
