@@ -24,16 +24,19 @@ function leadershipDiagram() {
     const x = 160 + Math.cos(a) * 118;
     const y = 96 + Math.sin(a) * 70;
     return `
-      <circle cx="${x}" cy="${y}" r="15" fill="#1c4fc4"/>
-      <text class="ring-ini" x="${x}" y="${y + 4}">${ini}</text>`;
+      <g class="ring-node" style="animation-delay:${(0.15 + i * 0.09).toFixed(2)}s">
+        <circle cx="${x}" cy="${y}" r="15" fill="#1c4fc4"/>
+        <circle cx="${x}" cy="${y}" r="15" fill="none" stroke="rgba(28,79,196,.35)" class="ring-halo"/>
+        <text class="ring-ini" x="${x}" y="${y + 4}">${ini}</text>
+      </g>`;
   }).join('');
-  const roster = LEADERS.map(([, name, title]) =>
-    `<div class="ic-person"><b>${name}</b><span>${title}</span></div>`).join('');
+  const roster = LEADERS.map(([, name, title], i) =>
+    `<div class="ic-person rise" style="animation-delay:${(0.4 + i * 0.05).toFixed(2)}s"><b>${name}</b><span>${title}</span></div>`).join('');
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">PUSH leadership surrounds the client</div>
+      <div class="ic-diagram-title">PUSH leadership surrounds your team</div>
       <svg viewBox="0 0 320 192">
-        <ellipse cx="160" cy="96" rx="118" ry="70" fill="none" stroke="rgba(28,79,196,.3)" stroke-width="1.5" stroke-dasharray="3 6"/>
+        <ellipse class="ring-orbit" cx="160" cy="96" rx="118" ry="70" fill="none" stroke="rgba(28,79,196,.35)" stroke-width="1.5" stroke-dasharray="3 7"/>
         <text class="ring-c1" x="160" y="92">Purolator</text>
         <text class="ring-c2" x="160" y="108">× PUSH SENIOR TEAM</text>
         ${nodes}
@@ -42,40 +45,121 @@ function leadershipDiagram() {
     </div>`;
 }
 
-// ZeroWaste™ — five inputs → two outcomes → the trademark
+// ZeroWaste™ — the old leaky line vs the sealed loop
 function zerowasteDiagram() {
-  const pills = [
-    'Independence', 'Human brilliance', 'An iterative, intelligent process',
-    'Perpetual creative optimization', 'An agentic operating system',
-  ].map((p) => `<div class="zw-pill">${p}</div>`).join('');
+  const steps = ['Brief', 'Tech', 'Media', 'Creative'];
+  const oldWay = steps.map((s, i) => `
+    <div class="zw-step rise" style="animation-delay:${(0.1 + i * 0.12).toFixed(2)}s">${s}</div>
+    ${i < 3 ? `<div class="zw-leak" style="animation-delay:${(0.2 + i * 0.12).toFixed(2)}s"><span class="zw-drip" style="animation-delay:${(0.9 + i * 0.35).toFixed(2)}s"></span>→</div>` : ''}
+  `).join('');
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">Why no dollar goes to waste</div>
-      <div class="zw-pills">${pills}</div>
-      <div class="zw-arrow">↓</div>
-      <div class="zw-boxes">
-        <div class="zw-box"><b>What it means</b>No dollars wasted or underutilized</div>
-        <div class="zw-box"><b>What it means to you</b>Budgets go farther</div>
-      </div>
-      <div class="zw-arrow">↓</div>
-      <div class="zw-badge">ZEROWASTE™</div>
+      <div class="ic-diagram-title">The old way leaks — the loop doesn't</div>
+      <div class="zw-lane"><span class="zw-lane-tag">THE OLD LINE</span>${oldWay}<span class="zw-loss rise" style="animation-delay:0.6s">− budget</span></div>
+      <svg class="zw-loopsvg" viewBox="0 0 320 104">
+        <circle cx="160" cy="52" r="38" fill="none" stroke="#1c4fc4" stroke-width="2.5" class="zw-loopring"/>
+        <path d="M160 14 L151 7 M160 14 L151 21" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
+        <path d="M160 90 L169 83 M160 90 L169 97" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
+        <circle class="zw-dollar" r="5"/>
+        <text class="zw-loop-t1" x="160" y="48">MEDIA × CREATIVE</text>
+        <text class="zw-loop-t2" x="160" y="63">conceived together</text>
+        <text class="zw-loop-side" x="48" y="52">20+ integrated</text>
+        <text class="zw-loop-side" x="48" y="64">tools</text>
+        <text class="zw-loop-side" x="272" y="52">every dollar</text>
+        <text class="zw-loop-side" x="272" y="64">in motion</text>
+      </svg>
+      <div class="zw-badge zw-glow">ZEROWASTE™</div>
     </div>`;
 }
 
-// PUSH + Studio P + STRATIS — the closed loop
+// Insight engine — radar sweep in, next moves out
+function insightDiagram() {
+  const moves = [
+    ['Next dollar', 'which vertical gets it'],
+    ['Next flight', 'which message runs'],
+    ['Next cut', 'made on data, not sentiment'],
+  ].map(([t, s], i) => `
+    <div class="ie-move rise" style="animation-delay:${(0.5 + i * 0.22).toFixed(2)}s"><b>${t}</b><span>${s}</span></div>`).join('');
+  const dots = [[62, 34], [38, 62], [76, 74], [52, 48], [82, 50]].map(([x, y], i) =>
+    `<circle class="ie-dot" cx="${x}" cy="${y}" r="3.2" style="animation-delay:${(0.3 + i * 0.5).toFixed(2)}s"/>`).join('');
+  return `
+    <div class="ic-diagram">
+      <div class="ic-diagram-title">Signals in → the next move out</div>
+      <div class="ie-grid">
+        <svg viewBox="0 0 116 116" class="ie-radar">
+          <circle cx="58" cy="58" r="52" fill="none" stroke="rgba(28,79,196,.18)" stroke-width="1.5"/>
+          <circle cx="58" cy="58" r="34" fill="none" stroke="rgba(28,79,196,.18)" stroke-width="1.5"/>
+          <circle cx="58" cy="58" r="16" fill="none" stroke="rgba(28,79,196,.18)" stroke-width="1.5"/>
+          <g class="ie-sweep"><path d="M58 58 L58 6 A52 52 0 0 1 92 19 Z" fill="rgba(28,79,196,.22)"/></g>
+          ${dots}
+          <circle cx="58" cy="58" r="4" fill="#1c4fc4"/>
+        </svg>
+        <div class="ie-moves">${moves}</div>
+      </div>
+      <div class="ie-cap">performance · market · customer · competition</div>
+    </div>`;
+}
+
+// Studio P — three brands, one narrative, every audience and channel
+function studioDiagram() {
+  const audiences = ['Enterprise', 'Healthcare', 'SMB', 'E-commerce'].map((a, i) =>
+    `<div class="sp-aud rise" style="animation-delay:${(0.55 + i * 0.12).toFixed(2)}s">${a}</div>`).join('');
+  const channels = ['Brand', 'Digital', 'Events', 'Sales enablement'].map((c, i) =>
+    `<span class="sp-chan rise" style="animation-delay:${(1.05 + i * 0.1).toFixed(2)}s">${c}</span>`).join('');
+  return `
+    <div class="ic-diagram">
+      <div class="ic-diagram-title">One message hierarchy, built modular</div>
+      <div class="sp-brands">
+        <span class="sp-brand rise" style="animation-delay:0.1s">PUROLATOR</span>
+        <span class="sp-brand rise" style="animation-delay:0.2s">LIVINGSTON</span>
+        <span class="sp-brand rise" style="animation-delay:0.3s">WILLIAMS</span>
+      </div>
+      <div class="sp-merge rise" style="animation-delay:0.38s">↓</div>
+      <div class="sp-bar rise" style="animation-delay:0.45s">ONE NARRATIVE — PROMISES, DELIVERED</div>
+      <div class="sp-auds">${audiences}</div>
+      <div class="sp-chans">${channels}</div>
+    </div>`;
+}
+
+// STRATIS proof — the return line, drawn live
+function proofDiagram() {
+  return `
+    <div class="ic-diagram">
+      <div class="ic-diagram-title">On $14.4M of live media</div>
+      <svg viewBox="0 0 320 118" class="pf-chart">
+        <path d="M14 96 L306 96" stroke="rgba(28,79,196,.14)" stroke-width="1" stroke-dasharray="2 6"/>
+        <path d="M14 58 L306 58" stroke="rgba(28,79,196,.14)" stroke-width="1" stroke-dasharray="2 6"/>
+        <path d="M14 20 L306 20" stroke="rgba(28,79,196,.14)" stroke-width="1" stroke-dasharray="2 6"/>
+        <path class="pf-base" d="M14 94 L306 94"/>
+        <text class="pf-lbl" x="16" y="86">1.1× — where it stood</text>
+        <path class="pf-line" pathLength="100" d="M14 92 C 80 88, 130 78, 180 58 S 262 24, 296 16"/>
+        <circle class="pf-dot" cx="296" cy="16" r="5.5"/>
+        <text class="pf-big" x="288" y="40">45.4×</text>
+      </svg>
+      <div class="pf-facts">
+        <div class="pf-fact rise" style="animation-delay:0.9s"><b>189</b><span>insights in 90 days</span></div>
+        <div class="pf-fact rise" style="animation-delay:1.05s"><b>10×</b><span>faster to decision</span></div>
+        <div class="pf-fact rise" style="animation-delay:1.2s"><b>45.4×</b><span>return, where 1.1× stood</span></div>
+      </div>
+    </div>`;
+}
+
+// PUSH + Studio P + STRATIS — the closed loop, around one bigger Purolator
 function loopDiagram() {
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">A closed-loop system built for momentum</div>
-      <svg viewBox="0 0 320 130">
-        <circle cx="100" cy="65" r="48" fill="none" stroke="#1c4fc4" stroke-width="2.5"/>
-        <circle cx="220" cy="65" r="48" fill="none" stroke="#1c4fc4" stroke-width="2.5"/>
-        <path d="M100 17 L91 10 M100 17 L91 24" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
-        <path d="M220 113 L229 106 M220 113 L229 120" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
-        <text class="loop-main" x="100" y="70">PUSH</text>
-        <text class="loop-main" x="220" y="70">Studio P</text>
-        <text class="loop-tag" x="160" y="14">STRATIS</text>
-        <text class="loop-tag loop-red" x="160" y="126">ZeroWaste™</text>
+      <div class="ic-diagram-title">One loop, around one bigger Purolator</div>
+      <svg viewBox="0 -16 320 168">
+        <circle class="loop-track" cx="160" cy="78" r="58" fill="none" stroke="#1c4fc4" stroke-width="2.5"/>
+        <path d="M160 20 L151 13 M160 20 L151 27" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
+        <path d="M160 136 L169 129 M160 136 L169 143" stroke="#1c4fc4" stroke-width="2.5" fill="none"/>
+        <circle class="loop-pulse" r="4.5"/>
+        <circle class="loop-pulse loop-pulse2" r="4.5"/>
+        <g class="loop-node" style="animation-delay:.15s"><circle cx="160" cy="20" r="15" fill="#fff" stroke="#1c4fc4" stroke-width="2.5"/><text class="loop-ic" x="160" y="25">◉</text><text class="loop-cap" x="160" y="-6">STRATIS · intelligence</text></g>
+        <g class="loop-node" style="animation-delay:.3s"><circle cx="104" cy="120" r="15" fill="#fff" stroke="#1c4fc4" stroke-width="2.5"/><text class="loop-ic" x="104" y="125">▶</text><text class="loop-cap" x="78" y="145">PUSH · media</text></g>
+        <g class="loop-node" style="animation-delay:.45s"><circle cx="216" cy="120" r="15" fill="#fff" stroke="#1c4fc4" stroke-width="2.5"/><text class="loop-ic" x="216" y="125">✦</text><text class="loop-cap" x="244" y="145">Studio P · creative</text></g>
+        <text class="loop-c1" x="160" y="74">ONE BIGGER</text>
+        <text class="loop-c2" x="160" y="92">PUROLATOR</text>
       </svg>
       <div class="ic-mini">
         <div><b>Studio P</b> shapes creative designed to move with the market</div>
@@ -93,51 +177,54 @@ export const POIS = [
   {
     id: 'hq',
     title: 'Meet PUSH',
-    step: 'Chapter 1 · The Team',
-    body: 'A modern media agency: human brilliance plus an agentic operating system, four offices across North America, ~75 functional experts and $300M in annual billings. Leadership doesn\'t hand you off — it surrounds you. Every floor of this tower is a PUSH discipline working Purolator\'s business as one team.',
-    stats: [['Offices', 'LA · ATL · OTT · TOR'], ['Experts', '~75, senior-led']],
+    step: 'Chapter 1 · A Senior Team Around Yours',
+    body: 'A modern media agency: human brilliance plus an agentic operating system, four offices across North America, ~75 functional experts and $300M in annual billings. Leadership doesn\'t hand you off — it surrounds you, and every floor of this tower is a PUSH discipline working as one team. A leaner roster means partners have to plug in clean: your brand, digital, demand-gen and events leads each get a senior counterpart, strategy through execution. For Purolator: an extension of your team from day one — fresh eyes, zero onboarding tax.',
+    stats: [['Offices', 'LA · ATL · OTT · TOR'], ['Experts', '~75, senior-led'], ['Model', 'Embedded, no handoffs']],
     html: leadershipDiagram(),
     lat: 90, lon: 0, dist: 116, pinAlt: 32, side: 0.85, lookR: 42,
   },
   {
     id: 'zerowaste',
     title: 'ZeroWaste™',
-    step: 'Chapter 2 · The Philosophy',
-    body: 'The old way is a straight line — brief, then tech, then media, then creative — with budget falling off the end. PUSH runs it as a loop: media and creative conceived together, fuelled by 20+ integrated tools, every dollar kept in motion.',
-    stats: [['Waste', 'Zero'], ['Budgets', 'Go further']],
+    step: 'Chapter 2 · Every Dollar Working',
+    body: 'You know what waste looks like: last-minute pivots, duplicated effort, assets built once and used once. The old way is a straight line — brief, then tech, then media, then creative — with budget falling off the end. PUSH runs it as a loop: media and creative conceived together, fuelled by 20+ integrated tools, content built modular so it\'s reused across every channel and audience. For Purolator: spend that stops funding rework and starts funding results — with the receipts to show it.',
+    stats: [['Rework', 'Designed out'], ['Every dollar', 'Accounted for']],
     html: zerowasteDiagram(),
     lat: 53, lon: 8, dist: 64, pinAlt: 9, side: -0.5, lookR: 43.5,
   },
   {
     id: 'lab',
     title: 'The Innovation Centre',
-    step: 'Chapter 3 · The Insight Engine',
-    body: 'Signals from the whole network flow in — engagement, sentiment, performance, culture, competition — and come out as the next big idea. AI-accelerated market intelligence, message testing and scenario modelling: marketing decisions made with logistics-grade precision.',
-    stats: [['Signals in', 'Live'], ['Ideas out', 'Weekly']],
+    step: 'Chapter 3 · Decide With Data',
+    body: '"Leverage AI to scale" only matters if it changes decisions. Signals from the whole network flow into this lab — performance, market, customer, competition — and come out as the next move: which vertical gets the next dollar, which message gets the next flight, what gets cut without sentiment. AI-accelerated market intelligence, message testing and scenario modelling — marketing decisions with logistics-grade precision. For Purolator: performance tracking that doesn\'t just report the quarter — it steers it.',
+    stats: [['Trade-offs', 'Data-informed'], ['Cadence', 'Weekly, not quarterly']],
+    html: insightDiagram(),
     lat: 54, lon: 58, dist: 80, pinAlt: 9, side: -0.8, lookR: 44,
   },
   {
     id: 'studio',
     title: 'Studio P',
-    step: 'Chapter 4 · The Creative Engine',
-    body: "PUSH's high-velocity creative studio, embedded inside the system. Live media signals decide what gets made, refined and scaled; what works is amplified, what doesn't is learned from fast. Creative rolls off the line and ships as reliably as the parcels.",
-    stats: [['Fed by', 'Live signals'], ['Output', 'Compounding']],
+    step: 'Chapter 4 · One Story, Every Audience',
+    body: 'PUSH\'s high-velocity creative studio, embedded inside the system. Purolator, Livingston and Williams have to sound like one company — to the enterprise account, the healthcare buyer, and the SMB owner who is, after all, a person too. Live media signals decide what gets made, refined and scaled: one message hierarchy, modular assets, reusable from national campaign to event booth to sales deck. For Purolator: message consistency by design — one narrative everywhere, including the markets where you\'re still introducing yourselves.',
+    stats: [['Three brands', 'One voice'], ['Assets', 'Built once, used everywhere']],
+    html: studioDiagram(),
     lat: 54, lon: -50, dist: 66, pinAlt: 9, side: -0.85, lookR: 44.5,
   },
   {
     id: 'stratis',
     title: 'STRATIS',
-    step: 'Chapter 5 · The Operating System',
-    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems — fragmented, delayed views. STRATIS connects every data stream around the business and reads them as one system, surfacing correlations no dashboard shows while the budget is still live. See it for real:',
-    stats: [['Insights', '189 in 90 days'], ['To decision', '10× faster']],
-    html: `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
+    step: 'Chapter 5 · Spend → Pipeline',
+    body: 'The beacon above the tower never sleeps. Marketing channels were built as closed ecosystems — and the gap between spend and pipeline is where budgets go to be questioned. STRATIS connects every data stream around the business and reads them as one system, surfacing what no dashboard shows while the budget is still live. On $14.4M of live media: 189 insights in 90 days, decisions 10× faster, and a 45.4× return standing where a 1.1× used to. For Purolator: a straight line from spend to pipeline — MQLs that convert, leads that stop leaking. See it for real:',
+    stats: [['Spend → pipeline', 'One view'], ['To decision', '10× faster']],
+    html: proofDiagram() + `<a class="ic-btn" href="https://stratisdemo-la.vercel.app/dashboard" target="_blank" rel="noopener">Launch the STRATIS demo&nbsp;↗</a>`,
     lat: 90, lon: 0, dist: 64, pinAlt: 0, pin: false, side: 1.35, lookR: 72,
   },
   {
     id: 'summary',
-    title: 'PUSH + Studio P + STRATIS',
-    step: 'Chapter 6 · One System',
-    body: 'Creative, media and intelligence operating as one system, not separate disciplines — behind one bigger Purolator. This whole world runs on that loop.',
+    title: 'When We PUSH, You Succeed',
+    step: 'Chapter 6 · One Bigger Purolator',
+    body: 'Creative, media and intelligence operating as one system — not three disciplines, and not three brands. Purolator, Livingston and Williams, one story told consistently from the national campaign to the booth to the deck your sales team carries. This whole world runs on that loop — and it\'s how it feels to work inside it. The conversation we\'d love to have next: your 2027 mandates, and where fresh eyes would help most.',
+    stats: [['The system', 'Yours to use'], ['Next', 'Let\'s talk 2027']],
     html: loopDiagram(),
     lat: 90, lon: 0, dist: 150, pinAlt: 0, pin: false, side: 0.8, lookR: 40,
   },
