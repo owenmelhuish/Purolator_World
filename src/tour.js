@@ -334,7 +334,7 @@ function wrapChecklist() {
     </div>`).join('');
   return `
     <div class="ic-diagram">
-      <div class="ic-diagram-title">PUSH MEDIA, on one hand</div>
+      <div class="ic-diagram-title">PUSH MEDIA</div>
       ${rows}
       <div class="ic-mini-punch wc-punch rise" style="animation-delay:1.6s">When we PUSH, you succeed.</div>
     </div>`;
