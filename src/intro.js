@@ -266,11 +266,8 @@ const CSS = `
 .vc .vcc svg rect{fill:none}
 .vc span{font-weight:800;letter-spacing:.11em;font-size:10.5px;color:${NAVY};text-align:center;line-height:1.55}
 .vc-a{left:102px;top:0}
-.vc-a .vcc{transform:translateY(-44px)}
 .vc-b{left:22px;top:96px}
-.vc-b .vcc{transform:translate(-34px,34px)}
 .vc-c{left:182px;top:96px}
-.vc-c .vcc{transform:translate(34px,34px)}
 /* start apart, drift together */
 .vc-a{transform:translateY(-46px)}
 .vc-b{transform:translate(-56px,34px)}
