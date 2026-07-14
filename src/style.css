@@ -278,6 +278,20 @@ html, body {
 .sp-strip { fill: none; stroke: rgba(28, 79, 196, 0.35); stroke-width: 1.3; stroke-dasharray: 3 4; }
 .sp-stript { fill: #5a6480; font: 800 8.2px Inter, sans-serif; letter-spacing: 0.08em; text-anchor: middle; }
 .sp-stripc { fill: #9aa4bb; font: 600 7.5px Inter, sans-serif; text-anchor: middle; }
+/* ch4 · variant wall */
+.sp-v { fill: rgba(28, 79, 196, 0.09); }
+.sp-v-navy { fill: var(--puro-blue-dark); }
+.sp-v-red { fill: rgba(227, 23, 46, 0.12); }
+.sp-vg { fill: var(--puro-blue); }
+.sp-vg-w { fill: #fff; }
+.sp-vg-r { fill: var(--puro-red); }
+.sp-vgo { fill: none; stroke: var(--puro-blue); stroke-width: 1.3; }
+.sp-vgo-w { fill: none; stroke: #fff; stroke-width: 1.3; }
+.sp-live { animation: sp-live 2.8s ease-in-out infinite; }
+@keyframes sp-live { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+.sp-more { fill: none; stroke: rgba(28, 79, 196, 0.45); stroke-width: 1.2; stroke-dasharray: 3 3; }
+.sp-moret { fill: var(--puro-blue); font: 800 7.5px Inter, sans-serif; text-anchor: middle; animation: sp-live 1.8s ease-in-out infinite; }
+.sp-wallt { fill: #8b96af; font: 800 7.8px Inter, sans-serif; letter-spacing: 0.1em; text-anchor: middle; }
 
 /* ch5 · stratis molecular network */
 .st-ring { fill: none; stroke: rgba(28, 79, 196, 0.16); stroke-width: 1; stroke-dasharray: 2 6; animation: ic-orbit 22s linear infinite; }

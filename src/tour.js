@@ -134,11 +134,37 @@ function ideationDiagram() {
 function studioDiagram() {
   const brands = [['PUROLATOR', 12], ['LIVINGSTON', 116], ['WILLIAMS', 220]];
   const tiles = [['ENTERPRISE', 8], ['HEALTHCARE', 86], ['SMB', 164], ['E-COMMERCE', 242]];
+  // tiny asset glyphs: video, performance bars, copy lines, display ring
+  const glyph = (k, cx, cy, strokeCls, fillCls) => {
+    if (k === 0) return `<path class="${fillCls}" d="M ${cx - 2.4} ${cy - 3.4} L ${cx - 2.4} ${cy + 3.4} L ${cx + 3.6} ${cy} Z"/>`;
+    if (k === 1) return `<rect class="${fillCls}" x="${cx - 5}" y="${cy + 0.6}" width="2.6" height="3"/><rect class="${fillCls}" x="${cx - 1.3}" y="${cy - 1.4}" width="2.6" height="5"/><rect class="${fillCls}" x="${cx + 2.4}" y="${cy - 3.6}" width="2.6" height="7.2"/>`;
+    if (k === 2) return `<rect class="${fillCls}" x="${cx - 5}" y="${cy - 2.6}" width="10" height="1.7" rx="0.8"/><rect class="${fillCls}" x="${cx - 5}" y="${cy + 0.9}" width="7" height="1.7" rx="0.8"/>`;
+    return `<circle class="${strokeCls}" cx="${cx}" cy="${cy}" r="3.1"/>`;
+  };
+  const wall = [];
+  for (let i = 0; i < 32; i++) {
+    const col = i % 8;
+    const row = (i / 8) | 0;
+    const x = 16 + col * 36;
+    const y = 148 + row * 22;
+    const cx = x + 17;
+    const cy = y + 9;
+    const delay = (1.15 + i * 0.045).toFixed(2);
+    if (i === 31) {
+      wall.push(`<g class="rise" style="animation-delay:${delay}s"><rect class="sp-more" x="${x}" y="${y}" width="34" height="18" rx="6"/><text class="sp-moret" x="${cx}" y="${cy + 2.8}">+ MORE</text></g>`);
+      continue;
+    }
+    const navy = i % 9 === 4;
+    const red = i % 13 === 7;
+    const tileCls = navy ? 'sp-v sp-v-navy' : (red ? 'sp-v sp-v-red' : 'sp-v');
+    const live = i % 11 === 6 ? 'sp-live' : '';
+    wall.push(`<g class="rise" style="animation-delay:${delay}s"><g class="${live}"><rect class="${tileCls}" x="${x}" y="${y}" width="34" height="18" rx="6"/>${glyph((row + col) % 4, cx, cy, navy ? 'sp-vgo-w' : 'sp-vgo', navy ? 'sp-vg-w' : (red ? 'sp-vg-r' : 'sp-vg'))}</g></g>`);
+  }
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">One idea in, variants at scale out</div>
       <div class="ic-panel">
-        <svg viewBox="0 0 320 178">
+        <svg viewBox="0 0 320 260">
           ${brands.map(([b, x], i) => `
             <path class="sp-link" pathLength="100" d="M${x + 44} 26 C ${x + 44} 38, 160 36, 160 46" style="animation-delay:${(0.35 + i * 0.08).toFixed(2)}s"/>
             <g class="rise" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">
@@ -154,12 +180,11 @@ function studioDiagram() {
             <g class="rise" style="animation-delay:${(0.85 + i * 0.1).toFixed(2)}s">
               <rect class="sp-tile" x="${x}" y="102" width="71" height="24" rx="9"/>
               <text class="sp-tilet" x="${x + 35.5}" y="117.5">${t}</text>
-            </g>`).join('')}
-          <g class="rise" style="animation-delay:1.3s">
-            <rect class="sp-strip" x="8" y="140" width="304" height="32" rx="10"/>
-            <text class="sp-stript" x="160" y="155">BRAND · DIGITAL · EVENTS · SALES ENABLEMENT</text>
-            <text class="sp-stripc" x="160" y="166">versioned, refreshed, always on brand</text>
-          </g>
+            </g>
+            <path class="sp-link" pathLength="100" d="M ${x + 35.5} 126 C ${x + 35.5} 137, ${33 + i * 72} 136, ${33 + i * 72} 147" style="animation-delay:${(1.0 + i * 0.05).toFixed(2)}s"/>
+            <path class="sp-link" pathLength="100" d="M ${x + 35.5} 126 C ${x + 35.5} 137, ${69 + i * 72} 136, ${69 + i * 72} 147" style="animation-delay:${(1.05 + i * 0.05).toFixed(2)}s"/>`).join('')}
+          ${wall.join('')}
+          <text class="sp-wallt" x="160" y="252">ONE IDEA · EVERY AUDIENCE · EVERY FORMAT · ALWAYS FRESH</text>
         </svg>
       </div>
     </div>`;
