@@ -270,10 +270,14 @@ function loopDiagram() {
   const INF = "M 160 78 C 122 26, 42 34, 42 78 C 42 122, 122 130, 160 78 C 198 26, 278 34, 278 78 C 278 122, 198 130, 160 78";
   const OVER = "M 140.5 97.4 C 150 90.6, 170 65.4, 179.5 58.6";
   const GAP = "M 148 91 C 154 85.5, 166 70.5, 172 65";
-  const parcels = [[0, 'k'], [-2.25, 'k'], [-4.5, 'p'], [-6.75, 'k']].map(([d, kind]) => `
-          <g class="inf-box" style="offset-path: path('${INF}'); animation-delay: ${d}s">
-            <rect class="${kind === 'k' ? 'bx-k' : 'bx-p'}" x="-4.6" y="-3.4" width="9.2" height="6.8" rx="1"/>
-            <line class="${kind === 'k' ? 'bx-tape' : 'bx-red'}" x1="0" y1="-3.4" x2="0" y2="3.4"/>
+  // 10 white parcels with blue + red accents, evenly spaced, riding the exact
+  // track via SMIL animateMotion (offset-path misplaces SVG children in some browsers)
+  const parcels = Array.from({ length: 10 }, (_, i) => `
+          <g class="inf-box">
+            <rect class="bx-w" x="-4.6" y="-3.4" width="9.2" height="6.8" rx="1"/>
+            <line class="bx-b" x1="-1.4" y1="-3.4" x2="-1.4" y2="3.4"/>
+            <line class="bx-r" x1="1.4" y1="-3.4" x2="1.4" y2="3.4"/>
+            <animateMotion dur="14s" repeatCount="indefinite" rotate="auto" begin="${(-i * 1.4).toFixed(1)}s"><mpath href="#inf-track"/></animateMotion>
           </g>`).join('');
   return `
     <div class="ic-diagram">
@@ -281,8 +285,9 @@ function loopDiagram() {
       <div class="ic-panel">
         <svg viewBox="0 0 320 152">
           <defs>
-            <path id="inf-g1" d="M 52 60 C 62 28, 116 20, 150 54" fill="none"/>
-            <path id="inf-g2" d="M 196 140 C 226 148, 258 144, 282 128" fill="none"/>
+            <path id="inf-track" d="${INF}" fill="none"/>
+            <path id="inf-g1" d="M 42 46 C 58 16, 110 10, 146 38" fill="none"/>
+            <path id="inf-g2" d="M 200 143 C 228 149, 258 147, 284 138" fill="none"/>
             <path id="inf-g3" d="M 178 40 C 208 6, 250 6, 266 36" fill="none"/>
           </defs>
           <path class="inf-shadow" d="${INF}"/>
