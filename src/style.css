@@ -137,6 +137,7 @@ html, body {
   font-size: 13.5px;
   line-height: 1.55;
   color: #46506a;
+  white-space: pre-line;
 }
 #info-diagram .ic-diagram { margin-top: 4px; padding-top: 8px; }
 #info-diagram:not(:empty) + #info-body {
