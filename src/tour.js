@@ -393,7 +393,7 @@ export const POIS = [
     id: 'summary',
     title: 'When We PUSH, You Succeed',
     step: 'Chapter 6 · One Bigger Purolator',
-    body: 'Creative, media and intelligence operating as one system, not three disciplines and not three brands. Purolator, Livingston and Williams, one story told consistently from the national campaign to the booth to the deck your sales team carries. This whole world runs on that loop, and it\'s how it feels to work inside it. The conversation we\'d love to have next: your 2027 mandates, and where fresh eyes would help most.',
+    body: 'This is the world we want to build with you. One Bigger Purolator: Purolator, Livingston and Williams telling one story, in one architecture, to every buyer at home and internationally. A senior team around yours, with creative and media in one room, so nothing is lost in handoffs and nothing is built twice. Studio P keeps that story fresh for every audience, because business owners are people too. STRATIS connects every signal, so spend is tracked to pipeline and every dollar defends itself. That is ZeroWaste, share of wallet won deliberately, and a brand that stands out because it moves faster than the market. When we PUSH, you succeed.',
     stats: [['The system', 'Yours to use'], ['Next', 'Let\'s talk 2027']],
     html: loopDiagram(),
     lat: 90, lon: 0, dist: 150, pinAlt: 0, pin: false, side: 0.8, lookR: 40,
