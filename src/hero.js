@@ -164,51 +164,37 @@ const FLAG_DRAWS = {
   },
 };
 
-export function makeFlagRow() {
-  const group = new THREE.Group();
-  const flags = [];
-  const order = ['push', 'livingston', 'purolator', 'williams', 'stratis'];
-  const xs = [-8, -4, 0, 4, 8];
-  order.forEach((key, i) => {
-    const x = xs[i];
-    const z = 0.5 - Math.abs(x) * 0.12;       // shallow arc, centred on the row
-    const ground = -((x * x + z * z) / 84);   // follow the globe falling away
-    const unit = new THREE.Group();
-    unit.position.set(x, ground, z);
-    // plinth sunk into the terrain + collar + white pole + finial
-    unit.add(cyl(0.44, 0.58, 2.6, mat(T_GREY1, { roughness: 0.8 }), 0, -0.95, 0, 18));
-    unit.add(cyl(0.2, 0.3, 0.5, mat(T_GREY2, { roughness: 0.6 }), 0, 0.5, 0, 14));
-    unit.add(cyl(0.06, 0.09, 7.0, mat(T_WHITE, { roughness: 0.4 }), 0, 3.95, 0, 10));
-    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), mat(T_GREY2, { roughness: 0.4 }));
-    finial.position.y = 7.5;
-    finial.castShadow = true;
-    unit.add(finial);
-    const geo = new THREE.PlaneGeometry(2.7, 1.65, 20, 8);
-    geo.translate(1.36, 0, 0); // hoist edge at the pole
-    const flag = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-      map: flagCanvas(FLAG_DRAWS[key]), side: THREE.DoubleSide, roughness: 0.75,
-    }));
-    flag.position.set(0.08, 6.5, 0);
-    flag.castShadow = true;
-    unit.add(flag);
-    group.add(unit);
-    flags.push({ mesh: flag, phase: i * 1.35 });
-  });
+export function makeBrandFlag(key, phase = 0) {
+  const unit = new THREE.Group();
+  // plinth sunk into the terrain + collar + white pole + finial
+  unit.add(cyl(0.44, 0.58, 2.6, mat(T_GREY1, { roughness: 0.8 }), 0, -0.95, 0, 18));
+  unit.add(cyl(0.2, 0.3, 0.5, mat(T_GREY2, { roughness: 0.6 }), 0, 0.5, 0, 14));
+  unit.add(cyl(0.06, 0.09, 7.0, mat(T_WHITE, { roughness: 0.4 }), 0, 3.95, 0, 10));
+  const finial = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), mat(T_GREY2, { roughness: 0.4 }));
+  finial.position.y = 7.5;
+  finial.castShadow = true;
+  unit.add(finial);
+  const geo = new THREE.PlaneGeometry(2.7, 1.65, 20, 8);
+  geo.translate(1.36, 0, 0); // hoist edge at the pole
+  const flag = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    map: flagCanvas(FLAG_DRAWS[key]), side: THREE.DoubleSide, roughness: 0.75,
+  }));
+  flag.position.set(0.08, 6.5, 0);
+  flag.castShadow = true;
+  unit.add(flag);
   function update(dt, time) {
-    for (const f of flags) {
-      const pos = f.mesh.geometry.attributes.position;
-      for (let vi = 0; vi < pos.count; vi++) {
-        const vx = pos.getX(vi);
-        const k = vx / 2.7;
-        pos.setZ(vi,
-          Math.sin(vx * 2.3 - time * 4.4 + f.phase) * 0.24 * k * k +
-          Math.sin(time * 1.4 + f.phase) * 0.05 * k);
-      }
-      pos.needsUpdate = true;
-      f.mesh.geometry.computeVertexNormals();
+    const pos = flag.geometry.attributes.position;
+    for (let vi = 0; vi < pos.count; vi++) {
+      const vx = pos.getX(vi);
+      const k = vx / 2.7;
+      pos.setZ(vi,
+        Math.sin(vx * 2.3 - time * 4.4 + phase) * 0.24 * k * k +
+        Math.sin(time * 1.4 + phase) * 0.05 * k);
     }
+    pos.needsUpdate = true;
+    flag.geometry.computeVertexNormals();
   }
-  return { group, update };
+  return { group: unit, update };
 }
 
 // ---------------------------------------------------------------------------

@@ -10,7 +10,7 @@ import {
 import {
   makeHQTower, makeCreativeStudio, makeIdeationLab, makePavilion,
   makeControlTower, makeShip, makeLoco, makeFreightCar, makeBillboard, makePerson,
-  makeMediaLab, makeDataCommand, makeFlagRow,
+  makeMediaLab, makeDataCommand, makeBrandFlag,
 } from './hero.js';
 import {
   makeTree, makeContainerYardStacks, makeGantryCrane, makePalletStack, makeRack,
@@ -451,12 +451,21 @@ registerPoi(tower, 'hq');
     },
   });
 }
-// brand flag plaza at the foot of the entrance steps — its own movable so it
-// can be repositioned in the ?edit layout editor
+// brand flag plaza at the foot of the entrance steps — each flag is its own
+// movable so it can be repositioned individually in the ?edit layout editor
 {
-  const flagRow = makeFlagRow();
-  placeM('flag-row', flagRow.group, 76.2, -70, THREE.MathUtils.degToRad(-70), 0.35);
-  animators.push({ update: flagRow.update });
+  const FLAG_SPOTS = [
+    ['flag-push', 'push', 73.09, -109.64],
+    ['flag-livingston', 'livingston', 75.18, -91.56],
+    ['flag-purolator', 'purolator', 75.52, -70],
+    ['flag-williams', 'williams', 75.18, -48.44],
+    ['flag-stratis', 'stratis', 73.09, -30.36],
+  ];
+  FLAG_SPOTS.forEach(([name, key, lat, lon], i) => {
+    const f = makeBrandFlag(key, i * 1.35);
+    placeM(name, f.group, lat, lon, THREE.MathUtils.degToRad(-70), 0.35);
+    animators.push({ update: f.update });
+  });
 }
 // plaza dressing
 {
