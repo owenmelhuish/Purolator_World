@@ -1704,6 +1704,7 @@ initPeople(world, animators).catch((e) => console.error('people failed', e));
 
 const clock = new THREE.Clock();
 const _q = new THREE.Quaternion();
+const _sunDir = new THREE.Vector3(), _sunRight = new THREE.Vector3(), _sunTarget = new THREE.Vector3();
 function tick() {
   requestAnimationFrame(tick);
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -1731,6 +1732,14 @@ function tick() {
     camFocus.setLength(70);
     camera.lookAt(camFocus);
   }
+  // keep the sun over the camera's shoulder so no side of the globe reads as
+  // the night side — whatever the tour frames is always lit
+  _sunDir.copy(camera.position).normalize();
+  _sunRight.crossVectors(_sunDir, _Y);
+  if (_sunRight.lengthSq() < 0.01) _sunRight.set(1, 0, 0);
+  _sunRight.normalize();
+  _sunTarget.copy(_sunDir).multiplyScalar(115).addScaledVector(_sunRight, 55).addScaledVector(_Y, 45);
+  sun.position.lerp(_sunTarget, 1 - Math.exp(-2.5 * dt));
   renderer.render(scene, camera);
 }
 tick();
