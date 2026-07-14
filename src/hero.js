@@ -171,7 +171,7 @@ export function makeFlagRow() {
   const xs = [-8, -4, 0, 4, 8];
   order.forEach((key, i) => {
     const x = xs[i];
-    const z = 10.4 - Math.abs(x) * 0.12;      // shallow arc facing the walk
+    const z = 0.5 - Math.abs(x) * 0.12;       // shallow arc, centred on the row
     const ground = -((x * x + z * z) / 84);   // follow the globe falling away
     const unit = new THREE.Group();
     unit.position.set(x, ground, z);

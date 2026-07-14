@@ -451,10 +451,11 @@ registerPoi(tower, 'hq');
     },
   });
 }
-// brand flag plaza at the foot of the entrance steps
+// brand flag plaza at the foot of the entrance steps — its own movable so it
+// can be repositioned in the ?edit layout editor
 {
   const flagRow = makeFlagRow();
-  tower.add(flagRow.group);
+  placeM('flag-row', flagRow.group, 76.2, -70, THREE.MathUtils.degToRad(-70), 0.35);
   animators.push({ update: flagRow.update });
 }
 // plaza dressing
