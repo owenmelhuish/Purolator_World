@@ -124,23 +124,40 @@ function dollarToken() {
   return t;
 }
 
-/** Station booth (3.0 × 2.4 × 3.2) — labelled header, worker at a lit screen. */
+/** Station booth pod — smooth beveled shell, vaulted roof with ridge,
+ *  labelled header, and a worker at a lit screen inside. */
 function zwBooth(label) {
   const g = new THREE.Group();
-  const shellM = mat(ZW_LGRAY, { roughness: 0.55 });
-  const coolM = mat(ZW_CGRAY, { roughness: 0.7 });
-  g.add(rbox(3.2, 0.16, 2.6, coolM, 0, 0.08, 0, 0.05));
-  g.add(rbox(3.0, 3.2, 0.35, shellM, 0, 1.68, -1.05, 0.1));   // back
-  g.add(rbox(0.3, 3.2, 2.4, shellM, -1.35, 1.68, 0, 0.1));    // sides
-  g.add(rbox(0.3, 3.2, 2.4, shellM, 1.35, 1.68, 0, 0.1));
-  g.add(rbox(3.25, 0.4, 2.7, shellM, 0, 3.32, 0, 0.12));      // roof
+  const shellM = mat(ZW_LGRAY, { roughness: 0.45 });
+  const coolM = mat(ZW_CGRAY, { roughness: 0.6 });
+  // floor pad with soft bevel
+  g.add(rbox(3.25, 0.22, 2.8, coolM, 0, 0.11, 0, 0.09));
+  // shell: thick beveled back + sides
+  g.add(rbox(2.9, 3.15, 0.42, shellM, 0, 1.72, -1.08, 0.17));
+  g.add(rbox(0.44, 3.15, 2.45, shellM, -1.27, 1.72, 0, 0.17));
+  g.add(rbox(0.44, 3.15, 2.45, shellM, 1.27, 1.72, 0, 0.17));
+  // vaulted roof cap + white ridge
+  g.add(rbox(3.2, 0.52, 2.85, shellM, 0, 3.42, 0, 0.22));
+  g.add(rbox(1.7, 0.2, 2.25, mat(0xffffff, { roughness: 0.4 }), 0, 3.76, 0, 0.09));
+  // slim LED lip under the roof edge
+  const lip = box(2.5, 0.05, 0.05, LED_BLUE, 0, 3.14, 1.36);
+  lip.castShadow = false;
+  g.add(lip);
   // dark header with the stage label
   const head = facePanel(2.55, 0.6, 0.16,
     emissiveSign(label, null, { bg: '#33415c', w: 384, h: 96, fontSize: 54 }),
     mat(0x33415c));
   head.position.set(0, 2.78, 1.3);
   g.add(head);
-  // interior: desk, lit screen, seated worker
+  // interior: rug, whiteboard, desk, lit screen, papers, seated worker
+  const rug = rbox(2.0, 0.05, 1.7, mat(0xdfe7f2, { roughness: 0.8 }), 0, 0.24, 0.15, 0.02);
+  rug.castShadow = false;
+  g.add(rug);
+  const board = facePanel(1.15, 0.75, 0.05, new THREE.MeshStandardMaterial({
+    color: 0xfdfefe, emissive: 0xffffff, emissiveIntensity: 0.12, roughness: 0.4,
+  }), shellM);
+  board.position.set(-0.75, 2.15, -0.83);
+  g.add(board);
   g.add(box(1.7, 0.08, 0.6, mat(0xffffff, { roughness: 0.5 }), 0, 1.05, -0.45));
   g.add(box(0.08, 1.0, 0.08, coolM, -0.7, 0.55, -0.45));
   g.add(box(0.08, 1.0, 0.08, coolM, 0.7, 0.55, -0.45));
@@ -150,6 +167,10 @@ function zwBooth(label) {
   scr.position.set(0, 1.75, -0.78);
   scr.rotation.y = Math.PI; // face the worker
   g.add(scr);
+  const papers = box(0.34, 0.04, 0.26, mat(0xffffff, { roughness: 0.6 }), 0.55, 1.11, -0.4);
+  papers.rotation.y = 0.4;
+  papers.castShadow = false;
+  g.add(papers);
   const p = requestFigure({ seated: true, scale: 0.95 });
   p.position.set(0, 0.12, 0.15);
   p.rotation.y = Math.PI / 2; // face the desk (-Z)
@@ -230,34 +251,42 @@ function zwEmblemSprites() {
 
 export function makeZeroWasteVignette() {
   const group = new THREE.Group();
-  const shellM = mat(ZW_LGRAY, { roughness: 0.6 });
-  const coolM = mat(ZW_CGRAY, { roughness: 0.75 });
+  const shellM = mat(ZW_LGRAY, { roughness: 0.5 });
+  const coolM = mat(ZW_CGRAY, { roughness: 0.65 });
   const RX = 7.5;        // circular-side centre
-  const BASE = 0.6;      // base plinth top
+  const BASE = 0.92;     // plinth walking surface
 
-  // --- merged base: rectangular left, circular right, cool-gray skirt
-  group.add(rbox(16, 0.6, 14, shellM, -6.5, 0.3, 0, 0.15));
-  group.add(cyl(7.6, 7.8, 0.6, shellM, RX, 0.3, 0, 56));
-  group.add(rbox(16.4, 0.22, 14.4, coolM, -6.5, 0.11, 0, 0.08));
-  group.add(cyl(7.9, 8.0, 0.22, coolM, RX, 0.11, 0, 56));
+  // --- one smooth encapsulating plinth: teardrop outline, beveled edges
+  {
+    const s = new THREE.Shape();
+    const CR = 7.9;                     // right bulge radius
+    const AY = Math.asin(7.2 / CR);     // where the straight edges meet the bulge
+    const AX = 7.5 + Math.cos(AY) * CR;
+    s.absarc(7.5, 0, CR, -AY, AY, false);
+    s.lineTo(-12.4, 7.2);
+    s.quadraticCurveTo(-14.6, 7.2, -14.6, 5.0);
+    s.lineTo(-14.6, -5.0);
+    s.quadraticCurveTo(-14.6, -7.2, -12.4, -7.2);
+    s.lineTo(AX, -7.2);
+    const plinth = new THREE.Mesh(new THREE.ExtrudeGeometry(s, {
+      depth: 0.46, bevelEnabled: true, bevelThickness: 0.23, bevelSize: 0.34, bevelSegments: 5, curveSegments: 48,
+    }), shellM);
+    plinth.rotation.x = -Math.PI / 2;
+    plinth.position.y = 0.23;
+    plinth.castShadow = true;
+    plinth.receiveShadow = true;
+    group.add(plinth);
+    // wider cool-gray skirt slab underneath
+    const skirt = new THREE.Mesh(new THREE.ExtrudeGeometry(s, {
+      depth: 0.1, bevelEnabled: true, bevelThickness: 0.08, bevelSize: 0.55, bevelSegments: 3, curveSegments: 48,
+    }), coolM);
+    skirt.rotation.x = -Math.PI / 2;
+    skirt.position.y = 0.08;
+    skirt.receiveShadow = true;
+    group.add(skirt);
+  }
 
   // === LEFT — the old way =====================================================
-  // back wall
-  group.add(rbox(14.8, 3.6, 0.45, shellM, -6.9, BASE + 1.8, -6.6, 0.12));
-  group.add(box(14.8, 0.2, 0.5, coolM, -6.9, BASE + 3.7, -6.6));
-  // flow arrows on the wall between stations
-  const arrowM = mat(0xffffff, { roughness: 0.6 });
-  for (const ax of [-10.9, -7.7, -4.5]) {
-    const bar = box(0.9, 0.16, 0.08, arrowM, ax, BASE + 2.9, -6.34);
-    bar.castShadow = false;
-    group.add(bar);
-    const h1 = box(0.4, 0.14, 0.08, arrowM, ax + 0.5, BASE + 2.99, -6.34);
-    h1.rotation.z = -0.7;
-    const h2 = box(0.4, 0.14, 0.08, arrowM, ax + 0.5, BASE + 2.81, -6.34);
-    h2.rotation.z = 0.7;
-    h1.castShadow = h2.castShadow = false;
-    group.add(h1, h2);
-  }
   // four station booths
   ['BRIEF', 'TECH', 'MEDIA', 'CREATIVE'].forEach((label, i) => {
     const booth = zwBooth(label);
@@ -272,18 +301,18 @@ export function makeZeroWasteVignette() {
   group.add(lbelt);
 
   // the leak: static spilled parcels + tokens under a red glow at the belt end
-  const spillGlow = box(3.4, 0.04, 3.6, new THREE.MeshBasicMaterial({
+  const spillGlow = box(2.9, 0.04, 3.2, new THREE.MeshBasicMaterial({
     color: 0xff4d4f, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false,
-  }), 1.3, BASE + 0.03, -0.9);
+  }), 0.1, BASE + 0.03, -1.3);
   spillGlow.castShadow = false;
   group.add(spillGlow);
-  for (const [sx, sz, ry, rz] of [[0.7, -1.6, 0.5, 1.1], [1.7, -0.7, 1.3, 0], [1.1, 0.3, 2.2, -0.9]]) {
+  for (const [sx, sz, ry, rz] of [[-0.5, -1.6, 0.5, 1.1], [0.3, -0.8, 1.3, 0], [-0.2, 0.1, 2.2, -0.9]]) {
     const dead = zwParcel(0.85);
     dead.position.set(sx, BASE + 0.05, sz);
     dead.rotation.set(0, ry, rz);
     group.add(dead);
   }
-  for (const [tx, tz] of [[0.4, -0.4], [1.9, -1.9], [2.3, 0.2], [0.9, 0.9], [2.6, -1.0]]) {
+  for (const [tx, tz] of [[-0.8, -0.5], [0.5, -2.0], [0.2, 0.6], [-0.3, 0.8], [0.2, -1.2]]) {
     const tok = dollarToken();
     tok.position.set(tx, BASE + 0.08, tz);
     tok.rotation.y = Math.random() * Math.PI;
@@ -301,21 +330,93 @@ export function makeZeroWasteVignette() {
   }
 
   // === RIGHT — the ZeroWaste™ way ============================================
-  // raised round platform + steps of glow
-  group.add(cyl(4.15, 4.35, 0.62, mat(0xffffff, { roughness: 0.5 }), RX, BASE + 0.31, 0, 48));
+  // recessed conveyor channel sunk into the plinth, glowing blue rims
+  const CH_IN = 4.6, CH_OUT = 6.9, BELT_R = 5.65;
+  const chFloor = new THREE.Mesh(new THREE.RingGeometry(CH_IN - 0.05, CH_OUT + 0.05, 96), mat(0xb9c2cd, { roughness: 0.8 }));
+  chFloor.rotation.x = -Math.PI / 2;
+  chFloor.position.set(RX, BASE + 0.055, 0);
+  chFloor.receiveShadow = true;
+  group.add(chFloor);
+  const chBelt = new THREE.Mesh(new THREE.RingGeometry(4.95, 6.35, 96), mat(C.belt, { roughness: 0.95 }));
+  chBelt.rotation.x = -Math.PI / 2;
+  chBelt.position.set(RX, BASE + 0.16, 0);
+  chBelt.receiveShadow = true;
+  group.add(chBelt);
+  for (let i = 0; i < 40; i++) {
+    const a = (i / 40) * Math.PI * 2;
+    const rib = box(0.09, 0.025, 1.3, mat(C.beltDark), RX + Math.sin(a) * BELT_R, BASE + 0.175, Math.cos(a) * BELT_R);
+    rib.rotation.y = a;
+    rib.castShadow = false;
+    group.add(rib);
+  }
+  const wallM = new THREE.MeshStandardMaterial({ color: ZW_LGRAY, roughness: 0.5, side: THREE.DoubleSide });
+  for (const r of [CH_IN, CH_OUT]) {
+    const wall = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.42, 96, 1, true), wallM);
+    wall.position.set(RX, BASE + 0.21, 0);
+    wall.castShadow = false;
+    wall.receiveShadow = true;
+    group.add(wall);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(r, 0.075, 10, 96), mat(0xffffff, { roughness: 0.4 }));
+    rim.rotation.x = Math.PI / 2;
+    rim.position.set(RX, BASE + 0.42, 0);
+    rim.castShadow = false;
+    group.add(rim);
+    const led = new THREE.Mesh(
+      new THREE.TorusGeometry(r + (r === CH_IN ? 0.09 : -0.09), 0.05, 8, 96),
+      new THREE.MeshBasicMaterial({ color: 0x4f9fe8, transparent: true, opacity: 0.65, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    led.rotation.x = Math.PI / 2;
+    led.position.set(RX, BASE + 0.34, 0);
+    led.castShadow = false;
+    group.add(led);
+  }
+  // bright light streaks sweeping around the channel
+  const arcsG = new THREE.Group();
+  arcsG.position.set(RX, BASE + 0.3, 0);
+  arcsG.rotation.x = Math.PI / 2;
+  for (let i = 0; i < 3; i++) {
+    const arc = new THREE.Mesh(
+      new THREE.TorusGeometry(BELT_R, 0.07, 8, 48, 0.85),
+      new THREE.MeshBasicMaterial({ color: 0xbfe4ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false })
+    );
+    arc.rotation.z = (i / 3) * Math.PI * 2;
+    arc.castShadow = false;
+    arcsG.add(arc);
+  }
+  group.add(arcsG);
+
+  // raised beveled dais inside the ring
+  group.add(cyl(4.15, 4.32, 0.55, mat(0xffffff, { roughness: 0.5 }), RX, BASE + 0.275, 0, 64));
+  const daisRim = new THREE.Mesh(new THREE.TorusGeometry(4.13, 0.08, 10, 96), mat(0xffffff, { roughness: 0.35 }));
+  daisRim.rotation.x = Math.PI / 2;
+  daisRim.position.set(RX, BASE + 0.55, 0);
+  daisRim.castShadow = false;
+  group.add(daisRim);
   const platGlow = new THREE.Mesh(
-    new THREE.TorusGeometry(4.3, 0.07, 8, 64),
+    new THREE.TorusGeometry(4.28, 0.06, 8, 96),
     new THREE.MeshBasicMaterial({ color: ZW_ACCENT, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false })
   );
   platGlow.rotation.x = Math.PI / 2;
-  platGlow.position.set(RX, BASE + 0.64, 0);
+  platGlow.position.set(RX, BASE + 0.44, 0);
   platGlow.castShadow = false;
   group.add(platGlow);
 
-  const TOP = BASE + 0.62; // platform walking surface
-  // round table + centre emitter
-  group.add(cyl(0.5, 0.62, 0.72, coolM, RX, TOP + 0.36, 0, 16));
-  group.add(cyl(2.25, 2.25, 0.12, mat(0xffffff, { roughness: 0.42 }), RX, TOP + 0.78, 0, 40));
+  const TOP = BASE + 0.55; // dais walking surface
+  // round table: pedestal, beveled white top, glowing inlay + centre emitter
+  group.add(cyl(0.5, 0.62, 0.72, coolM, RX, TOP + 0.36, 0, 24));
+  group.add(cyl(2.25, 2.25, 0.12, mat(0xffffff, { roughness: 0.42 }), RX, TOP + 0.78, 0, 56));
+  const tableRim = new THREE.Mesh(new THREE.TorusGeometry(2.24, 0.05, 8, 72), mat(0xffffff, { roughness: 0.35 }));
+  tableRim.rotation.x = Math.PI / 2;
+  tableRim.position.set(RX, TOP + 0.84, 0);
+  tableRim.castShadow = false;
+  group.add(tableRim);
+  const inlay = new THREE.Mesh(new THREE.RingGeometry(1.05, 1.45, 48), new THREE.MeshStandardMaterial({
+    color: 0xdceaff, emissive: 0x4f9fe8, emissiveIntensity: 0.35, roughness: 0.4,
+  }));
+  inlay.rotation.x = -Math.PI / 2;
+  inlay.position.set(RX, TOP + 0.845, 0);
+  inlay.castShadow = false;
+  group.add(inlay);
   group.add(cyl(0.4, 0.45, 0.08, mat(ZW_ACCENT, { roughness: 0.4, emissive: 0x4f9fe8, emissiveIntensity: 0.8 }), RX, TOP + 0.88, 0, 20));
   // chairs + team + laptops around the table
   for (let k = 0; k < 8; k++) {
@@ -345,34 +446,8 @@ export function makeZeroWasteVignette() {
     group.add(lap);
   }
 
-  // circular conveyor ring around the platform
-  const RING_R = 5.6;
-  const SEGS = 18;
-  const segLen = (2 * Math.PI * RING_R) / SEGS;
-  for (let i = 0; i < SEGS; i++) {
-    const a0 = (i / SEGS) * Math.PI * 2;
-    const a1 = ((i + 1) / SEGS) * Math.PI * 2;
-    const mx = RX + Math.sin((a0 + a1) / 2) * RING_R;
-    const mz = Math.cos((a0 + a1) / 2) * RING_R;
-    const seg = beltSegment(segLen * 1.02, 0.88);
-    seg.position.set(mx, BASE, mz);
-    seg.rotation.y = (a0 + a1) / 2 + Math.PI / 2;
-    group.add(seg);
-  }
-  // twin LED glow rings hugging the conveyor
-  for (const [rr, yy, op] of [[RING_R - 0.85, BASE + 0.35, 0.55], [RING_R + 0.85, BASE + 0.35, 0.55], [RING_R, BASE + 0.94, 0.35]]) {
-    const ring = new THREE.Mesh(
-      new THREE.TorusGeometry(rr, 0.06, 8, 72),
-      new THREE.MeshBasicMaterial({ color: 0x4f9fe8, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false })
-    );
-    ring.rotation.x = Math.PI / 2;
-    ring.position.set(RX, yy, 0);
-    ring.castShadow = false;
-    group.add(ring);
-  }
-
   // riders: parcels + live dashboards circling — nothing ever falls
-  const RING_Y = BASE + 0.9;
+  const RING_Y = BASE + 0.2;
   const riders = [];
   for (let i = 0; i < 12; i++) {
     let obj;
@@ -438,9 +513,17 @@ export function makeZeroWasteVignette() {
   const orbLight = new THREE.PointLight(0x7fb8ff, 14, 16, 2);
   orbLight.position.set(RX, ORB_Y - 1, 0);
   group.add(orbLight);
+  // white halo ring floating between orb and table
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.13, 12, 64), new THREE.MeshStandardMaterial({
+    color: 0xffffff, emissive: 0xcfe6ff, emissiveIntensity: 0.75, roughness: 0.3,
+  }));
+  halo.rotation.x = Math.PI / 2;
+  halo.position.set(RX, ORB_Y - 1.5, 0);
+  halo.castShadow = false;
+  group.add(halo);
 
   // plants bookending the split
-  for (const [px, pz] of [[-0.4, 5.6], [RX + 6.4, -3.4]]) {
+  for (const [px, pz] of [[-0.4, 5.6], [1.6, -6.0]]) {
     const plant = new THREE.Group();
     plant.add(cyl(0.28, 0.34, 0.5, coolM, 0, 0.25, 0, 12));
     const leaf = new THREE.Mesh(new THREE.IcosahedronGeometry(0.42, 1), mat(0x7fa77c, { roughness: 0.7 }));
@@ -502,15 +585,18 @@ export function makeZeroWasteVignette() {
     for (const r of riders) {
       r.t = (r.t + dt * 0.028) % 1;
       const a = r.t * Math.PI * 2;
-      r.obj.position.set(RX + Math.sin(a) * RING_R, RING_Y, Math.cos(a) * RING_R);
+      r.obj.position.set(RX + Math.sin(a) * BELT_R, RING_Y, Math.cos(a) * BELT_R);
       r.obj.rotation.y = a;
     }
+    arcsG.rotation.z = time * 0.5;
     // emblem life
     const bob = Math.sin(time * 1.3) * 0.14;
     orb.position.y = ORB_Y + bob;
     glow.position.y = ORB_Y + bob;
     arrows.position.y = ORB_Y + bob;
     label.position.y = ORB_Y + bob;
+    halo.position.y = ORB_Y - 1.5 + bob * 0.6;
+    halo.rotation.z = time * 0.4;
     arrows.material.rotation = time * 0.6;
     orb.material.emissiveIntensity = 1.0 + Math.sin(time * 2.1) * 0.25;
     cone.material.opacity = 0.11 + Math.sin(time * 1.7) * 0.04;
