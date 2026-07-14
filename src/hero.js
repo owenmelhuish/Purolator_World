@@ -265,15 +265,20 @@ export function makeStratisOrb() {
   }));
   glow.scale.setScalar(7);
   g.add(glow);
-  const label = new THREE.Sprite(new THREE.SpriteMaterial({
-    map: stratisLabelTexture(),
-    transparent: true,
-    depthWrite: false,
-    depthTest: false,
-  }));
-  label.scale.set(4.4, 2.2, 1);
-  label.renderOrder = 10;
-  g.add(label);
+  // the wordmark lives inside the glass as real geometry: front + back planes
+  // (back rotated so it never mirrors), depth-tested so the world occludes it
+  const labelTex = stratisLabelTexture();
+  for (const s of [1, -1]) {
+    // alpha-tested (not blended) so the transmissive glass pass renders it
+    const lp = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.3, 1.65),
+      new THREE.MeshBasicMaterial({ map: labelTex, alphaTest: 0.3 })
+    );
+    lp.position.z = s * 2.16; // printed on the bubble surface, crisp
+    if (s === -1) lp.rotation.y = Math.PI;
+    lp.castShadow = false;
+    g.add(lp);
+  }
   const light = new THREE.PointLight(0x9fc8ff, 40, 45, 1.8);
   g.add(light);
   g.userData.pulse = { core, glow, light };
