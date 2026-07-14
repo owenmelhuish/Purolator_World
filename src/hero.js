@@ -640,13 +640,13 @@ const GREETERS = {
     x: 1.6, z: 1.6,
   },
   CREATIVE: {
-    name: 'Gino', title: 'Executive Creative Director · Studio P',
-    line: "Hi, I'm Gino — I lead Studio P, PUSH's high-velocity creative studio. Live media signals tell us what to make next; what works gets amplified. We ship stories as reliably as Purolator ships parcels.",
+    name: 'Gino', title: 'Brand Strategy Officer · PUSH',
+    line: "Hi, I'm Gino — Brand Strategy Officer at PUSH. Studio P is our high-velocity creative studio: live media signals tell us what to make next, and what works gets amplified. We ship stories as reliably as Purolator ships parcels.",
     x: -0.9, z: 0.6,
   },
   ANALYTICS: {
-    name: 'Matt', title: 'Head of Analytics & Decision Science · PUSH',
-    line: "Hi, I'm Matt — Head of Analytics at PUSH. In 90 days STRATIS surfaced 189 insights no dashboard showed, and took decisions 10× faster. Up here, every idea has proof behind it.",
+    name: 'Matt', title: 'Director of Performance & Analytics · PUSH',
+    line: "Hi, I'm Matt — Director of Performance & Analytics at PUSH. In 90 days STRATIS surfaced 189 insights no dashboard showed, and took decisions 10× faster. Up here, every idea has proof behind it.",
     x: 0.8, z: 1.6,
   },
   COLLABORATION: {
