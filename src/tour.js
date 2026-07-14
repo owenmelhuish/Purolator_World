@@ -164,7 +164,7 @@ function studioDiagram() {
     <div class="ic-diagram">
       <div class="ic-diagram-title">One idea in, variants at scale out</div>
       <div class="ic-panel">
-        <svg viewBox="0 0 320 260">
+        <svg viewBox="0 0 320 240">
           ${brands.map(([b, x], i) => `
             <path class="sp-link" pathLength="100" d="M${x + 44} 26 C ${x + 44} 38, 160 36, 160 46" style="animation-delay:${(0.35 + i * 0.08).toFixed(2)}s"/>
             <g class="rise" style="animation-delay:${(0.1 + i * 0.1).toFixed(2)}s">
@@ -173,7 +173,7 @@ function studioDiagram() {
             </g>`).join('')}
           <g class="rise" style="animation-delay:0.55s">
             <rect class="sp-bar" x="10" y="48" width="300" height="26" rx="13"/>
-            <text class="sp-bart" x="160" y="65">ONE NARRATIVE: PROMISES, DELIVERED</text>
+            <text class="sp-bart" x="160" y="65">PUSH + STUDIO P</text>
           </g>
           ${tiles.map(([t, x], i) => `
             <path class="sp-link" pathLength="100" d="M160 76 C 160 88, ${x + 35.5} 86, ${x + 35.5} 100" style="animation-delay:${(0.75 + i * 0.07).toFixed(2)}s"/>
@@ -184,7 +184,6 @@ function studioDiagram() {
             <path class="sp-link" pathLength="100" d="M ${x + 35.5} 126 C ${x + 35.5} 137, ${33 + i * 72} 136, ${33 + i * 72} 147" style="animation-delay:${(1.0 + i * 0.05).toFixed(2)}s"/>
             <path class="sp-link" pathLength="100" d="M ${x + 35.5} 126 C ${x + 35.5} 137, ${69 + i * 72} 136, ${69 + i * 72} 147" style="animation-delay:${(1.05 + i * 0.05).toFixed(2)}s"/>`).join('')}
           ${wall.join('')}
-          <text class="sp-wallt" x="160" y="252">ONE IDEA · EVERY AUDIENCE · EVERY FORMAT · ALWAYS FRESH</text>
         </svg>
       </div>
     </div>`;
