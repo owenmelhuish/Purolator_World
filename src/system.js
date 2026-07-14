@@ -178,6 +178,44 @@ function zwBooth(label) {
   return g;
 }
 
+/** Traditional cubicle — fabric partitions, desk, monitor, seated worker. */
+function zwCubicle(withWorker = true) {
+  const g = new THREE.Group();
+  const panelM = mat(0xc7cfda, { roughness: 0.85 });
+  const trimM = mat(0xaab3c2, { roughness: 0.6 });
+  const deskM = mat(0xffffff, { roughness: 0.5 });
+  // partitions: back + sides with lighter top trim
+  g.add(rbox(2.2, 1.45, 0.12, panelM, 0, 0.72, -1.05, 0.04));
+  g.add(rbox(0.12, 1.45, 2.1, panelM, -1.05, 0.72, 0, 0.04));
+  g.add(rbox(0.12, 1.45, 2.1, panelM, 1.05, 0.72, 0, 0.04));
+  g.add(box(2.24, 0.06, 0.16, trimM, 0, 1.48, -1.05));
+  g.add(box(0.16, 0.06, 2.14, trimM, -1.05, 1.48, 0));
+  g.add(box(0.16, 0.06, 2.14, trimM, 1.05, 1.48, 0));
+  // desk along the back
+  g.add(box(1.8, 0.07, 0.62, deskM, 0, 0.78, -0.62));
+  g.add(box(0.07, 0.75, 0.55, trimM, -0.82, 0.4, -0.62));
+  g.add(box(0.07, 0.75, 0.55, trimM, 0.82, 0.4, -0.62));
+  // monitor on a stub stand
+  const scr = facePanel(0.6, 0.42, 0.05, new THREE.MeshStandardMaterial({
+    color: 0x16233f, emissive: 0x2f68d8, emissiveIntensity: 0.8, roughness: 0.35,
+  }), mat(0x16233f));
+  scr.position.set(0, 1.18, -0.78);
+  scr.rotation.y = Math.PI; // face the worker
+  g.add(scr);
+  g.add(box(0.06, 0.16, 0.06, trimM, 0, 0.94, -0.78));
+  const papers = box(0.3, 0.04, 0.22, deskM, -0.55, 0.83, -0.55);
+  papers.rotation.y = -0.3;
+  papers.castShadow = false;
+  g.add(papers);
+  if (withWorker) {
+    const p = requestFigure({ seated: true, scale: 0.9 });
+    p.position.set(0, 0.1, 0.15);
+    p.rotation.y = Math.PI / 2; // face the desk (-Z)
+    g.add(p);
+  }
+  return g;
+}
+
 /** Simple blue task chair for the round table. */
 function zwChair() {
   const g = new THREE.Group();
@@ -299,6 +337,16 @@ export function makeZeroWasteVignette() {
   const lbelt = beltSegment(14.2, 0.92);
   lbelt.position.set(-7.3, BASE, L_Z);
   group.add(lbelt);
+
+  // cubicle farm on the front apron — the traditional model, rigid rows
+  [
+    [-12.2, 1.7], [-9.4, 1.7], [-6.6, 1.7],
+    [-12.2, 4.5], [-9.4, 4.5], [-6.6, 4.5],
+  ].forEach(([cx, cz], i) => {
+    const cube = zwCubicle(i !== 4); // one empty seat: someone quit
+    cube.position.set(cx, BASE, cz);
+    group.add(cube);
+  });
 
   // the leak: static spilled parcels + tokens under a red glow at the belt end
   const spillGlow = box(2.9, 0.04, 3.2, new THREE.MeshBasicMaterial({
