@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { createWorldApp } from '../engine.js';
 import { dirFromLatLon, CirclePath, pathPlace } from '../globe.js';
-import { makeTree, makeLamppost, makeBench, makeOfficeBlock, makeHouse } from '../factories.js';
+import { makeTree, makeLamppost, makeBench, makeHouse } from '../factories.js';
 import { makePerson, makeLoco, makeFreightCar } from '../hero.js';
 import {
   makeArtBillboard, makeScreenTower, makeConifer, makeBus, makeStreetcar, makeCar, makeFlag,
@@ -12,6 +12,7 @@ import {
   makeFrostTree, makeFrostShrub, streetcarWrap, busWrap,
   makeTorontoCluster, makeBroadcastStudio, makeDriveIn, makeSocialPylon,
   makeResidenceHall, makeArboretum, makeTransitPlatform, makeCampusBannerPair,
+  makeHumberTower,
 } from './humber-builds.js';
 import BAKED_LAYOUT from '../layout-humber.json';
 
@@ -22,18 +23,20 @@ import BAKED_LAYOUT from '../layout-humber.json';
 // ---------------------------------------------------------------------------
 
 const THEME = {
-  skyTop: '#4f7cc9', skyBase: '#7ea6e0', skyHorizon: '#d9d4ee',
-  bg: 0x7ea6e0, fog: 0xaabbde, haloRGB: '214,212,238',
-  hemi: [0xffffff, 0xb9c4de], ambient: 0xf2f4fb,
-  sun: 0xfef6ea, fill: 0xd9def4,
+  // Humber twilight — the campaign's black-stage-and-spotlight feel: deep navy
+  // dusk sky, icy steel-blue light, the campus reading like a lit stage
+  skyTop: '#12244c', skyBase: '#31508a', skyHorizon: '#9fb2d4',
+  bg: 0x31508a, fog: 0x4d6190, haloRGB: '159,178,212',
+  hemi: [0xe8eeff, 0x3d4a66], ambient: 0xd9dfef,
+  sun: 0xffeed8, fill: 0xa9b9dd,
   globe: {
-    land: 0xedf0f7, sand: 0xe4e0d0, seabed: 0xb7c6e0,
-    water: 0x4a7fc4, pond: 0x6ea3d8, pondRim: 0xdde5f2,
+    land: 0xdfe4ee, sand: 0xcdd2de, seabed: 0x7d94bd,
+    water: 0x1f4278, pond: 0x2d5288, pondRim: 0xc6d0e2,
   },
-  road: { base: 0xc6cfe0, surface: 0xd4dcea, curb: 0xf3f6fb },
-  foundation: 0xe4e8f1,
+  road: { base: 0xb6c0d5, surface: 0xc5cfe1, curb: 0xe8edf6 },
+  foundation: 0xd8deeb,
   pin: 0x5c068c,
-  veil: '#e6e2f4',
+  veil: '#c3cde2',
   home: { lat: 30, lon: -70, dist: 228 },
 };
 
@@ -155,11 +158,11 @@ function build(ctx) {
   // --- the screen corner (Sankofa Square cue) --------------------------------------
   {
     const corner = new THREE.Group();
-    const t1 = makeScreenTower(adsHU.campaign, { w: 8.5, h: 15, d: 7, bodyColor: 0xd9dfeb });
+    const t1 = makeScreenTower(adsHU.campaign, { w: 8.5, h: 15, d: 7, bodyColor: 0x1b2946 });
     t1.position.set(-4.5, 0, -1.5);
     t1.rotation.y = 0.35;
     corner.add(t1);
-    const t2 = makeScreenTower(adsHU.applyNow, { w: 7, h: 11, d: 6, bodyColor: 0xcfd6e4 });
+    const t2 = makeScreenTower(adsHU.applyNow, { w: 7, h: 11, d: 6, bodyColor: 0x232c40 });
     t2.position.set(4.2, 0, -3.2);
     t2.rotation.y = -0.4;
     corner.add(t2);
@@ -299,23 +302,23 @@ function build(ctx) {
     let bi = 0;
     for (const b of BLOCKS) {
       bi++;
-      plate(null, b.lat, b.lon, b.big ? 0.17 : 0.13, 0.22, 0xe9edf5);
+      plate(null, b.lat, b.lon, b.big ? 0.17 : 0.13, 0.22, 0x3a4560);
       const put = (obj, du, dv, ry = 0) => {
         const lat = b.lat + dv / 0.733;
         const lon = b.lon + du / (0.733 * Math.cos(THREE.MathUtils.degToRad(b.lat)));
         placeSmall(`blk${bi}-${Math.round(du * 10)}-${Math.round(dv * 10)}`, obj, lat, lon, ry, 0.24);
       };
-      const o1 = makeOfficeBlock(bi, 4.2 + (bi % 3));
+      const o1 = makeHumberTower(bi, 4.2 + (bi % 3));
       put(o1, -1.5, -0.7, 0.2);
-      const o2 = makeOfficeBlock(bi + 1, 3.2 + ((bi + 1) % 2));
+      const o2 = makeHumberTower(bi + 1, 3.2 + ((bi + 1) % 2));
       put(o2, 1.6, 0.8, -0.2);
       if (b.big) {
         // downtown cluster: a couple of proper towers + an infill office
-        const t1 = makeOfficeBlock(bi + 2, 7 + (bi % 3));
+        const t1 = makeHumberTower(bi + 2, 7 + (bi % 3));
         put(t1, 0.3, -2.6, -0.4);
-        const t2 = makeOfficeBlock(bi + 3, 5 + ((bi + 1) % 3));
+        const t2 = makeHumberTower(bi + 3, 5 + ((bi + 1) % 3));
         put(t2, 3.4, -1.2, 0.5);
-        const o3 = makeOfficeBlock(bi + 5, 3 + (bi % 2));
+        const o3 = makeHumberTower(bi + 5, 3 + (bi % 2));
         put(o3, -3.2, 1.1, 0.9);
       }
       if (bi % 2 === 0) {

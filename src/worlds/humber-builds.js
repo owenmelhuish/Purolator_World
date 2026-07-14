@@ -315,6 +315,67 @@ function makeTypeSculpture() {
   return g;
 }
 
+// --- downtown tower in the Humber palette: navy/charcoal body, lit windows ---
+const _twrMats = new Map();
+function towerFacade(bodyHex, seed, rows) {
+  const key = `${bodyHex}|${seed}|${rows}`;
+  if (_twrMats.has(key)) return _twrMats.get(key);
+  const cv = document.createElement('canvas');
+  cv.width = 128;
+  cv.height = 256;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = `#${bodyHex.toString(16).padStart(6, '0')}`;
+  ctx.fillRect(0, 0, 128, 256);
+  let s = seed | 0;
+  const rnd = () => { s = (s * 1664525 + 1013904223) | 0; return ((s >>> 8) & 0xffff) / 0xffff; };
+  const cols = 4;
+  const cw = 128 / cols;
+  const rh = 256 / rows;
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const v = rnd();
+      // mostly dim steel-blue glass, some windows lit gold or ice
+      ctx.fillStyle = v > 0.84 ? '#f2cf7e' : v > 0.64 ? '#c6d7f2' : 'rgba(118,138,178,0.35)';
+      ctx.fillRect(c * cw + cw * 0.22, r * rh + rh * 0.24, cw * 0.56, rh * 0.48);
+    }
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const m = new THREE.MeshStandardMaterial({
+    map: tex, emissive: 0xffffff, emissiveIntensity: 0.26, emissiveMap: tex, roughness: 0.6,
+  });
+  _twrMats.set(key, m);
+  return m;
+}
+
+export function makeHumberTower(variant = 0, h = 5) {
+  const g = new THREE.Group();
+  const BODIES = [HU.navy, HU.stage, 0x232c40, 0x35547e];
+  const bodyHex = BODIES[variant % 4];
+  const W = 3.4 + (variant % 2) * 0.8;
+  const D = 3.0 + (variant % 3) * 0.5;
+  const facade = towerFacade(bodyHex, variant * 7 + 3, Math.max(6, Math.round(h * 1.7)));
+  const solid = mat(bodyHex, { roughness: 0.6 });
+  const bm = new THREE.Mesh(new THREE.BoxGeometry(W, h, D), [facade, facade, solid, solid, facade, facade]);
+  bm.position.y = h / 2 + 0.1;
+  bm.castShadow = true;
+  bm.receiveShadow = true;
+  g.add(bm);
+  g.add(box(W + 0.4, 1.1, D + 0.4, mat(0x2c374e, { roughness: 0.85 }), 0, -0.3, 0)); // sunk plinth
+  const capM = variant % 3 === 0 ? mat(HU.gold, { roughness: 0.45 }) : mat(HU.ice3, { roughness: 0.55 });
+  g.add(box(W + 0.2, 0.28, D + 0.2, capM, 0, h + 0.22, 0));                          // parapet
+  g.add(box(0.9, 0.5, 0.7, mat(0x39445c, { roughness: 0.6 }), W / 5, h + 0.6, -D / 6)); // rooftop unit
+  g.add(box(1.0, 1.7, 0.12, mat(HU.gold, { roughness: 0.5 }), 0, 0.95, D / 2 + 0.08)); // lit entrance
+  if (variant % 3 === 0) {
+    const sign = box(W * 0.5, 0.3, 0.1, new THREE.MeshStandardMaterial({
+      color: 0xffffff, emissive: 0xcfe0ff, emissiveIntensity: 0.7, roughness: 0.4,
+    }), 0, h - 0.55, D / 2 + 0.07);
+    sign.castShadow = false;
+    g.add(sign);
+  }
+  return g;
+}
+
 export function makeCampaignStage() {
   const g = new THREE.Group();
   // glossy black stage disc, stepped
