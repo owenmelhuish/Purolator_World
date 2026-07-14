@@ -241,12 +241,15 @@ function stratisDiagram() {
 
 // PUSH + Studio P + STRATIS — the closed loop as an infinity, built for momentum
 function loopDiagram() {
-  // 3D tube infinity: media loop left, creative loop right, STRATIS veins wrapping around
+  // top-down conveyor-belt infinity: parcels ride the loop through STRATIS scan gates
   const INF = "M 160 78 C 122 26, 42 34, 42 78 C 42 122, 122 130, 160 78 C 198 26, 278 34, 278 78 C 278 122, 198 130, 160 78";
   const OVER = "M 140.5 97.4 C 150 90.6, 170 65.4, 179.5 58.6";
   const GAP = "M 148 91 C 154 85.5, 166 70.5, 172 65";
-  const VEIN1 = "M 160 78 C 126 124, 48 118, 48 78 C 48 38, 126 32, 160 78 C 194 124, 272 118, 272 78 C 272 38, 194 32, 160 78";
-  const VEIN2 = "M 160 78 C 118 8, 30 20, 30 78 C 30 132, 118 146, 160 78 C 202 8, 290 20, 290 78 C 290 132, 202 146, 160 78";
+  const parcels = [[0, 'k'], [-2.25, 'k'], [-4.5, 'p'], [-6.75, 'k']].map(([d, kind]) => `
+          <g class="inf-box" style="offset-path: path('${INF}'); animation-delay: ${d}s">
+            <rect class="${kind === 'k' ? 'bx-k' : 'bx-p'}" x="-4.6" y="-3.4" width="9.2" height="6.8" rx="1"/>
+            <line class="${kind === 'k' ? 'bx-tape' : 'bx-red'}" x1="0" y1="-3.4" x2="0" y2="3.4"/>
+          </g>`).join('');
   return `
     <div class="ic-diagram">
       <div class="ic-diagram-title">A closed-loop system built for momentum</div>
@@ -258,7 +261,6 @@ function loopDiagram() {
             <path id="inf-g3" d="M 178 40 C 208 6, 250 6, 266 36" fill="none"/>
           </defs>
           <path class="inf-shadow" d="${INF}"/>
-          <path class="inf-vein inf-vein2" d="${VEIN2}"/>
           <path class="inf-t1" d="${INF}"/>
           <path class="inf-t2" d="${INF}"/>
           <path class="inf-t3" d="${INF}"/>
@@ -266,10 +268,9 @@ function loopDiagram() {
           <path class="inf-t1" d="${OVER}"/>
           <path class="inf-t2" d="${OVER}"/>
           <path class="inf-t3" d="${OVER}"/>
-          <path class="inf-vein" d="${VEIN1}"/>
-          <circle class="inf-vdot" r="2.6" style="offset-path: path('${VEIN1}')"/>
-          <circle class="inf-vdot" r="2.2" style="offset-path: path('${VEIN2}'); animation-delay: -2.5s; animation-duration: 6.5s"/>
-          <circle class="inf-dot" r="4.4" style="offset-path: path('${INF}')"/>
+          ${parcels}
+          <path class="inf-gate" d="M 86.8 33 L 86.8 51"/>
+          <path class="inf-gate" d="M 233.3 105 L 233.3 123" style="animation-delay: 0.7s"/>
           <text class="inf-name" x="96" y="83">MEDIA</text>
           <text class="inf-name" x="224" y="83">CREATIVE</text>
           <text class="inf-curve"><textPath href="#inf-g1" startOffset="18%">STRATIS</textPath></text>
@@ -280,7 +281,7 @@ function loopDiagram() {
       <div class="ic-mini">
         <div><b>Media</b>: PUSH activates and scales across every channel</div>
         <div><b>Creative</b>: Studio P shapes work built to move with the market</div>
-        <div><b>STRATIS</b>: the veins connecting both, feeding learning back in real time</div>
+        <div><b>STRATIS</b>: the scan gates reading every signal as it moves, feeding learning back in real time</div>
         <div class="ic-mini-punch">Creative informs media. Media informs creative. Momentum compounds.</div>
       </div>
     </div>`;

@@ -400,5 +400,135 @@
         0
       ]
     }
+  },
+  "depot": {
+    "lat": 20.82,
+    "lon": 14.49,
+    "heading": 11
+  },
+  "tree-04": {
+    "lat": -57.85,
+    "lon": 145.1,
+    "heading": 196.7
+  },
+  "tree-16": {
+    "lat": -59.87,
+    "lon": 130.64,
+    "heading": 106.9
+  },
+  "tree-17": {
+    "lat": -53.36,
+    "lon": 129.03,
+    "heading": 197.2
+  },
+  "tree-51": {
+    "lat": -52.46,
+    "lon": 137.61,
+    "heading": 265.6
+  },
+  "tree-34": {
+    "lat": -74.12,
+    "lon": -81.53,
+    "heading": 92.2
+  },
+  "tree-56": {
+    "lat": -78.57,
+    "lon": 2.13,
+    "heading": 357.3
+  },
+  "tree-32": {
+    "lat": -53.62,
+    "lon": 81.53,
+    "heading": 145.3
+  },
+  "tree-44": {
+    "lat": -72.99,
+    "lon": 56.89,
+    "heading": 1.6
+  },
+  "tree-40": {
+    "lat": -48.15,
+    "lon": 92.21,
+    "heading": 77.6
+  },
+  "nbhd-hamlet-62": {
+    "lat": -57.7,
+    "lon": 102.78,
+    "heading": 22.9
+  },
+  "tree-67": {
+    "lat": -75.02,
+    "lon": 35.95,
+    "heading": 34
+  },
+  "tree-73": {
+    "lat": -84.31,
+    "lon": -59.25,
+    "heading": 47.8
+  },
+  "tree-83": {
+    "lat": -48.3,
+    "lon": 115.98,
+    "heading": 306.8
+  },
+  "billboard-one-bigger": {
+    "lat": 35.7,
+    "lon": -171.79,
+    "heading": 11.5
+  },
+  "nbhd-suburb-19": {
+    "lat": -22.68,
+    "lon": -70.26,
+    "heading": 164
+  },
+  "nbhd-suburb-20": {
+    "lat": -10.77,
+    "lon": -66.06,
+    "heading": -156
+  },
+  "nbhd-suburb-44": {
+    "lat": -25.66,
+    "lon": -139.84,
+    "heading": 20.1
+  },
+  "market-square": {
+    "lat": 11.64,
+    "lon": -37.7,
+    "heading": -39
+  },
+  "tree-19": {
+    "lat": -26.47,
+    "lon": 131.8,
+    "heading": 212.3
+  },
+  "tree-79": {
+    "lat": -24.53,
+    "lon": 139.62,
+    "heading": 159.6
+  },
+  "nbhd-suburb-40": {
+    "lat": -8.61,
+    "lon": 146.8,
+    "heading": 165.7
+  },
+  "tree-10": {
+    "lat": -12.61,
+    "lon": -163.73,
+    "heading": 345.9
+  },
+  "tree-12": {
+    "lat": -9.48,
+    "lon": -167.97,
+    "heading": 302.6
+  },
+  "nbhd-suburb-41": {
+    "lat": -14.77,
+    "lon": 150.17,
+    "heading": 0
+  },
+  "nbhd-suburb-39": {
+    "lat": -25.2,
+    "lon": 146.34,
+    "heading": -180
   }
 }
