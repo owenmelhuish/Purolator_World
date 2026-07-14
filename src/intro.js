@@ -165,7 +165,7 @@ const SLIDES = [
   `,
 ];
 
-// the real PUSH box logo, recolored from brand purple to Purolator blue
+// the real PUSH wordmark (transparent PNG), tinted Purolator blue
 let pushLogoURL = '';
 {
   const img = new Image();
@@ -175,20 +175,12 @@ let pushLogoURL = '';
     cv.height = img.height;
     const ctx = cv.getContext('2d');
     ctx.drawImage(img, 0, 0);
-    const id = ctx.getImageData(0, 0, cv.width, cv.height);
-    const d = id.data;
-    const B = [28, 79, 196]; // Purolator blue
-    for (let i = 0; i < d.length; i += 4) {
-      // every pixel is a white↔purple mix; green channel gives the mix amount
-      const k = Math.min(1, Math.max(0, (255 - d[i + 1]) / 204));
-      d[i] = 255 + (B[0] - 255) * k;
-      d[i + 1] = 255 + (B[1] - 255) * k;
-      d[i + 2] = 255 + (B[2] - 255) * k;
-    }
-    ctx.putImageData(id, 0, 0);
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = '#1c4fc4'; // Purolator blue
+    ctx.fillRect(0, 0, cv.width, cv.height);
     pushLogoURL = cv.toDataURL('image/png');
   };
-  img.src = '/push-logo.jpg';
+  img.src = '/push-wordmark.png';
 }
 
 const NAVY = '#10307c';
@@ -305,8 +297,8 @@ const CSS = `
   background:${RED};clip-path:polygon(28% 0,100% 0,72% 100%,0 100%);
   opacity:0;transform:translateX(-14px);transition:opacity .5s ease 1.2s,transform .5s ease 1.2s}
 .live .in-flash{opacity:1;transform:none}
-.in-pushlogo{width:min(460px,48vw);display:block;margin-bottom:34px;border-radius:6px;
-  box-shadow:0 18px 50px rgba(16,48,124,.22)}
+.in-pushlogo{width:min(440px,46vw);display:block;margin-bottom:34px;
+  filter:drop-shadow(0 14px 34px rgba(16,48,124,.28))}
 .in-pushline{font-size:clamp(17px,2vw,27px);line-height:1.6;font-weight:500;margin:0;color:#44557c}
 .in-pushline b{font-weight:900;color:${NAVY}}
 .in-pushline em{font-style:normal;color:${BLUE};font-weight:800}

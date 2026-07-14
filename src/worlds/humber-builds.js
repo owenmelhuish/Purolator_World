@@ -1072,11 +1072,9 @@ export function makeHumberHQ() {
       ctx.strokeStyle = 'rgba(248,250,253,0.35)';
       ctx.lineWidth = 5;
       ctx.strokeRect(8, 8, W - 16, H - 16);
-      humberLockup(ctx, 110, H / 2, 1.6, true);
-      ctx.fillStyle = '#f8fafd';
-      ctx.font = '800 82px Georgia, serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('HUMBER', 210, H / 2 + 30);
+      // the lockup already carries the HUMBER / POLYTECHNIC wordmark — draw it
+      // once, centred (a second big HUMBER used to overlap it)
+      humberLockup(ctx, 150, H / 2, 2.2, true);
     }, { emissive: 0xffffff, emissiveIntensity: 0.4 });
     t.add(rbox(8.6, 2.1, 0.5, navy, 0, 0.5 + TH - 1.6, TD / 2 + 0.32, 0.06));
     const signF = new THREE.Mesh(new THREE.PlaneGeometry(8.2, 1.85), signFace);
