@@ -55,18 +55,11 @@ const POIS = [
     stats: [['Personas', 'Vacation · Work · Family'], ['Signals', 'Live, always-on']],
     lat: 54, lon: -50, dist: 80, pinAlt: 10, side: -0.6, lookR: 43.5,
   },
-  {
-    id: 'creative',
-    title: 'Creative That Matches the Moment',
-    step: 'Case Study · Chapter 3 · The Creative',
-    body: 'A mix of pre-produced assets and dynamic inclusions builds that extra layer of relevancy, in English and en français, from "Splurge on what matters" to "Nos salles de réunions scelleront l\'accord." The whole country is the media plan: every billboard on this globe is a real execution.',
-    stats: [['Creative', 'Dynamic + pre-produced'], ['Languages', 'EN · FR']],
-    lat: 33, lon: -18, dist: 88, pinAlt: 12, side: -0.6, lookR: 43,
-  },
+  // ('creative' chapter retired per Owen — its billboards stay as scenery)
   {
     id: 'privileges',
     title: 'More Rewards, More Often',
-    step: 'Case Study · Chapter 4 · The Loyalty Loop',
+    step: 'Case Study · Chapter 3 · The Loyalty Loop',
     body: 'Choice Privileges closes the loop: book direct, earn on every stay, milestone rewards every five nights: Gold to Platinum to Diamond to Titanium. Rewards are a download away, and every install feeds the demand engine for the next trip.',
     stats: [['Program', 'Choice Privileges'], ['Tiers', 'Gold → Titanium']],
     lat: 54, lon: 58, dist: 76, pinAlt: 11, side: -0.25, lookR: 44,
@@ -74,7 +67,7 @@ const POIS = [
   {
     id: 'proof',
     title: 'ROAS 10x+',
-    step: 'Case Study · Chapter 5 · The Proof',
+    step: 'Case Study · Chapter 4 · The Proof',
     body: 'Creating demand through persona targeting delivered a return on ad spend above ten to one: sustained, measured, and compounding. That\'s what a PUSH + STRATIS world looks like when the numbers come back.',
     stats: [['Return', 'ROAS 10x+'], ['Wasted dollars', 'Zero']],
     lat: 20, lon: -15, dist: 94, pinAlt: 11, side: -0.5, lookR: 42.5,

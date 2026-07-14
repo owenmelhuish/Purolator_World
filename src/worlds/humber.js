@@ -8,7 +8,7 @@ import {
 } from './props.js';
 import {
   HU, adsHU, makeCampaignStage, makeHumberHQ, makeBarrettCTI, makeQuad,
-  makeHeritageHall, makeHawksField, makeDataPavilion, makeEnrollmentMonument,
+  makeHeritageHall, makeHawksField, makeEnrollmentMonument,
   makeFrostTree, makeFrostShrub, streetcarWrap, busWrap,
   makeTorontoCluster, makeBroadcastStudio, makeDriveIn, makeSocialPylon,
   makeResidenceHall, makeArboretum, makeTransitPlatform, makeCampusBannerPair,
@@ -65,18 +65,11 @@ const POIS = [
     stats: [['Strategy', 'Full-funnel'], ['Channels', 'OOH · TV · Digital · Transit']],
     lat: 33, lon: -18, dist: 92, pinAlt: 14, side: -0.7, lookR: 43,
   },
-  {
-    id: 'signals',
-    title: 'Signals In, Decisions Out',
-    step: 'Case Study · Chapter 4 · The System',
-    body: 'Multiple consumer targets and entry points, one live view: real-time reporting dashboards and competitive tracking watched the category move while the campaign was in flight, and let every dollar chase what was working.',
-    stats: [['Dashboards', 'Real-time'], ['Tracking', 'Competitive']],
-    lat: 54, lon: 58, dist: 70, pinAlt: 11, side: -0.7, lookR: 43.5,
-  },
+  // ('signals' chapter retired with the live-campaign-room model, per Owen)
   {
     id: 'impact',
     title: '+3% Enrollment',
-    step: 'Case Study · Chapter 5 · The Impact',
+    step: 'Case Study · Chapter 4 · The Impact',
     body: 'Impact that created action: enrollment up 3% and ahead of the competition, in a category down 10%. When the market shrank, Humber grew. That\'s what the relaunch bought.',
     stats: [['Enrollment', '+3%'], ['Category', '−10%']],
     lat: 20, lon: -15, dist: 94, pinAlt: 11, side: -0.5, lookR: 42.5,
@@ -122,7 +115,6 @@ function build(ctx) {
   foundation(76, -95, 0, 15, 15, 0.33, { round: true, name: 'barrett' });
   foundation(78, 95, 0, 18.5, 18.5, 0.32, { round: true, name: 'quad' });
   foundation(54, -50, 0, 24, 24, 0.36, { round: true, name: 'stage' });
-  foundation(54, 58, 0, 16, 16, 0.33, { round: true, name: 'signals' });
   foundation(33, -18, 0, 25, 17, 0.36, { dz: 1, name: 'city' });
   foundation(20, -15, 0, 17, 12, 0.35, { name: 'impact' });
   foundation(55, 115, 0, 19, 13.5, 0.32, { name: 'hawks' });
@@ -178,11 +170,7 @@ function build(ctx) {
     registerPoi(corner, 'city');
   }
 
-  // --- data pavilion -----------------------------------------------------------------
-  const pavilion = makeDataPavilion();
-  pavilion.scale.setScalar(1.7);
-  placeM('signals', pavilion, 54, 58, Math.PI, 0.33, 'signals');
-  registerPoi(pavilion, 'signals');
+  // (data pavilion / live campaign room removed with the 'signals' chapter)
 
   // --- +3% monument ---------------------------------------------------------------------
   const monument = makeEnrollmentMonument();
@@ -256,7 +244,7 @@ function build(ctx) {
       // stage surroundings
       [50, -46, 3], [57, -55, 3],
       // monument + pavilion
-      [22, -12, 3], [51, 54, 3],
+      [22, -12, 3],
     ];
     for (const [la, lo, n] of CROWD) {
       for (let i = 0; i < n; i++) {

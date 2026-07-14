@@ -63,18 +63,11 @@ const POIS = [
     stats: [['Channels', 'Video · Display · Audio · Custom'], ['Messaging', 'By province']],
     lat: 33, lon: -18, dist: 100, pinAlt: 14, side: -0.6, lookR: 43,
   },
-  {
-    id: 'infra',
-    title: 'The Infrastructure of Trust',
-    step: 'Case Study · Chapter 4 · The Mission',
-    body: 'This is what the campaigns protect: Canadian Shield gives every household free protected DNS, the DNS Firewall guards schools and hospitals, IXPs keep Canadian traffic in Canada, and Net Good reinvests 100% of .CA profits: $14.2M across 245 community projects and counting.',
-    stats: [['Protected', '8M+ Canadians'], ['Net Good', '$14.2M reinvested']],
-    lat: 54, lon: 58, dist: 108, pinAlt: 15, side: -0.7, lookR: 43.5,
-  },
+  // ('infra' chapter retired per Owen — the shield dome stays as scenery)
   {
     id: 'recall',
     title: '+66% Unaided Recall',
-    step: 'Case Study · Chapter 5 · The Proof',
+    step: 'Case Study · Chapter 4 · The Proof',
     body: 'Total campaign unaided recall up 66% among Canadian SMEs. The goose landed. Three worlds, three categories, one operating system: that\'s what PUSH + STRATIS builds. Now imagine the Purolator world we started in, running the same way.',
     stats: [['Unaided recall', '+66%'], ['Audience', 'Canadian SMEs']],
     lat: 20, lon: -15, dist: 112, pinAlt: 13, side: -0.5, lookR: 42.5,
