@@ -50,9 +50,9 @@ const SLIDES = [
     <p class="in-punch rv">It all has to add up to <span class="uline">one Purolator.</span></p>
   `,
 
-  // 2 · What we're seeing — four forces, stroke-drawn icons
+  // 2 · Insight — four forces, stroke-drawn icons
   () => `
-    <div class="in-kicker rv">WHAT WE'RE SEEING</div>
+    <div class="in-kicker rv">INSIGHT</div>
     <h1 class="in-h1">${words('FOUR FORCES SHAPING YOUR NEXT CHAPTER')}</h1>
     <div class="in-forces">
       ${[
@@ -70,36 +70,23 @@ const SLIDES = [
     </div>
   `,
 
-  // 3 · Insight — the market is in play, with a drawn momentum chart
-  () => `
-    <div class="in-kicker rv">INSIGHT</div>
-    <h1 class="in-h1 in-h1-xl">${words('THE MARKET IS IN PLAY')}</h1>
-    <div class="in-chart rv">
-      <svg viewBox="0 0 340 120" fill="none">
-        <path class="gridline" d="M8 104 L332 104" />
-        <path class="gridline" d="M8 64 L332 64" />
-        <path class="gridline" d="M8 24 L332 24" />
-        <path class="chartline draw-slow" pathLength="100" d="M14 100 C 70 88, 96 62, 150 70 S 240 44, 326 14" />
-        <circle class="chartdot" cx="326" cy="14" r="6" />
-      </svg>
-      <div class="in-chart-cap">Share is moving, and the moves made now hold.</div>
-    </div>
-    <div class="in-facts">
-      <div class="in-fact rv">Shippers are <b>choosing again</b>: today's choices hold for years</div>
-      <div class="in-fact rv">The border is harder: customs touches <b>almost every shipment</b></div>
-      <div class="in-fact rv">Purolator has <b>more to offer than ever</b>: cross-border and cold chain</div>
-      <div class="in-fact rv">Advantage goes to whoever serves more, and moves fastest, <b>as one</b></div>
-    </div>
-  `,
-
-  // 4 · Strategic approach — the three brands physically merge
+  // 3 · Strategic approach — the three brands physically merge
   () => `
     <div class="in-kicker rv">STRATEGIC APPROACH</div>
     <h1 class="in-h1 in-h1-xl">${words('SHOW UP AS ONE BIGGER PUROLATOR')}</h1>
     <div class="in-venn rv">
-      <div class="vc vc-a"><span>PUROLATOR</span></div>
-      <div class="vc vc-b"><span>LIVINGSTON</span></div>
-      <div class="vc vc-c"><span>WILLIAMS</span></div>
+      <div class="vc vc-a"><div class="vcc">
+        <svg viewBox="0 0 30 30"><rect x="12" y="9" width="14" height="12" rx="2.5"/><path d="M3 12h6M1 15.5h8M3 19h6"/></svg>
+        <span>PUROLATOR</span>
+      </div></div>
+      <div class="vc vc-b"><div class="vcc">
+        <svg viewBox="0 0 30 30"><path d="M15 3v24" stroke-dasharray="2.5 4"/><path d="M6 15h17M18.5 10.5L23 15l-4.5 4.5"/></svg>
+        <span>LIVINGSTON<br>INTERNATIONAL</span>
+      </div></div>
+      <div class="vc vc-c"><div class="vcc">
+        <svg viewBox="0 0 30 30"><path d="M15 3v24M4.6 9l20.8 12M25.4 9L4.6 21M15 3l-3 3.4M15 3l3 3.4M15 27l-3-3.4M15 27l3-3.4"/></svg>
+        <span>WILLIAMS<br>PHARMALOGISTICS</span>
+      </div></div>
     </div>
     <div class="in-venn-cap rv">One capable partner, not three.</div>
     <div class="in-chips">
@@ -126,7 +113,7 @@ const SLIDES = [
         <g class="pin" style="transition-delay:${d}s">
           <path d="M${x - 9} ${y - 26} L${x + 9} ${y - 26} L${x} ${y - 3} Z" fill="${isLast ? RED : BLUE}"/>
           <circle cx="${x}" cy="${y - 41}" r="21" fill="${isLast ? RED : BLUE}"/>
-          <text class="pnum" x="${x}" y="${y - 35}">${i + 1}</text>
+          <text class="pnum" x="${x}" y="${y - 41}">${i + 1}</text>
         </g>
         <g class="plabel" style="transition-delay:${(+d + 0.18).toFixed(2)}s">
           <text class="pl1" x="${x}" y="${labelY}">${l1}</text>
@@ -135,7 +122,7 @@ const SLIDES = [
     }).join('');
     const ROUTE = 'M 28 182 C 100 178, 180 128, 290 120 C 400 113, 420 185, 500 180 C 590 175, 620 110, 710 115 C 800 120, 850 152, 920 160 L 962 163';
     return `
-      <div class="in-kicker rv">TOGETHER</div>
+      <div class="in-kicker rv">LET'S PUSH</div>
       <h1 class="in-h1">${words('FIVE DIRECTIONS WORTH BUILDING ON')}</h1>
       <div class="in-route rv">
         <svg viewBox="0 0 1000 300" fill="none">
@@ -274,13 +261,16 @@ const CSS = `
   background:rgba(28,79,196,.10);border:2px solid rgba(28,79,196,.38);
   display:flex;align-items:center;justify-content:center;
   transition:transform 1.1s cubic-bezier(.65,0,.2,1) .9s}
-.vc span{font-weight:800;letter-spacing:.14em;font-size:12px;color:${NAVY}}
+.vc .vcc{display:flex;flex-direction:column;align-items:center;gap:7px}
+.vc .vcc svg{width:30px;height:30px;fill:none;stroke:${NAVY};stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vc .vcc svg rect{fill:none}
+.vc span{font-weight:800;letter-spacing:.11em;font-size:10.5px;color:${NAVY};text-align:center;line-height:1.55}
 .vc-a{left:102px;top:0}
-.vc-a span{transform:translateY(-34px)}
+.vc-a .vcc{transform:translateY(-44px)}
 .vc-b{left:22px;top:96px}
-.vc-b span{transform:translate(-26px,28px)}
+.vc-b .vcc{transform:translate(-34px,34px)}
 .vc-c{left:182px;top:96px}
-.vc-c span{transform:translate(28px,28px)}
+.vc-c .vcc{transform:translate(34px,34px)}
 /* start apart, drift together */
 .vc-a{transform:translateY(-46px)}
 .vc-b{transform:translate(-56px,34px)}
@@ -301,7 +291,7 @@ const CSS = `
   transition:opacity .4s cubic-bezier(.34,1.56,.64,1),transform .4s cubic-bezier(.34,1.56,.64,1);
   filter:drop-shadow(0 6px 12px rgba(16,48,124,.28))}
 .live .pin{opacity:1;transform:none}
-.pnum{fill:#fff;font-weight:900;font-size:18px;text-anchor:middle;dominant-baseline:middle;
+.pnum{fill:#fff;font-weight:900;font-size:18px;text-anchor:middle;dominant-baseline:central;
   font-family:Inter,-apple-system,sans-serif}
 .plabel{opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s ease}
 .live .plabel{opacity:1;transform:none}
