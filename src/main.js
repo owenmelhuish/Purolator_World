@@ -10,7 +10,7 @@ import {
 import {
   makeHQTower, makeCreativeStudio, makeIdeationLab, makePavilion,
   makeControlTower, makeShip, makeLoco, makeFreightCar, makeBillboard, makePerson,
-  makeMediaLab, makeDataCommand,
+  makeMediaLab, makeDataCommand, makeFlagRow,
 } from './hero.js';
 import {
   makeTree, makeContainerYardStacks, makeGantryCrane, makePalletStack, makeRack,
@@ -441,7 +441,7 @@ registerPoi(tower, 'hq');
   animators.push({
     update(dt, time) {
       const k = Math.sin(time * 1.8);
-      core.material.emissiveIntensity = 0.7 + k * 0.2;
+      core.material.emissiveIntensity = 0.22 + k * 0.08;
       glow.scale.setScalar(7 + k * 0.9);
       light.intensity = 38 + k * 12;
       if (ring) {
@@ -450,6 +450,12 @@ registerPoi(tower, 'hq');
       }
     },
   });
+}
+// brand flag plaza at the foot of the entrance steps
+{
+  const flagRow = makeFlagRow();
+  tower.add(flagRow.group);
+  animators.push({ update: flagRow.update });
 }
 // plaza dressing
 {

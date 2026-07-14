@@ -74,6 +74,144 @@ function purolatorLogoMaterial() {
 }
 
 // ---------------------------------------------------------------------------
+// Entrance flag plaza — five brand flags on white poles, waving in the wind
+// ---------------------------------------------------------------------------
+function flagCanvas(draw) {
+  const cv = document.createElement('canvas');
+  cv.width = 512;
+  cv.height = 320;
+  const ctx = cv.getContext('2d');
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 4;
+  draw(ctx, () => { tex.needsUpdate = true; });
+  return tex;
+}
+
+const FLAG_DRAWS = {
+  purolator(ctx) {
+    ctx.fillStyle = '#f8fafd';
+    ctx.fillRect(0, 0, 512, 320);
+    ctx.fillStyle = '#e3172e';
+    for (let i = 0; i < 2; i++) {
+      const x = 96 + i * 24;
+      ctx.beginPath();
+      ctx.moveTo(x, 128); ctx.lineTo(x + 15, 128); ctx.lineTo(x - 7, 192); ctx.lineTo(x - 22, 192);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.fillStyle = '#10307c';
+    ctx.font = 'italic 800 72px Inter, -apple-system, Arial, sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Purolator', 150, 162);
+  },
+  livingston(ctx) {
+    ctx.fillStyle = '#224091';
+    ctx.fillRect(0, 0, 512, 320);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '800 54px Inter, -apple-system, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.letterSpacing = '4px';
+    ctx.fillText('LIVINGSTON', 256, 160);
+  },
+  williams(ctx) {
+    ctx.fillStyle = '#f8fafd';
+    ctx.fillRect(0, 0, 512, 320);
+    ctx.fillStyle = '#10307c';
+    ctx.font = '800 64px Inter, -apple-system, Arial, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('WILLIAMS', 256, 138);
+    ctx.fillStyle = '#3b7fc4';
+    ctx.font = '600 26px Inter, -apple-system, Arial, sans-serif';
+    ctx.letterSpacing = '6px';
+    ctx.fillText('PHARMALOGISTICS', 256, 202);
+  },
+  push(ctx, done) {
+    ctx.fillStyle = '#f8fafd';
+    ctx.fillRect(0, 0, 512, 320);
+    const img = new Image();
+    img.onload = () => {
+      const w = 400;
+      const h = w * (img.height / img.width);
+      ctx.drawImage(img, (512 - w) / 2, (320 - h) / 2, w, h);
+      done();
+    };
+    img.src = '/push-logo.jpg';
+  },
+  stratis(ctx, done) {
+    ctx.fillStyle = '#0d1526';
+    ctx.fillRect(0, 0, 512, 320);
+    const img = new Image();
+    img.onload = () => {
+      // tint the black wordmark white
+      const off = document.createElement('canvas');
+      off.width = img.width;
+      off.height = img.height;
+      const octx = off.getContext('2d');
+      octx.drawImage(img, 0, 0);
+      octx.globalCompositeOperation = 'source-in';
+      octx.fillStyle = '#ffffff';
+      octx.fillRect(0, 0, off.width, off.height);
+      const w = 430;
+      const h = w * (img.height / img.width);
+      ctx.drawImage(off, (512 - w) / 2, (320 - h) / 2, w, h);
+      done();
+    };
+    img.src = '/stratis-logo.png';
+  },
+};
+
+export function makeFlagRow() {
+  const group = new THREE.Group();
+  const flags = [];
+  const order = ['push', 'livingston', 'purolator', 'williams', 'stratis'];
+  const xs = [-8, -4, 0, 4, 8];
+  order.forEach((key, i) => {
+    const x = xs[i];
+    const z = 10.4 - Math.abs(x) * 0.12;      // shallow arc facing the walk
+    const ground = -((x * x + z * z) / 84);   // follow the globe falling away
+    const unit = new THREE.Group();
+    unit.position.set(x, ground, z);
+    // plinth sunk into the terrain + collar + white pole + finial
+    unit.add(cyl(0.44, 0.58, 2.6, mat(T_GREY1, { roughness: 0.8 }), 0, -0.95, 0, 18));
+    unit.add(cyl(0.2, 0.3, 0.5, mat(T_GREY2, { roughness: 0.6 }), 0, 0.5, 0, 14));
+    unit.add(cyl(0.06, 0.09, 7.0, mat(T_WHITE, { roughness: 0.4 }), 0, 3.95, 0, 10));
+    const finial = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), mat(T_GREY2, { roughness: 0.4 }));
+    finial.position.y = 7.5;
+    finial.castShadow = true;
+    unit.add(finial);
+    const geo = new THREE.PlaneGeometry(2.7, 1.65, 20, 8);
+    geo.translate(1.36, 0, 0); // hoist edge at the pole
+    const flag = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+      map: flagCanvas(FLAG_DRAWS[key]), side: THREE.DoubleSide, roughness: 0.75,
+    }));
+    flag.position.set(0.08, 6.5, 0);
+    flag.castShadow = true;
+    unit.add(flag);
+    group.add(unit);
+    flags.push({ mesh: flag, phase: i * 1.35 });
+  });
+  function update(dt, time) {
+    for (const f of flags) {
+      const pos = f.mesh.geometry.attributes.position;
+      for (let vi = 0; vi < pos.count; vi++) {
+        const vx = pos.getX(vi);
+        const k = vx / 2.7;
+        pos.setZ(vi,
+          Math.sin(vx * 2.3 - time * 4.4 + f.phase) * 0.24 * k * k +
+          Math.sin(time * 1.4 + f.phase) * 0.05 * k);
+      }
+      pos.needsUpdate = true;
+      f.mesh.geometry.computeVertexNormals();
+    }
+  }
+  return { group, update };
+}
+
+// ---------------------------------------------------------------------------
 // STRATIS orb — glowing beacon
 // ---------------------------------------------------------------------------
 function glowTexture() {
@@ -92,39 +230,50 @@ function glowTexture() {
 }
 
 function stratisLabelTexture() {
+  // the real STRATIS wordmark, tinted white (loads async into the canvas)
   const cv = document.createElement('canvas');
-  cv.width = 512; cv.height = 256;
+  cv.width = 1024; cv.height = 512;
   const ctx = cv.getContext('2d');
-  ctx.clearRect(0, 0, 512, 256);
-  ctx.fillStyle = 'rgba(255,255,255,0.96)';
-  ctx.font = '800 72px Inter, -apple-system, Arial, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.letterSpacing = '6px';
-  ctx.fillText('STRATIS', 256, 128);
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, 1024, 512);
+    const w = 940;
+    const h = w * (img.height / img.width);
+    ctx.drawImage(img, (1024 - w) / 2, (512 - h) / 2, w, h);
+    ctx.globalCompositeOperation = 'source-in';
+    ctx.fillStyle = 'rgba(16,48,124,0.92)'; // navy reads on glass against the sky
+    ctx.fillRect(0, 0, 1024, 512);
+    ctx.globalCompositeOperation = 'source-over';
+    tex.needsUpdate = true;
+  };
+  img.src = '/stratis-logo.png';
   return tex;
 }
 
 export function makeStratisOrb() {
   const g = new THREE.Group();
+  // glassy bubble: transmissive physical material so the sky reads through it
   const core = new THREE.Mesh(
-    new THREE.SphereGeometry(2.1, 28, 22),
-    new THREE.MeshStandardMaterial({
-      color: 0xbcd8ff,
-      emissive: 0x6ea8f5,
-      emissiveIntensity: 0.7,
-      roughness: 0.2,
+    new THREE.SphereGeometry(2.1, 36, 28),
+    new THREE.MeshPhysicalMaterial({
+      color: 0xf2f8ff,
+      metalness: 0,
+      roughness: 0.06,
+      transmission: 0.92,
+      thickness: 1.6,
+      ior: 1.35,
       transparent: true,
-      opacity: 0.92,
+      emissive: 0x7fb6f0,
+      emissiveIntensity: 0.22,
     })
   );
   g.add(core);
   const glow = new THREE.Sprite(new THREE.SpriteMaterial({
     map: glowTexture(),
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.55,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
   }));
@@ -136,7 +285,7 @@ export function makeStratisOrb() {
     depthWrite: false,
     depthTest: false,
   }));
-  label.scale.set(4.6, 2.3, 1);
+  label.scale.set(4.4, 2.2, 1);
   label.renderOrder = 10;
   g.add(label);
   const light = new THREE.PointLight(0x9fc8ff, 40, 45, 1.8);
