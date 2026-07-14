@@ -171,6 +171,11 @@ function zwBooth(label) {
   papers.rotation.y = 0.4;
   papers.castShadow = false;
   g.add(papers);
+  const chair = zwChair(0x77829a);
+  chair.position.set(0, 0.07, 0.15);
+  chair.rotation.y = Math.PI; // back to the opening, facing the desk
+  chair.scale.y = 0.85;       // lower backrest so heads stay visible
+  g.add(chair);
   const p = requestFigure({ seated: true, scale: 0.95 });
   p.position.set(0, 0.12, 0.15);
   p.rotation.y = Math.PI / 2; // face the desk (-Z)
@@ -208,18 +213,23 @@ function zwCubicle(withWorker = true) {
   papers.castShadow = false;
   g.add(papers);
   if (withWorker) {
+    const ch = zwChair(0x77829a);
+    ch.position.set(0, 0, 0.15);
+    ch.rotation.y = Math.PI; // back to the opening, facing the desk
+    ch.scale.y = 0.85;       // lower backrest so heads stay visible
+    g.add(ch);
     const p = requestFigure({ seated: true, scale: 0.9 });
-    p.position.set(0, 0.1, 0.15);
+    p.position.set(0, 0.05, 0.15);
     p.rotation.y = Math.PI / 2; // face the desk (-Z)
     g.add(p);
   }
   return g;
 }
 
-/** Simple blue task chair for the round table. */
-function zwChair() {
+/** Simple task chair — blue at the round table, gray in the cubicles. */
+function zwChair(seatColor = 0x2456c9) {
   const g = new THREE.Group();
-  const blue = mat(0x2456c9, { roughness: 0.7 });
+  const blue = mat(seatColor, { roughness: 0.7 });
   const grey = mat(ZW_CGRAY, { roughness: 0.5 });
   g.add(rbox(0.55, 0.1, 0.5, blue, 0, 0.55, 0, 0.04));
   g.add(rbox(0.5, 0.62, 0.09, blue, 0, 0.98, -0.24, 0.04));

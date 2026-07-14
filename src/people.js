@@ -124,7 +124,7 @@ const WALKERS = [
   { lat: -22, lon: 58, r: 4.5, alt: 0.26, speed: 1.8, ts: 1.6, reverse: true },
   { lat: -22, lon: -55, r: 4.5, alt: 0.26, speed: 1.05 },
   { lat: 19, lon: 130, r: 4.4, alt: 0.26, speed: 0.95, reverse: true },
-  { lat: -16, lon: 165, r: 4.8, alt: 0.26, speed: 1.65, ts: 1.5 },
+  // (walker at -16/165 removed — its loop crossed under the ZeroWaste plinth)
   { lat: -22, lon: -163, r: 4.5, alt: 0.26, speed: 1.0 },
   { lat: -49, lon: -124, r: 4.4, alt: 0.26, speed: 0.9, reverse: true },
   { lat: 13, lon: 99, r: 4.4, alt: 0.26, speed: 1.75, ts: 1.55 },
