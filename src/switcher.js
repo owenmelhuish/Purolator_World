@@ -6,9 +6,9 @@
 
 const WORLDS = [
   { key: 'purolator', name: 'Purolator', tag: 'PUSH + STRATIS — One Bigger Purolator', color: '#1c4fc4', url: '/' },
-  { key: 'choice', name: 'Choice Hotels Canada', tag: 'Case Study · Travel', color: '#f57f29', url: '/choice.html' },
-  { key: 'humber', name: 'Humber Polytechnic', tag: 'Case Study · Education', color: '#5c068c', url: '/humber.html' },
-  { key: 'cira', name: 'CIRA · .CA', tag: 'Case Study · Canadian Internet', color: '#aa1e3a', url: '/cira.html' },
+  { key: 'choice', name: 'Choice Hotels Canada', tag: 'Case Study · Lead Gen', color: '#f57f29', url: '/choice.html' },
+  { key: 'humber', name: 'Humber Polytechnic', tag: 'Case Study · Branding', color: '#5c068c', url: '/humber.html' },
+  { key: 'cira', name: 'CIRA · .CA', tag: 'Case Study · B2B', color: '#aa1e3a', url: '/cira.html' },
 ];
 
 const CSS = `
