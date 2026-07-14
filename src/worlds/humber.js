@@ -43,10 +43,10 @@ const THEME = {
 const POIS = [
   {
     id: 'campus',
-    title: 'Builders of Brilliance',
+    title: 'Builders of Brilliant Branding',
     step: 'Case Study · Chapter 1 · The Relaunch',
     body: 'While working closely with the client and their creative teams, PUSH was able to help Humber see a 3% increase in applications in a declining marketplace.\n\nFuture students have a wide variety of schools to choose from and we needed to provide students with confidence to accept their offer. In post-campaign research, students confirmed that seeing their school showcased in key media placements helped build their confidence and pride in choosing Humber.\n\nComing in second place was not an option. Big and bold media placements combined with strategic digital strategies delivered. Branding mattered.',
-    stats: [['Learners', '86,000+'], ['Relaunched', 'August 2024']],
+    stats: [['Capacity', 'Media · Strategy · Creative team integration']],
     lat: 90, lon: 0, dist: 185, pinAlt: 36, side: 0.85, lookR: 42,
   },
   {

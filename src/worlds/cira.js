@@ -44,7 +44,7 @@ const POIS = [
     title: 'A Trusted Internet for Canadians',
     step: 'Case Study · Chapter 1 · The Partner',
     body: 'CIRA\'s goal is to help Canadian businesses establish themselves with a .CA.\n\nWorking closely with the client and creative team, we were able to develop a campaign that spoke directly to small and medium sized business owners.\n\nBeyond traditional advertising, we secured our client media exposure through website content creation as well as podcasts.\n\nThrough ongoing optimizations, strategic digital placements and personalized messaging, the campaign resonated with an increase in unaided recall of +66% among SMEs.',
-    stats: [['.CA domains', '3.4M'], ['Mission', 'Trusted internet']],
+    stats: [['Capacity', 'Strategy · Media · Creative'], ['Markets', 'English Canada · French Canada']],
     lat: 90, lon: 0, dist: 168, pinAlt: 28, side: 0.85, lookR: 42,
   },
   {
