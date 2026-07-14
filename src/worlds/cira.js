@@ -43,7 +43,7 @@ const POIS = [
     id: 'ca',
     title: 'A Trusted Internet for Canadians',
     step: 'Case Study · Chapter 1 · The Partner',
-    body: 'CIRA, the Canadian Internet Registration Authority, runs .CA on behalf of all Canadians: 3.4 million domains, a member-driven nonprofit in Ottawa. PUSH powers the national campaigns behind internet safety, .CA registration and digital identity, B2B and consumer at once. Welcome to the Canadian internet, as a place.',
+    body: 'CIRA\'s goal is to help Canadian businesses establish themselves with a .CA.\n\nWorking closely with the client and creative team, we were able to develop a campaign that spoke directly to small and medium sized business owners.\n\nBeyond traditional advertising, we secured our client media exposure through website content creation as well as podcasts.\n\nThrough ongoing optimizations, strategic digital placements and personalized messaging, the campaign resonated with an increase in unaided recall of +66% among SMEs.',
     stats: [['.CA domains', '3.4M'], ['Mission', 'Trusted internet']],
     lat: 90, lon: 0, dist: 168, pinAlt: 28, side: 0.85, lookR: 42,
   },

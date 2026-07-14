@@ -43,7 +43,7 @@ const POIS = [
     id: 'resort',
     title: 'Experience More',
     step: 'Case Study · Chapter 1 · The Partnership',
-    body: 'Choice Hotels Canada: 350+ hotels and ~30,000 rooms, in nearly every town from coast to coast, each one locally owned. PUSH built "Experience More," the national platform that turned that footprint into demand, with STRATIS keeping every media dollar accountable. This is their world: one Canada, and always a place to stay in it.',
+    body: 'Managing multiple messages tailored to different target groups, PUSH works closely with the client team to define the relevant personas and jobs to be done in the Canadian market, with a test and learn mentality against a strong mix of digital media tactics and creative activations.\n\nThrough weekly reports and status meetings we are able to continuously optimize our always-on and seasonal campaigns toward revenue targets, balancing ROAS, cost per booking and revenue per booking results.\n\nOpen dialogue contributes to ease in revisions that deliver maximum results.',
     stats: [['Hotels', '350+ across Canada'], ['Platform', 'Experience More']],
     lat: 90, lon: 0, dist: 136, pinAlt: 20, side: 0.85, lookR: 42,
   },
