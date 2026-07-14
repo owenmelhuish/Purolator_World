@@ -595,6 +595,7 @@ export function setupUI({ onSelect, onOverview, onStart, pois = POIS, nextWorld 
   const card = document.getElementById('info-card');
   const stepEl = document.getElementById('info-step');
   const titleEl = document.getElementById('info-title');
+  const diagramEl = document.getElementById('info-diagram');
   const bodyEl = document.getElementById('info-body');
   const statsEl = document.getElementById('info-stats');
   const dotsEl = document.getElementById('tour-dots');
@@ -613,6 +614,8 @@ export function setupUI({ onSelect, onOverview, onStart, pois = POIS, nextWorld 
   function showCard(poi) {
     stepEl.textContent = poi.step;
     titleEl.textContent = poi.title;
+    // story order: title → diagram → copy → stats/actions
+    diagramEl.innerHTML = poi.html ?? '';
     bodyEl.textContent = poi.body;
     // the final chapter hands off to the next world in the case-study loop
     const handoff = nextWorld && poi === pois[pois.length - 1]
@@ -620,7 +623,9 @@ export function setupUI({ onSelect, onOverview, onStart, pois = POIS, nextWorld 
       : '';
     statsEl.innerHTML =
       (poi.stats ?? []).map(([k, v]) => `<div class="stat">${k}: <b>${v}</b></div>`).join('') +
-      (poi.html ?? '') + handoff;
+      handoff;
+    // action buttons belong at the bottom of the card, after the copy
+    diagramEl.querySelectorAll(':scope > .ic-btn').forEach((b) => statsEl.appendChild(b));
     statsEl.querySelector('.ic-next-world')?.addEventListener('click', () => nextWorld.go());
     card.scrollTop = 0;
     card.classList.remove('hidden');
